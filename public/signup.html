@@ -9,9 +9,9 @@
   <!-- 
     - primary meta tags
   -->
-  <title>Past Terapi - Giriş Yap</title>
-  <meta name="title" content="Past Terapi - Giriş Yap">
-  <meta name="description" content="Past Terapi giriş sayfası">
+  <title>Past Terapi - Hesap Oluştur</title>
+  <meta name="title" content="Past Terapi - Hesap Oluştur">
+  <meta name="description" content="Past Terapi hesap oluşturma sayfası">
 
   <!-- 
     - favicon
@@ -32,7 +32,7 @@
   <link rel="stylesheet" href="./assets/css/style.css">
 
   <style>
-    .login-container {
+    .signup-container {
       display: flex;
       justify-content: center;
       align-items: center;
@@ -41,7 +41,7 @@
       background-color: var(--alice-blue);
     }
 
-    .login-form-wrapper {
+    .signup-form-wrapper {
       background-color: var(--white);
       padding: 40px;
       border-radius: var(--radius-12);
@@ -51,7 +51,7 @@
       text-align: center;
     }
 
-    .login-form-wrapper h2 {
+    .signup-form-wrapper h2 {
       font-family: var(--ff-oswald);
       font-size: var(--headline-md);
       color: var(--midnight-green);
@@ -84,7 +84,7 @@
       outline: none;
     }
 
-    .login-btn {
+    .signup-btn {
       width: 100%;
       padding: 15px;
       background-color: var(--verdigris);
@@ -96,7 +96,7 @@
       transition: var(--transition-1);
     }
 
-    .login-btn:hover {
+    .signup-btn:hover {
       background-color: var(--eerie-black);
     }
 
@@ -136,57 +136,6 @@
     .back-button:hover {
       background-color: var(--eerie-black);
     }
-
-    .separator {
-      display: flex;
-      align-items: center;
-      text-align: center;
-      margin-block: 20px;
-      color: var(--independece);
-      font-size: var(--title-sm);
-    }
-
-    .separator::before,
-    .separator::after {
-      content: '';
-      flex: 1;
-      border-bottom: 1px solid var(--gainsboro);
-    }
-
-    .separator:not(:empty)::before {
-      margin-right: .25em;
-    }
-
-    .separator:not(:empty)::after {
-      margin-left: .25em;
-    }
-
-    .google-login-btn {
-      width: 100%;
-      padding: 12px 15px;
-      background-color: var(--white);
-      color: var(--eerie-black);
-      border: 1px solid var(--gainsboro);
-      border-radius: var(--radius-6);
-      font-size: var(--title-md);
-      cursor: pointer;
-      transition: var(--transition-1);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-      margin-top: 15px;
-    }
-
-    .google-login-btn:hover {
-      background-color: var(--alice-blue);
-      border-color: var(--verdigris);
-    }
-
-    .google-login-btn img {
-      width: 20px;
-      height: 20px;
-    }
   </style>
 
 </head>
@@ -207,10 +156,14 @@
         <ion-icon name="arrow-back-outline"></ion-icon>
         Geri
       </a>
-      <section class="login-container">
-        <div class="login-form-wrapper">
-          <h2>Giriş Yap</h2>
+      <section class="signup-container">
+        <div class="signup-form-wrapper">
+          <h2>Hesap Oluştur</h2>
           <form action="#" method="post">
+            <div class="input-field-group">
+              <label for="name">Ad Soyad</label>
+              <input type="text" id="name" name="name" placeholder="Adınızı ve soyadınızı girin" required>
+            </div>
             <div class="input-field-group">
               <label for="email">E-posta</label>
               <input type="email" id="email" name="email" placeholder="E-posta adresinizi girin" required>
@@ -219,17 +172,15 @@
               <label for="password">Şifre</label>
               <input type="password" id="password" name="password" placeholder="Şifrenizi girin" required>
             </div>
-            <button type="submit" class="login-btn">Giriş Yap</button>
+            <div class="input-field-group">
+              <label for="confirm-password">Şifreyi Onayla</label>
+              <input type="password" id="confirm-password" name="confirm-password" placeholder="Şifrenizi tekrar girin" required>
+            </div>
+            <button type="submit" class="signup-btn">Hesap Oluştur</button>
           </form>
-          <div class="separator"><span>veya</span></div>
-          <button class="google-login-btn">
-            <ion-icon name="logo-google"></ion-icon>
-            Google ile Giriş Yap
-          </button>
           <div class="form-links">
-            <a href="#">Şifremi Unuttum?</a>
-            <span> | </span>
-            <a href="signup.html">Hesap Oluştur</a>
+            <span>Zaten bir hesabınız var mı?</span>
+            <a href="login.html">Giriş Yap</a>
           </div>
         </div>
       </section>
