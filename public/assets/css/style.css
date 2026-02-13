@@ -523,9 +523,10 @@ body.nav-active { overflow: hidden; }
   transition: var(--transition-1);
 }
 
-.service-card .btn-circle:is(:hover, :focus-visible) {
-  background-color: var(--verdigris);
+.btn-circle:is(:hover, :focus-visible) {
+  background-color: var(--cadet-blue);
   color: var(--white);
+  transform: scale(1.05);
 }
 
 
@@ -557,6 +558,11 @@ body.nav-active { overflow: hidden; }
   padding: 7px 30px;
   border-radius: var(--radius-6);
   font-weight: var(--fw-700);
+}
+
+.tab-btn:is(:hover, :focus-visible) {
+  color: var(--rich-black-fogra-29);
+  transform: scale(1.05);
 }
 
 .tab-btn.active {
