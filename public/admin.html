@@ -1,0 +1,8 @@
+<script>
+  const role = localStorage.getItem("role");
+
+  if (role !== "admin") {
+    alert("Bu sayfaya erişimin yok!");
+    window.location.href = "login.html";
+  }
+</script>

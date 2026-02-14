@@ -11,7 +11,7 @@
   -->
   <title>Past Terapi - Giriş Yap</title>
   <meta name="title" content="Past Terapi - Giriş Yap">
-  <meta name="description" content="Past Terapi giriş sayfası">
+  <meta name="description" content="Past Terapi giriş sayfasi">
 
   <!-- 
     - favicon
@@ -212,7 +212,8 @@
       <section class="login-container">
         <div class="login-form-wrapper">
           <h2>Giriş Yap</h2>
-          <form action="#" method="post">
+
+          <form id="loginForm">
             <div class="input-field-group">
               <label for="email">E-posta</label>
               <input type="email" id="email" name="email" placeholder="E-posta adresinizi girin" required>
@@ -223,6 +224,8 @@
             </div>
             <button type="submit" class="login-btn">Giriş Yap</button>
           </form>
+
+          
           <div class="separator"><span>veya</span></div>
           <button class="google-login-btn">
             <ion-icon name="logo-google"></ion-icon>
@@ -264,7 +267,7 @@
                   Ana E-posta : <a href="mailto:contact@therapy.com" class="contact-link">contact@&shy;therapy.com</a>
                 </p>
                 <p>
-                  Sorularınız İçin : <a href="mailto:Info@therapy.com" class="contact-link">Info@therapy.com</a>
+                  Sorulariniz İçin : <a href="mailto:Info@therapy.com" class="contact-link">Info@therapy.com</a>
                 </p>
               </div>
             </li>
@@ -284,7 +287,7 @@
           </ul>
         </div>
         <div class="footer-list" data-reveal="bottom">
-          <p class="headline-sm footer-list-title">Hakkımızda</p>
+          <p class="headline-sm footer-list-title">Hakkimizda</p>
           <p class="text">
             Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque fermentum tortor quis arcu varius, sit amet tempus urna vestibulum. Integer vitae magna pretium, consequat velit nec.
           </p>
@@ -301,10 +304,10 @@
             <p class="headline-sm footer-list-title">Hizmetler</p>
           </li>
           <li>
-            <a href="#" class="text footer-link">Danışmanlık</a>
+            <a href="#" class="text footer-link">Danişmanlik</a>
           </li>
           <li>
-            <a href="#" class="text footer-link">Terapi Seansları</a>
+            <a href="#" class="text footer-link">Terapi Seanslari</a>
           </li>
           <li>
             <a href="#" class="text footer-link">Atölyeler</a>
@@ -316,21 +319,21 @@
             <a href="#" class="text footer-link">Teleterapi</a>
           </li>
           <li>
-            <a href="#" class="text footer-link">Farkındalık Eğitimi</a>
+            <a href="#" class="text footer-link">Farkindalik Eğitimi</a>
           </li>
         </ul>
         <ul class="footer-list" data-reveal="bottom">
           <li>
-            <p class="headline-sm footer-list-title">Faydalı Linkler</p>
+            <p class="headline-sm footer-list-title">Faydali Linkler</p>
           </li>
           <li>
-            <a href="#" class="text footer-link">Gizlilik Politikası</a>
+            <a href="#" class="text footer-link">Gizlilik Politikasi</a>
           </li>
           <li>
-            <a href="#" class="text footer-link">Hizmet Şartları</a>
+            <a href="#" class="text footer-link">Hizmet Şartlari</a>
           </li>
           <li>
-            <a href="#" class="text footer-link">Danışan Yorumları</a>
+            <a href="#" class="text footer-link">Danişan Yorumlari</a>
           </li>
           <li>
             <a href="#" class="text footer-link">SSS</a>
@@ -343,13 +346,13 @@
             <button type="submit" class="btn has-before title-md">Abone Ol</button>
           </form>
           <p class="text">
-            En son güncellemeleri e-posta ile alın. İstediğiniz zaman abonelikten çıkabilirsiniz.
+            En son güncellemeleri e-posta ile alin. İstediğiniz zaman abonelikten çikabilirsiniz.
           </p>
         </div>
       </div>
       <div class="footer-bottom">
         <p class="text copyright">
-          &copy; Terapist Merkezi 2022 | Tüm Hakları YourTherapyPractice Tarafından Saklıdır
+          &copy; Terapist Merkezi 2022 | Tüm Haklari YourTherapyPractice Tarafindan Saklidir
         </p>
         <ul class="social-list">
           <li>
@@ -396,11 +399,60 @@
   <!-- 
     - custom js link
   -->
-  <script src="./assets/js/script.js"></script>
+     <script src="./assets/js/script.js"></script>
 
-  <!-- 
-    - ionicon link
-  -->
+ <script>
+const form = document.querySelector("form");
+
+form.addEventListener("submit", async function (e) {
+  e.preventDefault();
+
+  const email = document.getElementById("email").value;
+  const password = document.getElementById("password").value;
+
+  try {
+    const res = await fetch("/api/login", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        email,
+        password
+      })
+    });
+
+    const data = await res.json();
+
+    
+    if (data.error) {
+      alert(data.error + " ❌");
+      return;
+    }
+
+    
+    localStorage.setItem("token", data.token);
+    localStorage.setItem("role", data.role);
+    localStorage.setItem("name", data.name);
+
+    alert("Hoşgeldin " + data.name + " 👋");
+
+    
+    if (data.role === "admin") {
+      window.location.href = "admin.html";
+    } else {
+      window.location.href = "index.html";
+    }
+
+  } catch (err) {
+    console.error(err);
+    alert("Sunucuya bağlanilamadi 🚨");
+  }
+});
+</script>
+
+
+
   <script type="module" src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.esm.js"></script>
   <script nomodule src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.js"></script>
 

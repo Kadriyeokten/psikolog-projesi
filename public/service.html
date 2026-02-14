@@ -56,6 +56,34 @@
 
 </head>
 
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+  const token = localStorage.getItem("token");
+
+  const loginBtn = document.getElementById("loginBtn");
+  const logoutBtn = document.getElementById("logoutBtn");
+
+  if (token) {
+    if (loginBtn) loginBtn.style.display = "none";
+    if (logoutBtn) logoutBtn.style.display = "inline-block";
+  } else {
+    if (loginBtn) loginBtn.style.display = "inline-block";
+    if (logoutBtn) logoutBtn.style.display = "none";
+  }
+
+  if (logoutBtn) {
+    logoutBtn.addEventListener("click", function () {
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+
+      window.location.href = "login.html";
+    });
+  }
+
+});
+</script>
+
 <body id="top">
 
   <!-- 
@@ -119,9 +147,20 @@
           <li class="navbar-item">
             <a href="appointment.html" class="navbar-link title-md" style="background-color: hsl(182, 100%, 35%); border-radius: 6px;">Randevu Al</a>
           </li>
-          <li class="navbar-item" style="margin-left: auto;">
-            <a href="login.html" class="navbar-link title-md" style="background-color: hsl(182, 100%, 35%); border-radius: 6px;">Giriş Yap</a>
-          </li>
+                 <li class="navbar-item" style="margin-left: auto;">
+  <a href="login.html"
+     id="loginBtn"
+     class="navbar-link title-md btn has-before">
+     Giriş Yap
+  </a>
+
+  <a href="#"
+     id="logoutBtn"
+     class="navbar-link title-md btn has-before"
+     style="display:none; margin-left:10px;">
+     Çıkış Yap
+  </a>
+</li>
         </ul>
 
         <ul class="social-list">
