@@ -1,8 +1,296 @@
-<script>
-  const role = localStorage.getItem("role");
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Paneli</title>
+    <link rel="stylesheet" href="./assets/css/style.css">
+    <style>
+        html, body {
+            height: 100%; /* HTML ve body'nin yüksekliğini tam ekran yap */
+            margin: 0;
+            padding: 0;
+            /* overflow: hidden; */ /* Bu satır kaldırıldı */
+        }
+        body {
+            font-family: 'Rubik', sans-serif;
+            background-color: var(--alice-blue);
+            color: var(--eerie-black);
+            /* margin: 0; */ /* Yukarıdaki html, body tanımına taşındı */
+            /* padding: 0; */ /* Yukarıdaki html, body tanımına taşındı */
+        }
+        .admin-header {
+            background-color: var(--verdigris);
+            color: var(--white);
+            padding: 20px;
+            text-align: center;
+            font-family: 'Oswald', sans-serif;
+        }
+        .admin-header h1 {
+            margin: 0;
+            font-size: var(--headline-lg);
+        }
+        .admin-container {
+            display: flex;
+            padding: 20px;
+            gap: 20px;
+            min-height: calc(100% - 80px); /* Header yüksekliği ve paddingler için boşluk bırak */
+            box-sizing: border-box; /* Padding'in yüksekliği etkilememesi için */
+        }
+        .admin-sidebar {
+            width: 250px;
+            background-color: var(--white);
+            padding: 20px;
+            border-radius: var(--radius-12);
+            box-shadow: var(--shadow-1);
+        }
+        .admin-sidebar ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .admin-sidebar ul li {
+            margin-bottom: 10px;
+        }
+        .admin-sidebar ul li a {
+            display: block;
+            padding: 10px 15px;
+            color: var(--eerie-black);
+            text-decoration: none;
+            border-radius: var(--radius-6);
+            transition: background-color 0.3s ease;
+        }
+        .admin-sidebar ul li a:hover,
+        .admin-sidebar ul li a.active {
+            background-color: var(--verdigris);
+            color: var(--white);
+        }
+        .admin-content {
+            flex-grow: 1;
+            background-color: var(--white);
+            padding: 30px;
+            border-radius: var(--radius-12);
+            box-shadow: var(--shadow-1);
+            max-height: calc(100vh - 120px); /* Tarayıcı yüksekliğinden başlık ve paddingleri çıkar */
+            overflow-y: auto; /* İçerik taştığında dikey kaydırma çubuğu göster */
+            box-sizing: border-box; /* Padding'in yüksekliği etkilememesi için */
+        }
+        .admin-section {
+            margin-bottom: 40px;
+            display: none; /* Varsayılan olarak gizli */
+        }
+        .admin-section.active {
+            display: block;
+        }
+        .admin-section h2 {
+            font-family: 'Oswald', sans-serif;
+            font-size: var(--headline-md);
+            color: var(--midnight-green);
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--gainsboro);
+            padding-bottom: 10px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            display: block;
+            font-size: var(--title-md);
+            color: var(--eerie-black);
+            margin-bottom: 8px;
+        }
+        .form-group input[type="text"],
+        .form-group textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid var(--gainsboro);
+            border-radius: var(--radius-6);
+            font-size: var(--title-md);
+            color: var(--eerie-black);
+            resize: vertical;
+        }
+        .form-group input[type="file"] {
+            padding: 10px 0;
+        }
+        .form-group button {
+            background-color: var(--verdigris);
+            color: var(--white);
+            padding: 10px 20px;
+            border: none;
+            border-radius: var(--radius-6);
+            cursor: pointer;
+            font-weight: var(--fw-700);
+            transition: background-color 0.3s ease;
+        }
+        .form-group button:hover {
+            background-color: var(--eerie-black);
+        }
+        .doctor-card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+        }
+        .doctor-card {
+            background-color: var(--alice-blue);
+            border-radius: var(--radius-12);
+            padding: 20px;
+            text-align: center;
+            box-shadow: var(--shadow-1);
+        }
+        .doctor-card img {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-bottom: 15px;
+        }
+        .doctor-card h3 {
+            font-family: 'Oswald', sans-serif;
+            font-size: var(--title-lg);
+            margin-bottom: 5px;
+        }
+        .doctor-card p {
+            font-size: var(--title-sm);
+            color: var(--independece);
+        }
+        .doctor-card .actions button {
+            margin: 5px;
+            padding: 8px 15px;
+            font-size: var(--title-sm);
+        }
+    </style>
+</head>
+<body>
+    <header class="admin-header">
+        <h1>Admin Paneli</h1>
+    </header>
 
-  if (role !== "admin") {
-    alert("Bu sayfaya erişimin yok!");
-    window.location.href = "login.html";
-  }
-</script>
+    <div class="admin-container">
+        <aside class="admin-sidebar">
+            <ul>
+                <li><a href="#dashboard" class="active" data-section="dashboard">Genel Bakış</a></li>
+                <li><a href="#about-us" data-section="about-us">Hakkımızda</a></li>
+                <li><a href="#services" data-section="services">Hizmetler</a></li>
+                <li><a href="#doctors" data-section="doctors">Doktorlar</a></li>
+                <li><a href="#settings" data-section="settings">Ayarlar</a></li>
+                <li><a href="index.html">Siteye Dön</a></li>
+            </ul>
+        </aside>
+
+        <main class="admin-content">
+            <section id="dashboard" class="admin-section active">
+                <h2>Genel Bakış</h2>
+                <p>Admin paneline hoş geldiniz. Buradan web sitenizin içeriğini yönetebilirsiniz.</p>
+                <!-- Genel istatistikler veya özet bilgiler buraya eklenebilir -->
+            </section>
+
+            <section id="about-us" class="admin-section">
+                <h2>Hakkımızda Sayfası Yönetimi</h2>
+                <div class="form-group">
+                    <label for="aboutUsContent">Hakkımızda Metni</label>
+                    <textarea id="aboutUsContent" rows="10" placeholder="Hakkımızda sayfasının içeriğini girin."></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="aboutUsImage">Hakkımızda Görseli</label>
+                    <input type="file" id="aboutUsImage" accept="image/*">
+                    <img id="aboutUsImagePreview" src="#" alt="Görsel Önizleme" style="max-width: 200px; margin-top: 10px; display: none;">
+                </div>
+                <div class="form-group">
+                    <button id="saveAboutUs">Kaydet</button>
+                </div>
+            </section>
+
+            <section id="services" class="admin-section">
+                <h2>Hizmetler Yönetimi</h2>
+                <div id="serviceList">
+                    <!-- Mevcut hizmetler buraya JS ile yüklenecek -->
+                    <div class="form-group">
+                        <label for="serviceTitle1">Hizmet Başlığı 1</label>
+                        <input type="text" id="serviceTitle1" value="Bireysel Terapi">
+                        <label for="serviceDesc1">Hizmet Açıklaması 1</label>
+                        <textarea id="serviceDesc1" rows="3">Bireysel terapi, kişisel gelişim ve ruh sağlığı konularında destek sağlar.</textarea>
+                        <button>Güncelle</button> <button>Sil</button>
+                    </div>
+                    <div class="form-group">
+                        <label for="serviceTitle2">Hizmet Başlığı 2</label>
+                        <input type="text" id="serviceTitle2" value="Çift Terapisi">
+                        <label for="serviceDesc2">Hizmet Açıklaması 2</label>
+                        <textarea id="serviceDesc2" rows="3">Çift terapisi, ilişkilerdeki sorunları çözmeye yardımcı olur.</textarea>
+                        <button>Güncelle</button> <button>Sil</button>
+                    </div>
+                </div>
+                <h3>Yeni Hizmet Ekle</h3>
+                <div class="form-group">
+                    <label for="newServiceTitle">Hizmet Başlığı</label>
+                    <input type="text" id="newServiceTitle" placeholder="Yeni hizmet başlığı">
+                </div>
+                <div class="form-group">
+                    <label for="newServiceDesc">Hizmet Açıklaması</label>
+                    <textarea id="newServiceDesc" rows="3" placeholder="Yeni hizmet açıklaması"></textarea>
+                </div>
+                <div class="form-group">
+                    <button id="addService">Hizmet Ekle</button>
+                </div>
+            </section>
+
+            <section id="doctors" class="admin-section">
+                <h2>Doktorlar Yönetimi</h2>
+                <div class="doctor-card-grid" id="doctorList">
+                    <!-- Mevcut doktorlar buraya JS ile yüklenecek -->
+                    <div class="doctor-card">
+                        <img src="./assets/images/doc-1.jpg" alt="Doktor Adı">
+                        <h3>Dr. Ayşe Yılmaz</h3>
+                        <p>Uzman Psikolog</p>
+                        <div class="actions">
+                            <button>Düzenle</button>
+                            <button>Sil</button>
+                        </div>
+                    </div>
+                    <div class="doctor-card">
+                        <img src="./assets/images/doc-2.jpg" alt="Doktor Adı">
+                        <h3>Uzm. Psk. Can Demir</h3>
+                        <p>Klinik Psikolog</p>
+                        <div class="actions">
+                            <button>Düzenle</button>
+                            <button>Sil</button>
+                        </div>
+                    </div>
+                </div>
+                <h3>Yeni Doktor Ekle</h3>
+                <div class="form-group">
+                    <label for="newDoctorName">Ad Soyad</label>
+                    <input type="text" id="newDoctorName" placeholder="Doktorun adı soyadı">
+                </div>
+                <div class="form-group">
+                    <label for="newDoctorTitle">Ünvan</label>
+                    <input type="text" id="newDoctorTitle" placeholder="Doktorun ünvanı (örn: Uzman Psikolog)">
+                </div>
+                <div class="form-group">
+                    <label for="newDoctorImage">Doktor Görseli</label>
+                    <input type="file" id="newDoctorImage" accept="image/*">
+                </div>
+                <div class="form-group">
+                    <button id="addDoctor">Doktor Ekle</button>
+                </div>
+            </section>
+
+            <section id="settings" class="admin-section">
+                <h2>Genel Ayarlar</h2>
+                <div class="form-group">
+                    <label for="siteTitle">Site Başlığı</label>
+                    <input type="text" id="siteTitle" value="Past Terapi">
+                </div>
+                <div class="form-group">
+                    <label for="contactEmail">İletişim E-postası</label>
+                    <input type="text" id="contactEmail" value="contact@therapy.com">
+                </div>
+                <div class="form-group">
+                    <button id="saveSettings">Ayarları Kaydet</button>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="./assets/js/admin.js"></script>
+</body>
+</html>
