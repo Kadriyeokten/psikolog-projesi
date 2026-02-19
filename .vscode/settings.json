@@ -4,3 +4,83 @@
   "editor.tabSize": 2,
   "editor.insertSpaces": true
 }
+/*
+
+
+
+CREATE TABLE users (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(100),
+    email VARCHAR(150) UNIQUE NOT NULL,
+    password TEXT NOT NULL,
+    role VARCHAR(20) DEFAULT 'user',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+
+CREATE TABLE site_content (
+    id SERIAL PRIMARY KEY,
+
+    about_title   VARCHAR(255) NOT NULL,
+    about_text    TEXT         NOT NULL,
+    feature_title1 TEXT         NOT NULL,
+    feature_title2 TEXT         NOT NULL,
+    feature_title3 TEXT         NOT NULL,
+    feature_desc1 TEXT         NOT NULL,
+    feature_desc2 TEXT         NOT NULL,
+    feature_desc3 TEXT         NOT NULL,
+    feature1 TEXT         NOT NULL,
+    feature2 TEXT         NOT NULL,
+    feature3 TEXT         NOT NULL,
+    feature4 TEXT         NOT NULL,
+    about_image   VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+
+INSERT INTO public.site_content
+(id, about_title, about_text, feature_title1, feature_title2, feature_title3, feature_desc1, feature_desc2, feature_desc3, feature1, feature2, feature3, feature4, about_image, created_at, updated_at)
+VALUES(nextval('site_content_id_seq'::regclass), 'Yüksek Nitelikli Profesyoneller', 'Terapist ekibimiz, danışanlarımıza olağanüstü bakım ve bütünsel şifa sağlamaya kendini adamış yüksek nitelikli profesyonellerden oluşmaktadır. Her terapist, uygulamamıza zengin bir bilgi ve uzmanlık getirerek her bireyin kendi özel ihtiyaçlarına göre kişiselleştirilmiş tedavi almasını sağlar.', 'Nitelik', 'Deneyimler', 'Uzmanlık Alanları', 'Nitelik: Terapistlerimiz masaj terapisi, fiziksel rehabilitasyon, akupunktur ve aromaterapi dahil olmak üzere çeşitli terapi yöntemlerinde ileri derecelere ve sertifikalara sahiptir.', 'Deneyim: Alanlarındaki en son gelişmelerle güncel kalırlar ve danışanlarımıza en yüksek kalitede bakımı sağlamak için becerilerini sürekli olarak genişletirler.', 'Uzmanlık Alanları: Alanlarındaki en son gelişmelerle güncel kalırlar ve danışanlarımıza en yüksek kalitede bakımı sağlamak için becerilerini sürekli olarak genişletirler.', 'Sertifikalı ve Lisanslı', 'Yılların Klinik Deneyimi', 'Özelleştirilmiş Tekniklerde Uzmanlık', 'Şefkatli ve Empatik Bakım', 'public\uploads\about-banner.png', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+
+
+CREATE TABLE doctors (
+  id SERIAL PRIMARY KEY,
+
+  full_name VARCHAR(150) NOT NULL,
+  title VARCHAR(150),
+
+  image_path TEXT,
+
+  phone VARCHAR(30),
+  email VARCHAR(150),
+
+  instagram VARCHAR(255),
+  twitter VARCHAR(255),
+  facebook VARCHAR(255),
+  linkedin VARCHAR(255),
+
+  is_active BOOLEAN DEFAULT true,
+
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE services (
+    id SERIAL PRIMARY KEY,  
+    title VARCHAR(150) NOT NULL, 
+    dsc VARCHAR(255) NOT NULL,     
+    image_path TEXT,                
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,  
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP  
+);
+
+
+
+
+
+
+
+
+
+*/
