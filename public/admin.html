@@ -45,6 +45,53 @@
             border-radius: var(--radius-12);
             box-shadow: var(--shadow-1);
         }
+            .book .row {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 2rem;
+    }
+
+    .book .row .image {
+      flex: 1 1 45rem;
+    }
+
+    .book .row .image img {
+      width: 100%;
+    }
+
+    .book .row .form-container {
+      flex: 1 1 45rem;
+      background-color: #f5f5f5;
+      padding: 2rem;
+      border-radius: .5rem;
+    }
+
+    .book .row form h3 {
+      font-size: 2.5rem;
+      color: var(--black);
+      padding-bottom: 1rem;
+      text-transform: capitalize;
+    }
+
+    .book .row form .input-box {
+      margin-bottom: 1.5rem;
+    }
+
+    .book .row form label {
+      font-size: 1.6rem;
+      color: var(--black);
+    }
+
+    .book .row form .box {
+      width: 100%;
+      padding: 1rem 1.2rem;
+      font-size: 1.6rem;
+      color: var(--black);
+      border-radius: .5rem;
+      border: .1rem solid rgba(0, 0, 0, .1);
+      margin-top: .5rem;
+    }
         .admin-sidebar ul {
             list-style: none;
             padding: 0;
@@ -226,42 +273,54 @@
                 </div>
             </section>
 
-            <section id="services" class="admin-section">
-                <h2>Hizmetler Yönetimi</h2>
-                <div id="serviceList">
-                    <!-- Mevcut hizmetler buraya JS ile yüklenecek -->
-                    <div class="form-group">
-                        <label for="serviceTitle1">Hizmet Başlığı 1</label>
-                        <input type="text" id="serviceTitle1" value="Bireysel Terapi">
-                        <label for="serviceDesc1">Hizmet Açıklaması 1</label>
-                        <input type="text" id="serviceDesc1" rows="3">Bireysel terapi, kişisel gelişim ve ruh sağlığı konularında destek sağlar.</input>
-                        <button>Güncelle</button> <button>Sil</button>
-                    </div>
-                    <div class="form-group">
-                        <label for="serviceTitle2">Hizmet Başlığı 2</label>
-                        <input type="text" id="serviceTitle2" value="Çift Terapisi">
-                        <label for="serviceDesc2">Hizmet Açıklaması 2</label>
-                        <input type="text" id="serviceDesc2" rows="3">Çift terapisi, ilişkilerdeki sorunları çözmeye yardımcı olur.</input>
-                        <button>Güncelle</button> <button>Sil</button>
-                    </div>
-                </div>
-                <h3>Yeni Hizmet Ekle</h3>
-                <div class="form-group">
-                    <label for="newServiceTitle">Hizmet Başlığı</label>
-                    <input type="text" id="newServiceTitle" placeholder="Yeni hizmet başlığı">
-                </div>
-                <div class="form-group">
-                    <label for="newServiceDesc">Hizmet Açıklaması</label>
-                    <input id="newServiceDesc" rows="3" placeholder="Yeni hizmet açıklaması"></input>
-                </div>
-                <div class="form-group">
-                    <button id="addService">Hizmet Ekle</button>
-                </div>
-            </section>
+            
+<section id="services" class="admin-section">
+    <h2>Hizmetler Yönetimi</h2>
+    <h3>Yeni Hizmet Ekle veya Güncelle</h3>
+
+    <div class="input-box">
+        <label for="serviceSelect">Hizmet Seçin:</label>
+        <select id="serviceSelect" name="service" class="box">
+            <option value="">Yeni Hizmet Ekle</option>
+        </select>
+    </div>
+
+    <div id="serviceForm">
+        <div class="form-group">
+            <label for="serviceTitle">Hizmet Başlığı</label>
+            <input type="text" id="serviceTitle" placeholder="Hizmet başlığını girin">
+        </div>
+
+        <div class="form-group">
+            <label for="serviceDesc">Hizmet Açıklaması</label>
+            <textarea id="serviceDesc" rows="3" placeholder="Hizmet açıklamasını girin"></textarea>
+        </div>
+
+        <div class="form-group">
+            <label for="serviceImage">Hizmet Görseli</label>
+            <input type="file" id="serviceImage" accept="image/*">
+            <img id="service_image" src="#" alt="Görsel Önizleme" style="max-width: 200px; margin-top: 10px; display: none;">
+        </div>
+
+        <div class="form-group">
+            <button id="addService">Ekle</button>
+            <button id="updateService">Güncelle</button>
+            <button id="deleteService">Sil</button>
+        </div>
+    </div>
+</section>
+                   
+           
 
             <section id="doctors" class="admin-section">
                 <h2>Doktorlar Yönetimi</h2>
-               <h3>Yeni Doktor Ekle</h3>
+               <h3>Yeni Doktor Ekle veya Güncelle</h3>
+               <div class="input-box">
+                    <label for="doctors">Terapist Seçin:</label>
+                    <select id="doctorSelect" name="therapist" class="box">
+                         <option value="">Doktor seçiniz</option>
+                    </select>
+                </div>
 <div class="form-group">
   <label for="doctorName">Ad Soyad</label>
   <input type="text" id="doctorName" placeholder="Doktorun adı soyadı" style="width: 50%">
@@ -309,7 +368,15 @@
 </div>
 
 <div class="form-group">
-  <button id="addDoctor">Doktor Ekle</button>
+  <label for="doctorIsActive">Aktif/Pasif</label>
+  <input type="checkbox" id="doctorIsActive" placeholder="Aktif" >
+  </div>
+
+<div class="form-group">
+ <button id="deleteDoctor">Sil</button>
+ <button id="updateDoctor">Güncelle</button>
+<button id="addDoctor">Ekle</button>
+ 
 </div>
 
             </section>
@@ -331,6 +398,10 @@
         </main>
     </div>
 
+    
     <script src="./assets/js/admin.js"></script>
+    <script src="./assets/js/service.js"></script>
+    
+    <script src="./assets/js/doctor.js"></script>
 </body>
 </html>

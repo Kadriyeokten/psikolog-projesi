@@ -46,6 +46,77 @@
     <link rel="stylesheet" href="./assets/css/style.css" />
 
     <style>
+      /* Box container ve kartlar */
+      .box-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 15px;
+        justify-content: center;
+        margin-top: 30px;
+      }
+
+      .box {
+        width: 280px;
+        text-align: center;
+        border: 1px solid #ddd;
+        border-radius: 10px;
+        padding: 15px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        transition: transform 0.2s;
+        background: #fff;
+      }
+
+      .box:hover {
+        transform: translateY(-5px);
+      }
+
+      .box img {
+        width: 100%;
+        height: 300px;
+        object-fit: cover;
+        border-radius: 10px;
+        margin-bottom: 10px;
+      }
+
+      .box h3 {
+        font-size: 1.1rem;
+        margin: 5px 0;
+      }
+
+      .box span {
+        font-size: 0.95rem;
+        color: #555;
+      }
+
+      .share a {
+        margin: 0 5px;
+        color: #555;
+        font-size: 1rem;
+        transition: color 0.2s;
+      }
+
+      .share a:hover {
+        color: #0077b5; /* LinkedIn gibi hover renk örneği */
+      }
+
+      /* Responsive */
+      @media (max-width: 768px) {
+        .box {
+          width: 45%;
+        }
+        .box img {
+          height: 200px;
+        }
+      }
+
+      @media (max-width: 480px) {
+        .box {
+          width: 90%;
+        }
+        .box img {
+          height: 180px;
+        }
+      }
       .whatsapp-fab {
         position: fixed;
         bottom: 20px;
@@ -292,9 +363,7 @@
         <section class="doctors" id="doctors">
           <h1 class="heading">bizim <span>terapistlerimiz</span></h1>
 
-          <div class="box-container" id="doctorsContainer">
-            <!-- JS buraya doktorları ekleyecek -->
-          </div>
+          <div class="box-container" id="therapist-container"></div>
         </section>
 
         <!-- 
@@ -759,4 +828,44 @@
       />
     </a>
   </body>
+  <script>
+    async function loadTherapists() {
+      try {
+        // API'den veriyi çekiyoruz
+        const response = await fetch("/api/doctors");
+        if (!response.ok) throw new Error("API hatası: " + response.status);
+
+        const data = await response.json();
+
+        const container = document.getElementById("therapist-container");
+        container.innerHTML = ""; // eski içerik silinsin
+
+        data.forEach((therapist) => {
+          if (!therapist.is_active) return; // sadece aktifleri göster
+
+          const box = document.createElement("div");
+          box.className = "box";
+
+          box.innerHTML = `
+          <img src="${therapist.image_path}" alt="${therapist.full_name}">
+          <h3>${therapist.full_name}</h3>
+          <span>${therapist.title}</span>
+          <div class="share">
+            ${therapist.facebook ? `<a href="${therapist.facebook}" class="fab fa-facebook-f" target="_blank"></a>` : ""}
+            ${therapist.twitter ? `<a href="${therapist.twitter}" class="fab fa-twitter" target="_blank"></a>` : ""}
+            ${therapist.instagram ? `<a href="${therapist.instagram}" class="fab fa-instagram" target="_blank"></a>` : ""}
+            ${therapist.linkedin ? `<a href="${therapist.linkedin}" class="fab fa-linkedin" target="_blank"></a>` : ""}
+          </div>
+        `;
+
+          container.appendChild(box);
+        });
+      } catch (err) {
+        console.error("Terapistleri yüklerken hata oluştu:", err);
+      }
+    }
+
+    // Sayfa yüklendiğinde terapistleri yükle
+    window.addEventListener("DOMContentLoaded", loadTherapists);
+  </script>
 </html>

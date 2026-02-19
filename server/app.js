@@ -217,9 +217,6 @@ app.get("/api/doctors", async (req, res) => {
 // Doktor ekle (Admin)
 app.post("/api/doctors", upload.single("image"), async (req, res) => {
   try {
-    console.log("DOCTOR BODY:", req.body);
-    console.log("DOCTOR FILE:", req.file);
-
     const {
       full_name,
       title,
@@ -277,15 +274,193 @@ app.post("/api/doctors", upload.single("image"), async (req, res) => {
 });
 
 //Doctor Delete
-
 app.delete("/api/doctors/:id", async (req, res) => {
-  const { id } = req.params;
+  const id = parseInt(req.params.id);
 
   try {
-    await db.query("DELETE FROM doctors WHERE doctor_id = ?", [id]);
+    const result = await db.query(
+      "DELETE FROM doctors WHERE id = $1 RETURNING id",
+      [id],
+    );
+
+    if (result.rowCount === 0) {
+      return res.status(404).json({ error: "Doktor bulunamadı" });
+    }
+
     res.json({ message: "Doktor silindi" });
   } catch (err) {
+    console.error("DELETE ERROR:", err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+//Doctor update
+app.put("/api/doctors/:id", async (req, res) => {
+  const {
+    full_name,
+    title,
+    imagePath,
+    phone,
+    email,
+    instagram,
+    twitter,
+    facebook,
+    linkedin,
+    is_active,
+  } = req.body;
+
+  try {
+    await db.query(
+      `UPDATE doctors 
+       SET full_name=$1, title=$2, phone=$3, email=$4, instagram=$5
+       WHERE doctor_id=$6`,
+      [
+        full_name,
+        title,
+        imagePath,
+        phone,
+        email,
+        instagram,
+        twitter,
+        facebook,
+        linkedin,
+        is_active,
+        req.params.id,
+      ],
+    );
+
+    res.json({ message: "Güncellendi" });
+  } catch (err) {
     console.error(err);
-    res.status(500).json({ error: "Doktor Silme hatası" });
+    res.status(500).json({ error: "Güncelleme başarısız" });
+  }
+});
+
+//id ile doktor getir
+
+app.get("/api/doctors/:id", async (req, res) => {
+  try {
+    const result = await db.query("SELECT * FROM doctors WHERE id = $1", [
+      req.params.id,
+    ]);
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: "Doktor bulunamadı" });
+    }
+
+    res.json(result.rows[0]);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Sunucu hatası" });
+  }
+});
+
+//Service all
+
+// Tüm hizmetleri al
+app.get("/api/services", async (req, res) => {
+  try {
+    const result = await db.query("SELECT * FROM services ORDER BY id ASC");
+    res.json(result.rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Hizmetler alınamadı" });
+  }
+});
+
+//id service
+
+app.get("/api/services/:id", async (req, res) => {
+  const { id } = req.params;
+  try {
+    const result = await db.query("SELECT * FROM services WHERE id = $1", [id]);
+    if (result.rows.length === 0)
+      return res.status(404).json({ error: "Hizmet bulunamadı" });
+    res.json(result.rows[0]);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Hizmet alınamadı" });
+  }
+});
+
+//insert service
+app.post("/api/services", async (req, res) => {
+  const { title, dsc, image_path } = req.body;
+  if (!dsc) return res.status(400).json({ error: "Açıklama gerekli" });
+
+  try {
+    const result = await db.query(
+      `INSERT INTO services (title, dsc, image_path) 
+       VALUES ($1, $2, $3) 
+       RETURNING *`,
+      [title, dsc, image_path || null],
+    );
+    res.status(201).json(result.rows[0]);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Hizmet eklenemedi" });
+  }
+});
+
+// POST yeni hizmet
+app.post("/api/services", async (req, res) => {
+  const { title, dsc, image_path } = req.body;
+  if (!title || !dsc)
+    return res.status(400).json({ error: "Title ve dsc gerekli" });
+
+  try {
+    const result = await db.query(
+      `INSERT INTO services (title, dsc, image_path) 
+       VALUES ($1, $2, $3) 
+       RETURNING *`,
+      [title, dsc, image_path || null],
+    );
+    res.status(201).json(result.rows[0]);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Hizmet eklenemedi" });
+  }
+});
+
+// PUT güncelleme (sadece title, dsc ve image_path)
+app.put("/api/services/:id", async (req, res) => {
+  const { id } = req.params;
+  const { title, dsc, image_path } = req.body;
+
+  try {
+    const result = await db.query(
+      `UPDATE services
+       SET title = COALESCE($1, title),
+           dsc = COALESCE($2, dsc),
+           image_path = COALESCE($3, image_path),
+           updated_at = NOW()
+       WHERE id = $4
+       RETURNING *`,
+      [title, dsc, image_path, id],
+    );
+
+    if (result.rows.length === 0)
+      return res.status(404).json({ error: "Hizmet bulunamadı" });
+    res.json(result.rows[0]);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Hizmet güncellenemedi" });
+  }
+});
+
+// DELETE hizmet
+app.delete("/api/services/:id", async (req, res) => {
+  const { id } = req.params;
+  try {
+    const result = await db.query(
+      "DELETE FROM services WHERE id = $1 RETURNING *",
+      [id],
+    );
+    if (result.rows.length === 0)
+      return res.status(404).json({ error: "Hizmet bulunamadı" });
+    res.json({ message: "Hizmet silindi", service: result.rows[0] });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Hizmet silinemedi" });
   }
 });
