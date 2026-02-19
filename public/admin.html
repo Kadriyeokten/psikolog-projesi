@@ -26,6 +26,7 @@
             text-align: center;
             font-family: 'Oswald', sans-serif;
         }
+        
         .admin-header h1 {
             margin: 0;
             font-size: var(--headline-lg);
@@ -105,7 +106,7 @@
             padding: 12px 15px;
             border: 1px solid var(--gainsboro);
             border-radius: var(--radius-6);
-            font-size: var(--title-md);
+            font-size:14px;
             color: var(--eerie-black);
             resize: vertical;
         }
@@ -124,6 +125,10 @@
         }
         .form-group button:hover {
             background-color: var(--eerie-black);
+        }
+        .form-group h4,h3
+        {
+             color: var(--midnight-green);
         }
         .doctor-card-grid {
             display: grid;
@@ -185,15 +190,36 @@
             </section>
 
             <section id="about-us" class="admin-section">
-                <h2>Hakkımızda Sayfası Yönetimi</h2>
+                <h3>Hakkımızda Sayfası Yönetimi</h3>
                 <div class="form-group">
-                    <label for="aboutUsContent">Hakkımızda Metni</label>
-                    <textarea id="aboutUsContent" rows="10" placeholder="Hakkımızda sayfasının içeriğini girin."></textarea>
+                    <h4>Hakkımızda Başlığı</h4>
+                    <input type="text" id="about_title" rows="1"></input>
                 </div>
                 <div class="form-group">
-                    <label for="aboutUsImage">Hakkımızda Görseli</label>
+                    <h4>Hakkımızda Metni</h4>
+                    <input type="text" id="about_text" rows="5" placeholder="Hakkımızda sayfasının içeriğini girin."></input>
+                </div>
+                <div class="form-group">
+                    <h4>Başlıklar ve Alt Metinler</h4>
+                    <input type="text" id="feature_title1" rows="1" placeholder="Başlık1" style="width: 25% ;background-color: var(--alice-blue); color: var(--midnight-green); font-size:14px;"></input>
+                    <input type="text" id="feature_desc1" rows="2" placeholder="Özellik1" ></input>
+                    <input type="text" id="feature_title2" rows="1" placeholder="Başlık2" style="width: 25%; background-color: var(--alice-blue);color: var(--midnight-green); font-size:14px;"></input>
+                    <input type="text" id="feature_desc2" rows="2" placeholder="Özellik2" ></input>
+                    <input type="text" id="feature_title3" rows="1" placeholder="Başlık3" style="width: 25%;background-color: var(--alice-blue);color: var(--midnight-green); font-size:14px;"></input>
+                    <input type="text" id="feature_desc3" rows="2" placeholder="Özellik3" ></input>
+                    
+                </div>
+                <div class="form-group">
+                    <h4>Özellikler</h4>
+                    <input type="text" id="feature1" rows="1" placeholder="Özellik1" style="width: 50% ;background-color: var(--alice-blue); color: var(--midnight-green); font-size:14px;"></input>
+                    <input type="text" id="feature2" rows="1" placeholder="Özellik2" style="width: 50% ;background-color: var(--alice-blue); color: var(--midnight-green); font-size:14px;"></input>
+                    <input type="text" id="feature3" rows="1" placeholder="Özellik3" style="width: 50% ;background-color: var(--alice-blue); color: var(--midnight-green); font-size:14px;"></input> 
+                    <input type="text" id="feature4" rows="1" placeholder="Özellik4" style="width: 50% ;background-color: var(--alice-blue); color: var(--midnight-green); font-size:14px;"></input>
+                    </div>
+                <div class="form-group">
+                    <h4>Hakkımızda Görseli</h4>
                     <input type="file" id="aboutUsImage" accept="image/*">
-                    <img id="aboutUsImagePreview" src="#" alt="Görsel Önizleme" style="max-width: 200px; margin-top: 10px; display: none;">
+                    <img id="about_image" src="#" alt="Görsel Önizleme" style="max-width: 200px; margin-top: 10px; display: none;">
                 </div>
                 <div class="form-group">
                     <button id="saveAboutUs">Kaydet</button>
@@ -208,14 +234,14 @@
                         <label for="serviceTitle1">Hizmet Başlığı 1</label>
                         <input type="text" id="serviceTitle1" value="Bireysel Terapi">
                         <label for="serviceDesc1">Hizmet Açıklaması 1</label>
-                        <textarea id="serviceDesc1" rows="3">Bireysel terapi, kişisel gelişim ve ruh sağlığı konularında destek sağlar.</textarea>
+                        <input type="text" id="serviceDesc1" rows="3">Bireysel terapi, kişisel gelişim ve ruh sağlığı konularında destek sağlar.</input>
                         <button>Güncelle</button> <button>Sil</button>
                     </div>
                     <div class="form-group">
                         <label for="serviceTitle2">Hizmet Başlığı 2</label>
                         <input type="text" id="serviceTitle2" value="Çift Terapisi">
                         <label for="serviceDesc2">Hizmet Açıklaması 2</label>
-                        <textarea id="serviceDesc2" rows="3">Çift terapisi, ilişkilerdeki sorunları çözmeye yardımcı olur.</textarea>
+                        <input type="text" id="serviceDesc2" rows="3">Çift terapisi, ilişkilerdeki sorunları çözmeye yardımcı olur.</input>
                         <button>Güncelle</button> <button>Sil</button>
                     </div>
                 </div>
@@ -226,7 +252,7 @@
                 </div>
                 <div class="form-group">
                     <label for="newServiceDesc">Hizmet Açıklaması</label>
-                    <textarea id="newServiceDesc" rows="3" placeholder="Yeni hizmet açıklaması"></textarea>
+                    <input id="newServiceDesc" rows="3" placeholder="Yeni hizmet açıklaması"></input>
                 </div>
                 <div class="form-group">
                     <button id="addService">Hizmet Ekle</button>
@@ -235,43 +261,57 @@
 
             <section id="doctors" class="admin-section">
                 <h2>Doktorlar Yönetimi</h2>
-                <div class="doctor-card-grid" id="doctorList">
-                    <!-- Mevcut doktorlar buraya JS ile yüklenecek -->
-                    <div class="doctor-card">
-                        <img src="./assets/images/doc-1.jpg" alt="Doktor Adı">
-                        <h3>Dr. Ayşe Yılmaz</h3>
-                        <p>Uzman Psikolog</p>
-                        <div class="actions">
-                            <button>Düzenle</button>
-                            <button>Sil</button>
-                        </div>
-                    </div>
-                    <div class="doctor-card">
-                        <img src="./assets/images/doc-2.jpg" alt="Doktor Adı">
-                        <h3>Uzm. Psk. Can Demir</h3>
-                        <p>Klinik Psikolog</p>
-                        <div class="actions">
-                            <button>Düzenle</button>
-                            <button>Sil</button>
-                        </div>
-                    </div>
-                </div>
-                <h3>Yeni Doktor Ekle</h3>
-                <div class="form-group">
-                    <label for="newDoctorName">Ad Soyad</label>
-                    <input type="text" id="newDoctorName" placeholder="Doktorun adı soyadı">
-                </div>
-                <div class="form-group">
-                    <label for="newDoctorTitle">Ünvan</label>
-                    <input type="text" id="newDoctorTitle" placeholder="Doktorun ünvanı (örn: Uzman Psikolog)">
-                </div>
-                <div class="form-group">
-                    <label for="newDoctorImage">Doktor Görseli</label>
-                    <input type="file" id="newDoctorImage" accept="image/*">
-                </div>
-                <div class="form-group">
-                    <button id="addDoctor">Doktor Ekle</button>
-                </div>
+               <h3>Yeni Doktor Ekle</h3>
+<div class="form-group">
+  <label for="doctorName">Ad Soyad</label>
+  <input type="text" id="doctorName" placeholder="Doktorun adı soyadı" style="width: 50%">
+</div>
+
+<div class="form-group">
+  <label for="doctorTitle">Ünvan</label>
+  <input type="text" id="doctorTitle" placeholder="Ünvan (Uzman Psikolog)" style="width: 50%">
+</div>
+
+<div class="form-group">
+  <label for="doctorPhone">Telefon</label>
+  <input type="text" id="doctorPhone" placeholder="05xx xxx xx xx" style="width: 50%">
+</div>
+
+<div class="form-group">
+  <label for="doctorEmail">E-Mail</label>
+  <input type="text" id="doctorEmail" placeholder="mail@example.com" style="width: 50%">
+</div>
+
+<div class="form-group">
+  <label for="doctorInstagram">Instagram</label>
+  <input type="text" id="doctorInstagram" placeholder="Instagram link" style="width: 50%">
+</div>
+
+<div class="form-group">
+  <label for="doctorTwitter">Twitter</label>
+  <input type="text" id="doctorTwitter" placeholder="Twitter link" style="width: 50%">
+</div>
+
+<div class="form-group">
+  <label for="doctorFacebook">Facebook</label>
+  <input type="text" id="doctorFacebook" placeholder="Facebook link" style="width: 50%">
+</div>
+
+<div class="form-group">
+  <label for="doctorLinkedin">LinkedIn</label>
+  <input type="text" id="doctorLinkedin" placeholder="LinkedIn link" style="width: 50%">
+</div>
+
+<div class="form-group">
+  <label for="doctorImage">Doktor Görseli</label>
+  <input type="file" id="doctorImage" accept="image/*">
+  <img id="doctor_image" src="#" alt="Görsel Önizleme" style="max-width: 200px; margin-top: 10px; display: none;">
+</div>
+
+<div class="form-group">
+  <button id="addDoctor">Doktor Ekle</button>
+</div>
+
             </section>
 
             <section id="settings" class="admin-section">
