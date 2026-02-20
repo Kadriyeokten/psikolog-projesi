@@ -27,10 +27,11 @@
   <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;700&family=Rubik:wght@400;500;700&display=swap"
     rel="stylesheet">
 
-  <!-- 
-    - custom css link
-  -->
+  <!-- custom css link -->
   <link rel="stylesheet" href="./assets/css/style.css">
+
+  <!-- FullCalendar CSS -->
+  <link href='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.css' rel='stylesheet' />
 
   <style>
     .whatsapp-fab {
@@ -104,12 +105,27 @@
     }
 
     #calendar {
-      height: 300px;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      border: 1px solid #ccc;
-      border-radius: .5rem;
+      min-height: 500px;
+      margin-top: 1rem;
+      font-size: 1.4rem;
+    }
+
+    .fc .fc-button-primary {
+      background-color: var(--verdigris);
+      border-color: var(--verdigris);
+    }
+
+    .fc .fc-button-primary:hover {
+      background-color: var(--midnight-green);
+      border-color: var(--midnight-green);
+    }
+
+    .fc .fc-highlight {
+      background: rgba(20, 184, 166, 0.2) !important;
+    }
+
+    .fc-event {
+      cursor: pointer;
     }
   </style>
 
@@ -345,24 +361,19 @@ document.addEventListener("DOMContentLoaded", function () {
                 <div class="input-box">
                     <label for="service">Hizmet Seçin:</label>
                     <select id="service" name="service" class="box">
-                        <option value="massage-therapy">Masaj Terapisi</option>
-                        <option value="physical-rehabilitation">Fiziksel Rehabilitasyon</option>
-                        <option value="acupuncture">Akupunktur</option>
-                        <option value="aromatherapy">Aromaterapi</option>
+                        <option value="">Yükleniyor...</option>
                     </select>
                 </div>
                 <div class="input-box">
                     <label for="therapist">Terapist Seçin:</label>
                     <select id="therapist" name="therapist" class="box">
-                        <option value="dr-nalini-mahajan">Dr Nalini Mahajan</option>
-                        <option value="dr-shree-kumar">Dr. Shree kumar</option>
-                        <option value="dr-uday-devgan">Dr Uday Devgan</option>
-                        <option value="dr-vijay-kumar">Dr Vijay Kumar</option>
+                        <option value="">Yükleniyor...</option>
                     </select>
                 </div>
-                <div id="calendar" class="box">
-                    <!-- Google Calendar will be embedded here -->
-                    <p>Google Takvim burada gösterilecek.</p>
+                <div class="input-box">
+                    <label>Randevu Tarihi ve Saati Seçin:</label>
+                    <div id="calendar" style="background: white; padding: 10px; border-radius: 8px;"></div>
+                    <input type="hidden" id="selectedDateTime" name="appointment_date">
                 </div>
                 <input type="submit" value="Şimdi Randevu Al" class="btn">
             </form>
@@ -588,6 +599,9 @@ document.addEventListener("DOMContentLoaded", function () {
     - custom js link
   -->
   <script src="./assets/js/script.js"></script>
+  <!-- FullCalendar JS -->
+  <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js'></script>
+  <script src="./assets/js/appointment.js"></script>
 
   <!-- 
     - ionicon link

@@ -2,12 +2,14 @@ const db = require("./db");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const multer = require("multer");
-const JWT_SECRET = "my_super_secret_key_123";
+require("dotenv").config();
+
+const JWT_SECRET = process.env.JWT_SECRET || "my_super_secret_key_123";
 const express = require("express");
 const path = require("path");
 
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 
 db.query("SELECT current_database()", (err, res) => {
   if (err) console.error("DB Hata:", err);
@@ -226,6 +228,7 @@ app.post("/api/doctors", upload.single("image"), async (req, res) => {
       twitter,
       facebook,
       linkedin,
+      is_active,
     } = req.body;
 
     let imagePath = null;
@@ -245,9 +248,10 @@ app.post("/api/doctors", upload.single("image"), async (req, res) => {
           instagram,
           twitter,
           facebook,
-          linkedin
+          linkedin,
+          is_active
         )
-        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)
+        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)
       `,
       [
         full_name,
@@ -259,6 +263,7 @@ app.post("/api/doctors", upload.single("image"), async (req, res) => {
         twitter,
         facebook,
         linkedin,
+        is_active === "true" || is_active === true,
       ],
     );
 
@@ -295,25 +300,40 @@ app.delete("/api/doctors/:id", async (req, res) => {
 });
 
 //Doctor update
-app.put("/api/doctors/:id", async (req, res) => {
-  const {
-    full_name,
-    title,
-    imagePath,
-    phone,
-    email,
-    instagram,
-    twitter,
-    facebook,
-    linkedin,
-    is_active,
-  } = req.body;
-
+app.put("/api/doctors/:id", upload.single("image"), async (req, res) => {
   try {
+    const id = req.params.id;
+    const {
+      full_name,
+      title,
+      phone,
+      email,
+      instagram,
+      twitter,
+      facebook,
+      linkedin,
+      is_active,
+    } = req.body;
+
+    let imagePath = null;
+    if (req.file) {
+      imagePath = "/uploads/" + req.file.filename;
+    }
+
     await db.query(
       `UPDATE doctors 
-       SET full_name=$1, title=$2, phone=$3, email=$4, instagram=$5
-       WHERE doctor_id=$6`,
+       SET full_name=$1, 
+           title=$2, 
+           image_path=COALESCE($3, image_path), 
+           phone=$4, 
+           email=$5, 
+           instagram=$6, 
+           twitter=$7, 
+           facebook=$8, 
+           linkedin=$9,
+           is_active=$10,
+           updated_at=NOW()
+       WHERE id=$11`,
       [
         full_name,
         title,
@@ -324,15 +344,15 @@ app.put("/api/doctors/:id", async (req, res) => {
         twitter,
         facebook,
         linkedin,
-        is_active,
-        req.params.id,
+        is_active === "true" || is_active === true,
+        id,
       ],
     );
 
-    res.json({ message: "Güncellendi" });
+    res.json({ success: true, message: "Güncellendi" });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Güncelleme başarısız" });
+    console.error("UPDATE ERROR:", err);
+    res.status(500).json({ error: "Güncelleme başarısız", detail: err.message });
   }
 });
 
@@ -384,16 +404,21 @@ app.get("/api/services/:id", async (req, res) => {
 });
 
 //insert service
-app.post("/api/services", async (req, res) => {
-  const { title, dsc, image_path } = req.body;
-  if (!dsc) return res.status(400).json({ error: "Açıklama gerekli" });
-
+app.post("/api/services", upload.single("image"), async (req, res) => {
   try {
+    const { title, dsc } = req.body;
+    if (!title || !dsc) return res.status(400).json({ error: "Başlık ve açıklama gerekli" });
+
+    let imagePath = null;
+    if (req.file) {
+      imagePath = "/uploads/" + req.file.filename;
+    }
+
     const result = await db.query(
       `INSERT INTO services (title, dsc, image_path) 
        VALUES ($1, $2, $3) 
        RETURNING *`,
-      [title, dsc, image_path || null],
+      [title, dsc, imagePath],
     );
     res.status(201).json(result.rows[0]);
   } catch (err) {
@@ -402,32 +427,19 @@ app.post("/api/services", async (req, res) => {
   }
 });
 
-// POST yeni hizmet
-app.post("/api/services", async (req, res) => {
-  const { title, dsc, image_path } = req.body;
-  if (!title || !dsc)
-    return res.status(400).json({ error: "Title ve dsc gerekli" });
-
-  try {
-    const result = await db.query(
-      `INSERT INTO services (title, dsc, image_path) 
-       VALUES ($1, $2, $3) 
-       RETURNING *`,
-      [title, dsc, image_path || null],
-    );
-    res.status(201).json(result.rows[0]);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Hizmet eklenemedi" });
-  }
-});
+// POST yeni hizmet (Tekrarlanan rota kaldırıldı ve üsttekiyle birleştirildi)
 
 // PUT güncelleme (sadece title, dsc ve image_path)
-app.put("/api/services/:id", async (req, res) => {
+app.put("/api/services/:id", upload.single("image"), async (req, res) => {
   const { id } = req.params;
-  const { title, dsc, image_path } = req.body;
+  const { title, dsc } = req.body;
 
   try {
+    let imagePath = null;
+    if (req.file) {
+      imagePath = "/uploads/" + req.file.filename;
+    }
+
     const result = await db.query(
       `UPDATE services
        SET title = COALESCE($1, title),
@@ -436,7 +448,7 @@ app.put("/api/services/:id", async (req, res) => {
            updated_at = NOW()
        WHERE id = $4
        RETURNING *`,
-      [title, dsc, image_path, id],
+      [title, dsc, imagePath, id],
     );
 
     if (result.rows.length === 0)

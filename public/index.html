@@ -40,6 +40,7 @@
       width: 60px;
       height: 60px;
       background-color: #25d366;
+      
       border-radius: 50%;
       display: flex;
       justify-content: center;
@@ -274,7 +275,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
       <section class="service" aria-label="service">
         <div class="container">
-          <ul class="service-list">
+          <ul class="service-list" id="dynamic-service-list">
             <li>
               <div class="service-card" data-reveal="bottom">
                 <div class="card-icon">
@@ -356,47 +357,47 @@ document.addEventListener("DOMContentLoaded", function () {
         <div class="container">
           <div class="about-content">
             <p class="section-subtitle title-lg has-after" id="about-label" data-reveal="left">Terapistlerimiz Hakkında</p>
-            <h2 class="headline-md" data-reveal="left">Yüksek Nitelikli Profesyoneller</h2>
-            <p class="section-text" data-reveal="left">
+            <h2 class="headline-md" id="about_title" data-reveal="left">Yüksek Nitelikli Profesyoneller</h2>
+            <p class="section-text" id="about_text" data-reveal="left">
               Terapist ekibimiz, danışanlarımıza olağanüstü bakım ve bütünsel şifa sağlamaya kendini adamış yüksek nitelikli profesyonellerden oluşmaktadır. Her terapist, uygulamamıza zengin bir bilgi ve uzmanlık getirerek her bireyin kendi özel ihtiyaçlarına göre kişiselleştirilmiş tedavi almasını sağlar.
             </p>
             <ul class="tab-list" data-reveal="left">
               <li>
-                <button class="tab-btn active">Nitelikler</button>
+                <button class="tab-btn active" id="feature_title1">Nitelikler</button>
               </li>
               <li>
-                <button class="tab-btn">Deneyim</button>
+                <button class="tab-btn" id="feature_title2">Deneyim</button>
               </li>
               <li>
-                <button class="tab-btn">Uzmanlık Alanları</button>
+                <button class="tab-btn" id="feature_title3">Uzmanlık Alanları</button>
               </li>
             </ul>
-            <p class="tab-text" data-reveal="left">
+            <p class="tab-text" data-reveal="left" id="feature_desc1">
               Terapistlerimiz masaj terapisi, fiziksel rehabilitasyon, akupunktur ve aromaterapi dahil olmak üzere çeşitli terapi yöntemlerinde ileri derecelere ve sertifikalara sahiptir. Alanlarındaki en son gelişmelerle güncel kalırlar ve danışanlarımıza en yüksek kalitede bakımı sağlamak için becerilerini sürekli olarak genişletirler.
             </p>
             <div class="wrapper">
               <ul class="about-list">
                 <li class="about-item" data-reveal="left">
                   <ion-icon name="checkmark-circle-outline"></ion-icon>
-                  <span class="span">Sertifikalı ve Lisanslı</span>
+                  <span class="span" id="feature1">Sertifikalı ve Lisanslı</span>
                 </li>
                 <li class="about-item" data-reveal="left">
                   <ion-icon name="checkmark-circle-outline"></ion-icon>
-                  <span class="span">Yılların Klinik Deneyimi</span>
+                  <span class="span" id="feature2">Yılların Klinik Deneyimi</span>
                 </li>
                 <li class="about-item" data-reveal="left">
                   <ion-icon name="checkmark-circle-outline"></ion-icon>
-                  <span class="span">Özelleştirilmiş Tekniklerde Uzmanlık</span>
+                  <span class="span" id="feature3">Özelleştirilmiş Tekniklerde Uzmanlık</span>
                 </li>
                 <li class="about-item" data-reveal="left">
                   <ion-icon name="checkmark-circle-outline"></ion-icon>
-                  <span class="span">Şefkatli ve Empatik Bakım</span>
+                  <span class="span" id="feature4">Şefkatli ve Empatik Bakım</span>
                 </li>
               </ul>
             </div>
           </div>
           <figure class="about-banner" data-reveal="right">
-            <img src="./assets/images/about-banner.png" width="554" height="678" loading="lazy" alt="about therapists banner" class="w-100">
+            <img id="about_image" src="./assets/images/about-banner.png" width="554" height="678" loading="lazy" alt="about therapists banner" class="w-100">
           </figure>
         </div>
       </section>
@@ -725,6 +726,8 @@ document.addEventListener("DOMContentLoaded", function () {
     - custom js link
   -->
   <script src="./assets/js/script.js"></script>
+  <script src="./assets/js/service.js"></script>
+  <script src="./assets/js/about.js"></script>
 
   <!-- 
     - ionicon link

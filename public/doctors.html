@@ -186,10 +186,10 @@
 
     <header class="header" data-header>
       <div class="container">
-        <a href="#" class="logo" style="font-size: larger">
+        <a href="#" class="logo logo-larger">
           <img
             src="./assets/images/ZARA_LOGO_with_Text.png"
-            style="width: max(12vw, 100px)"
+            class="navbar-logo"
             alt="Zara"
           />
         </a>
@@ -205,8 +205,9 @@
             </a>
 
             <button
+              type="button"
               class="nav-close-btn"
-              aria-label="clsoe menu"
+              aria-label="close menu"
               data-nav-toggler
             >
               <ion-icon name="close-outline" aria-hidden="true"></ion-icon>
@@ -236,15 +237,11 @@
             <li class="navbar-item">
               <a
                 href="appointment.html"
-                class="navbar-link title-md"
-                style="
-                  background-color: hsl(182, 100%, 35%);
-                  border-radius: 6px;
-                "
+                class="navbar-link title-md navbar-link-appointment"
                 >Randevu Al</a
               >
             </li>
-            <li class="navbar-item" style="margin-left: auto">
+            <li class="navbar-item navbar-item-ml-auto">
               <a
                 href="login.html"
                 id="loginBtn"
@@ -256,8 +253,7 @@
               <a
                 href="#"
                 id="logoutBtn"
-                class="navbar-link title-md btn has-before"
-                style="display: none; margin-left: 10px"
+                class="navbar-link title-md btn has-before logout-btn"
               >
                 Çıkış Yap
               </a>
@@ -266,38 +262,43 @@
 
           <ul class="social-list">
             <li>
-              <a href="#" class="social-link">
+              <a href="#" class="social-link" title="Twitter">
                 <ion-icon name="logo-twitter"></ion-icon>
               </a>
             </li>
 
             <li>
-              <a href="#" class="social-link">
+              <a href="#" class="social-link" title="Facebook">
                 <ion-icon name="logo-facebook"></ion-icon>
               </a>
             </li>
 
             <li>
-              <a href="#" class="social-link">
+              <a href="#" class="social-link" title="Pinterest">
                 <ion-icon name="logo-pinterest"></ion-icon>
               </a>
             </li>
 
             <li>
-              <a href="#" class="social-link">
+              <a href="#" class="social-link" title="Instagram">
                 <ion-icon name="logo-instagram"></ion-icon>
               </a>
             </li>
 
             <li>
-              <a href="#" class="social-link">
+              <a href="#" class="social-link" title="YouTube">
                 <ion-icon name="logo-youtube"></ion-icon>
               </a>
             </li>
           </ul>
         </nav>
 
-        <button class="nav-open-btn" aria-label="open menu" data-nav-toggler>
+        <button
+          type="button"
+          class="nav-open-btn"
+          aria-label="open menu"
+          data-nav-toggler
+        >
           <ion-icon name="menu-outline"></ion-icon>
         </button>
 
@@ -310,11 +311,7 @@
         <!-- 
         - #HERO
       -->
-        <section
-          class="section hero"
-          style="background-image: url(&quot;./assets/images/hero-bg.png&quot;)"
-          aria-label="doctors"
-        >
+        <section class="section hero" aria-label="doctors">
           <div class="container">
             <div class="hero-content">
               <p class="hero-subtitle has-before" data-reveal="left">
@@ -337,10 +334,7 @@
                       class="input-field"
                     />
                   </div>
-                  <button
-                    class="btn has-before"
-                    style="width: 200px; height: 80px"
-                  >
+                  <button type="button" class="btn has-before hero-btn">
                     <ion-icon name="send"></ion-icon>
                     <span class="span title-md">Mesaj Gönder</span>
                   </button>
@@ -354,7 +348,7 @@
                 height="517"
                 loading="eager"
                 alt="contact hero banner"
-                style="width: 600px; height: 500px"
+                class="hero-banner-img"
               />
             </figure>
           </div>
@@ -625,10 +619,7 @@
     - #FOOTER
   -->
 
-    <footer
-      class="footer"
-      style="background-image: url(&quot;./assets/images/footer-bg.png&quot;)"
-    >
+    <footer class="footer">
       <div class="container">
         <div class="section footer-top">
           <div class="footer-brand" data-reveal="bottom">
@@ -763,22 +754,22 @@
           </p>
           <ul class="social-list">
             <li>
-              <a href="#" class="social-link">
+              <a href="#" class="social-link" title="Facebook">
                 <ion-icon name="logo-facebook"></ion-icon>
               </a>
             </li>
             <li>
-              <a href="#" class="social-link">
+              <a href="#" class="social-link" title="Twitter">
                 <ion-icon name="logo-twitter"></ion-icon>
               </a>
             </li>
             <li>
-              <a href="#" class="social-link">
+              <a href="#" class="social-link" title="Instagram">
                 <ion-icon name="logo-instagram"></ion-icon>
               </a>
             </li>
             <li>
-              <a href="#" class="social-link">
+              <a href="#" class="social-link" title="LinkedIn">
                 <ion-icon name="logo-linkedin"></ion-icon>
               </a>
             </li>
@@ -821,6 +812,8 @@
       href="https://wa.me/TELEFON_NUMARASI?text=Merhaba%2C%20randevu%20hakk%C4%B1nda%20bilgi%20almak%20istiyorum."
       class="whatsapp-fab"
       target="_blank"
+      rel="noopener noreferrer"
+      title="WhatsApp"
     >
       <img
         src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/6b/WhatsApp.svg/240px-WhatsApp.svg.png"

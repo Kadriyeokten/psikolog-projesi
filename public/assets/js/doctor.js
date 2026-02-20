@@ -96,16 +96,23 @@ document.getElementById("updateDoctor").addEventListener("click", async () => {
     formData.append("image", file);
   }
   try {
-    await fetch(`/api/doctors/${doctorId}`, {
+    const res = await fetch(`/api/doctors/${doctorId}`, {
       method: "PUT",
       body: formData,
     });
 
-    alert("Doktor güncellendi");
-    clearDoctorForm();
+    const data = await res.json();
+
+    if (res.ok) {
+      alert("Doktor güncellendi");
+      await loadDoctorSelect(); // Listeyi yenile
+      clearDoctorForm();
+    } else {
+      alert("Hata: " + (data.error || "Güncelleme başarısız"));
+    }
   } catch (err) {
     console.error(err);
-    alert("Doktor Güncelleme başarısız");
+    alert("Sunucu hatası");
   }
 });
 

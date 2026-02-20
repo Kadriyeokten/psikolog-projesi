@@ -1,461 +1,358 @@
-<!DOCTYPE html>
-<html lang="en">
+<!doctype html>
+<html lang="tr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-<head>
-  <meta charset="UTF-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-  <!-- 
+    <!-- 
     - primary meta tags
   -->
-  <title>Past Terapi - Giriş Yap</title>
-  <meta name="title" content="Past Terapi - Giriş Yap">
-  <meta name="description" content="Past Terapi giriş sayfasi">
+    <title>Past Terapi - Giriş Yap</title>
+    <meta name="title" content="Past Terapi - Giriş Yap" />
+    <meta name="description" content="Past Terapi giriş sayfası" />
 
-  <!-- 
+    <!-- 
     - favicon
   -->
-  <link rel="shortcut icon" href="assets/images/ZARA_LOGO.png" type="image/x-icon">
+    <link
+      rel="shortcut icon"
+      href="assets/images/ZARA_LOGO.png"
+      type="image/x-icon"
+      title="Site Favicon"
+    />
 
-  <!-- 
+    <!-- 
     - google font link
   -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;700&family=Rubik:wght@400;500;700&display=swap"
-    rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;700&family=Rubik:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
 
-  <!-- 
+    <!-- 
     - custom css link
   -->
-  <link rel="stylesheet" href="./assets/css/style.css">
+    <link rel="stylesheet" href="./assets/css/style.css" />
+  </head>
 
-  <style>
-    .login-container {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: calc(100vh - 200px); /* Adjust based on header/footer height */
-      padding: 20px;
-      background-color: var(--alice-blue);
-    }
-
-    .login-form-wrapper {
-      background-color: var(--white);
-      padding: 40px;
-      border-radius: var(--radius-12);
-      box-shadow: var(--shadow-1);
-      width: 100%;
-      max-width: 400px;
-      text-align: center;
-    }
-
-    .login-form-wrapper h2 {
-      font-family: var(--ff-oswald);
-      font-size: var(--headline-md);
-      color: var(--midnight-green);
-      margin-bottom: 30px;
-    }
-
-    .input-field-group {
-      margin-bottom: 20px;
-      text-align: left;
-    }
-
-    .input-field-group label {
-      display: block;
-      font-size: var(--title-md);
-      color: var(--eerie-black);
-      margin-bottom: 8px;
-    }
-
-    .input-field-group input {
-      width: 100%;
-      padding: 12px 15px;
-      border: 1px solid var(--gainsboro);
-      border-radius: var(--radius-6);
-      font-size: var(--title-md);
-      color: var(--eerie-black);
-    }
-
-    .input-field-group input:focus {
-      border-color: var(--verdigris);
-      outline: none;
-    }
-
-    .login-btn {
-      width: 100%;
-      padding: 15px;
-      background-color: var(--verdigris);
-      color: var(--white);
-      font-weight: var(--fw-700);
-      border-radius: var(--radius-6);
-      font-size: var(--title-md);
-      cursor: pointer;
-      transition: var(--transition-1);
-    }
-
-    .login-btn:hover {
-      background-color: var(--eerie-black);
-    }
-
-
-
-    .form-links {
-      margin-top: 20px;
-      font-size: var(--title-sm);
-    }
-
-    .form-links a {
-      color: var(--verdigris);
-      text-decoration: none;
-      transition: var(--transition-1);
-    }
-
-    .form-links a:hover {
-      text-decoration: underline;
-    }
-
-    .form-links span {
-      color: var(--independece);
-    }
-
-    .back-button {
-      display: inline-flex;
-      align-items: center;
-      gap: 5px;
-      margin: 20px;
-      padding: 10px 15px;
-      background-color: var(--verdigris);
-      color: var(--white);
-      border-radius: var(--radius-6);
-      text-decoration: none;
-      font-weight: var(--fw-700);
-      transition: var(--transition-1);
-    }
-
-    .back-button:hover {
-      background-color: var(--eerie-black);
-    }
-
-    .separator {
-      display: flex;
-      align-items: center;
-      text-align: center;
-      margin-block: 20px;
-      color: var(--independece);
-      font-size: var(--title-sm);
-    }
-
-    .separator::before,
-    .separator::after {
-      content: '';
-      flex: 1;
-      border-bottom: 1px solid var(--gainsboro);
-    }
-
-    .separator:not(:empty)::before {
-      margin-right: .25em;
-    }
-
-    .separator:not(:empty)::after {
-      margin-left: .25em;
-    }
-
-    .google-login-btn {
-      width: 100%;
-      padding: 12px 15px;
-      background-color: var(--white);
-      color: var(--eerie-black);
-      border: 1px solid var(--gainsboro);
-      border-radius: var(--radius-6);
-      font-size: var(--title-md);
-      cursor: pointer;
-      transition: var(--transition-1);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-      margin-top: 15px;
-    }
-
-    .google-login-btn:hover {
-      background-color: var(--alice-blue);
-      border-color: var(--verdigris);
-    }
-
-    .google-login-btn img {
-      width: 20px;
-      height: 20px;
-    }
-  </style>
-
-</head>
-
-<body id="top">
-
-  <!-- 
+  <body id="top">
+    <!-- 
     - #PRELOADER
   -->
 
-  <div class="preloader" data-preloader>
-    <div class="circle"></div>
-  </div>
+    <div class="preloader" data-preloader>
+      <div class="circle"></div>
+    </div>
 
-  <main>
-    <article>
-      <a href="index.html" class="back-button">
-        <ion-icon name="arrow-back-outline"></ion-icon>
-        Geri
-      </a>
-      <section class="login-container">
-        <div class="login-form-wrapper">
-          <h2>Giriş Yap</h2>
+    <main>
+      <article>
+        <a href="index.html" class="back-button" title="Ana sayfaya geri dön">
+          <ion-icon name="arrow-back-outline"></ion-icon>
+          Geri
+        </a>
+        <section class="login-container">
+          <div class="login-form-wrapper">
+            <h2>Giriş Yap</h2>
 
-          <form id="loginForm">
-            <div class="input-field-group">
-              <label for="email">E-posta</label>
-              <input type="email" id="email" name="email" placeholder="E-posta adresinizi girin" required>
+            <form id="loginForm">
+              <div class="input-field-group">
+                <label for="email">E-posta</label>
+                <input
+                  type="email"
+                  id="email"
+                  name="email"
+                  placeholder="E-posta adresinizi girin"
+                  required
+                />
+              </div>
+              <div class="input-field-group">
+                <label for="password">Şifre</label>
+                <input
+                  type="password"
+                  id="password"
+                  name="password"
+                  placeholder="Şifrenizi girin"
+                  required
+                />
+              </div>
+              <button type="submit" class="login-btn">Giriş Yap</button>
+            </form>
+
+            <div class="separator"><span>veya</span></div>
+            <button type="button" class="google-login-btn">
+              <ion-icon name="logo-google"></ion-icon>
+              Google ile Giriş Yap
+            </button>
+            <div class="form-links">
+              <a href="#" title="Şifremi unuttum">Şifremi Unuttum?</a>
+              <span> | </span>
+              <a href="signup.html" title="Yeni hesap oluştur">Hesap Oluştur</a>
             </div>
-            <div class="input-field-group">
-              <label for="password">Şifre</label>
-              <input type="password" id="password" name="password" placeholder="Şifrenizi girin" required>
-            </div>
-            <button type="submit" class="login-btn">Giriş Yap</button>
-          </form>
-
-          
-          <div class="separator"><span>veya</span></div>
-          <button class="google-login-btn">
-            <ion-icon name="logo-google"></ion-icon>
-            Google ile Giriş Yap
-          </button>
-          <div class="form-links">
-            <a href="#">Şifremi Unuttum?</a>
-            <span> | </span>
-            <a href="signup.html">Hesap Oluştur</a>
           </div>
-        </div>
-      </section>
+        </section>
+      </article>
+    </main>
 
-    </article>
-  </main>
-
-
-
-
-
-  <!-- 
+    <!-- 
     - #FOOTER
   -->
 
-  <footer class="footer" style="background-image: url('./assets/images/footer-bg.png')">
-    <div class="container">
-      <div class="section footer-top">
-        <div class="footer-brand" data-reveal="bottom">
-          <a href="#" class="logo">
-            <img src="./assets/images/ZARA_LOGO_with_Text.png" width="136" height="46" loading="lazy" alt="Therapist Home">
-          </a>
-          <ul class="contact-list has-after">
-            <li class="contact-item">
-              <div class="item-icon">
-                <ion-icon name="mail-open-outline"></ion-icon>
-              </div>
-              <div>
-                <p>
-                  Ana E-posta : <a href="mailto:contact@therapy.com" class="contact-link">contact@&shy;therapy.com</a>
-                </p>
-                <p>
-                  Sorulariniz İçin : <a href="mailto:Info@therapy.com" class="contact-link">Info@therapy.com</a>
-                </p>
-              </div>
+    <footer class="footer">
+      <div class="container">
+        <div class="section footer-top">
+          <div class="footer-brand" data-reveal="bottom">
+            <a href="#" class="logo" title="Ana sayfa">
+              <img
+                src="./assets/images/ZARA_LOGO_with_Text.png"
+                width="136"
+                height="46"
+                loading="lazy"
+                alt="Therapist Home"
+              />
+            </a>
+            <ul class="contact-list has-after">
+              <li class="contact-item">
+                <div class="item-icon">
+                  <ion-icon name="mail-open-outline"></ion-icon>
+                </div>
+                <div>
+                  <p>
+                    Ana E-posta :
+                    <a href="mailto:contact@therapy.com" class="contact-link"
+                      >contact@&shy;therapy.com</a
+                    >
+                  </p>
+                  <p>
+                    Sorularınız İçin :
+                    <a href="mailto:Info@therapy.com" class="contact-link"
+                      >Info@therapy.com</a
+                    >
+                  </p>
+                </div>
+              </li>
+              <li class="contact-item">
+                <div class="item-icon">
+                  <ion-icon name="call-outline"></ion-icon>
+                </div>
+                <div>
+                  <p>
+                    Ofis Telefonu :
+                    <a href="tel:0029129102320" class="contact-link"
+                      >0029129102320</a
+                    >
+                  </p>
+                  <p>
+                    Cep Telefonu :
+                    <a href="tel:000232439493" class="contact-link"
+                      >000 2324 39493</a
+                    >
+                  </p>
+                </div>
+              </li>
+            </ul>
+          </div>
+          <div class="footer-list" data-reveal="bottom">
+            <p class="headline-sm footer-list-title">Hakkımızda</p>
+            <p class="text">
+              Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque
+              fermentum tortor quis arcu varius, sit amet tempus urna
+              vestibulum. Integer vitae magna pretium, consequat velit nec.
+            </p>
+            <address class="address">
+              <ion-icon name="map-outline"></ion-icon>
+              <span class="text">
+                1234 Terapi Yolu <br />
+                Şehir, Eyalet 12345
+              </span>
+            </address>
+          </div>
+          <ul class="footer-list" data-reveal="bottom">
+            <li>
+              <p class="headline-sm footer-list-title">Hizmetler</p>
             </li>
-            <li class="contact-item">
-              <div class="item-icon">
-                <ion-icon name="call-outline"></ion-icon>
-              </div>
-              <div>
-                <p>
-                  Ofis Telefonu : <a href="tel:0029129102320" class="contact-link">0029129102320</a>
-                </p>
-                <p>
-                  Cep Telefonu : <a href="tel:000232439493" class="contact-link">000 2324 39493</a>
-                </p>
-              </div>
+            <li>
+              <a
+                href="#"
+                class="text footer-link"
+                title="Danışmanlık hizmetleri"
+                >Danışmanlık</a
+              >
+            </li>
+            <li>
+              <a href="#" class="text footer-link" title="Terapi seansları"
+                >Terapi Seansları</a
+              >
+            </li>
+            <li>
+              <a href="#" class="text footer-link" title="Atölye çalışmaları"
+                >Atölyeler</a
+              >
+            </li>
+            <li>
+              <a href="#" class="text footer-link" title="Grup terapisi"
+                >Grup Terapisi</a
+              >
+            </li>
+            <li>
+              <a href="#" class="text footer-link" title="Uzaktan terapi"
+                >Teleterapi</a
+              >
+            </li>
+            <li>
+              <a href="#" class="text footer-link" title="Farkındalık eğitimi"
+                >Farkındalık Eğitimi</a
+              >
+            </li>
+          </ul>
+          <ul class="footer-list" data-reveal="bottom">
+            <li>
+              <p class="headline-sm footer-list-title">Faydalı Linkler</p>
+            </li>
+            <li>
+              <a href="#" class="text footer-link" title="Gizlilik politikası"
+                >Gizlilik Politikası</a
+              >
+            </li>
+            <li>
+              <a href="#" class="text footer-link" title="Hizmet şartları"
+                >Hizmet Şartları</a
+              >
+            </li>
+            <li>
+              <a href="#" class="text footer-link" title="Danışan yorumları"
+                >Danışan Yorumları</a
+              >
+            </li>
+            <li>
+              <a href="#" class="text footer-link" title="Sıkça sorulan sorular"
+                >SSS</a
+              >
+            </li>
+          </ul>
+          <div class="footer-list" data-reveal="bottom">
+            <p class="headline-sm footer-list-title">Abone Ol</p>
+            <form action="" class="footer-form">
+              <input
+                type="email"
+                name="email"
+                placeholder="E-posta"
+                class="input-field title-lg"
+              />
+              <button type="submit" class="btn has-before title-md">
+                Abone Ol
+              </button>
+            </form>
+            <p class="text">
+              En son güncellemeleri e-posta ile alın. İstediğiniz zaman
+              abonelikten çıkabilirsiniz.
+            </p>
+          </div>
+        </div>
+        <div class="footer-bottom">
+          <p class="text copyright">
+            &copy; Terapist Merkezi 2022 | Tüm Hakları YourTherapyPractice
+            Tarafından Saklıdır
+          </p>
+          <ul class="social-list">
+            <li>
+              <a href="#" class="social-link" title="Facebook sayfamız">
+                <ion-icon name="logo-facebook"></ion-icon>
+              </a>
+            </li>
+            <li>
+              <a href="#" class="social-link" title="Twitter hesabımız">
+                <ion-icon name="logo-twitter"></ion-icon>
+              </a>
+            </li>
+            <li>
+              <a href="#" class="social-link" title="Instagram hesabımız">
+                <ion-icon name="logo-instagram"></ion-icon>
+              </a>
+            </li>
+            <li>
+              <a href="#" class="social-link" title="LinkedIn profilimiz">
+                <ion-icon name="logo-linkedin"></ion-icon>
+              </a>
             </li>
           </ul>
         </div>
-        <div class="footer-list" data-reveal="bottom">
-          <p class="headline-sm footer-list-title">Hakkimizda</p>
-          <p class="text">
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque fermentum tortor quis arcu varius, sit amet tempus urna vestibulum. Integer vitae magna pretium, consequat velit nec.
-          </p>
-          <address class="address">
-            <ion-icon name="map-outline"></ion-icon>
-            <span class="text">
-              1234 Terapi Yolu <br>
-              Şehir, Eyalet 12345
-            </span>
-          </address>
-        </div>
-        <ul class="footer-list" data-reveal="bottom">
-          <li>
-            <p class="headline-sm footer-list-title">Hizmetler</p>
-          </li>
-          <li>
-            <a href="#" class="text footer-link">Danişmanlik</a>
-          </li>
-          <li>
-            <a href="#" class="text footer-link">Terapi Seanslari</a>
-          </li>
-          <li>
-            <a href="#" class="text footer-link">Atölyeler</a>
-          </li>
-          <li>
-            <a href="#" class="text footer-link">Grup Terapisi</a>
-          </li>
-          <li>
-            <a href="#" class="text footer-link">Teleterapi</a>
-          </li>
-          <li>
-            <a href="#" class="text footer-link">Farkindalik Eğitimi</a>
-          </li>
-        </ul>
-        <ul class="footer-list" data-reveal="bottom">
-          <li>
-            <p class="headline-sm footer-list-title">Faydali Linkler</p>
-          </li>
-          <li>
-            <a href="#" class="text footer-link">Gizlilik Politikasi</a>
-          </li>
-          <li>
-            <a href="#" class="text footer-link">Hizmet Şartlari</a>
-          </li>
-          <li>
-            <a href="#" class="text footer-link">Danişan Yorumlari</a>
-          </li>
-          <li>
-            <a href="#" class="text footer-link">SSS</a>
-          </li>
-        </ul>
-        <div class="footer-list" data-reveal="bottom">
-          <p class="headline-sm footer-list-title">Abone Ol</p>
-          <form action="" class="footer-form">
-            <input type="email" name="email" placeholder="E-posta" class="input-field title-lg">
-            <button type="submit" class="btn has-before title-md">Abone Ol</button>
-          </form>
-          <p class="text">
-            En son güncellemeleri e-posta ile alin. İstediğiniz zaman abonelikten çikabilirsiniz.
-          </p>
-        </div>
       </div>
-      <div class="footer-bottom">
-        <p class="text copyright">
-          &copy; Terapist Merkezi 2022 | Tüm Haklari YourTherapyPractice Tarafindan Saklidir
-        </p>
-        <ul class="social-list">
-          <li>
-            <a href="#" class="social-link">
-              <ion-icon name="logo-facebook"></ion-icon>
-            </a>
-          </li>
-          <li>
-            <a href="#" class="social-link">
-              <ion-icon name="logo-twitter"></ion-icon>
-            </a>
-          </li>
-          <li>
-            <a href="#" class="social-link">
-              <ion-icon name="logo-instagram"></ion-icon>
-            </a>
-          </li>
-          <li>
-            <a href="#" class="social-link">
-              <ion-icon name="logo-linkedin"></ion-icon>
-            </a>
-          </li>
-        </ul>
-      </div>
-    </div>
-  </footer>
-  
+    </footer>
 
-
-
-
-  <!-- 
+    <!-- 
     - #BACK TO TOP
   -->
 
-  <a href="#top" class="back-top-btn" aria-label="back to top" data-back-top-btn>
-    <ion-icon name="chevron-up"></ion-icon>
-  </a>
+    <a
+      href="#top"
+      class="back-top-btn"
+      aria-label="back to top"
+      data-back-top-btn
+      title="Başa dön"
+    >
+      <ion-icon name="chevron-up"></ion-icon>
+    </a>
 
-
-
-
-
-  <!-- 
+    <!-- 
     - custom js link
   -->
-     <script src="./assets/js/script.js"></script>
+    <script src="./assets/js/script.js"></script>
 
- <script>
-const form = document.querySelector("form");
+    <script>
+      const form = document.querySelector("form");
 
-form.addEventListener("submit", async function (e) {
-  e.preventDefault();
+      form.addEventListener("submit", async function (e) {
+        e.preventDefault();
 
-  const email = document.getElementById("email").value;
-  const password = document.getElementById("password").value;
+        const email = document.getElementById("email").value;
+        const password = document.getElementById("password").value;
 
-  try {
-    const res = await fetch("/api/login", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        email,
-        password
-      })
-    });
+        try {
+          const res = await fetch("/api/login", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              email,
+              password,
+            }),
+          });
 
-    const data = await res.json();
+          const data = await res.json();
 
-    
-    if (data.error) {
-      alert(data.error + " ❌");
-      return;
-    }
+          if (data.error) {
+            alert(data.error + " ❌");
+            return;
+          }
 
-    
-    localStorage.setItem("token", data.token);
-    localStorage.setItem("role", data.role);
-    localStorage.setItem("name", data.name);
+          localStorage.setItem("token", data.token);
+          localStorage.setItem("role", data.role);
+          localStorage.setItem("name", data.name);
 
-    alert("Hoşgeldin " + data.name + " 👋");
+          alert("Hoşgeldin " + data.name + " 👋");
 
-    
-    if (data.role === "admin") {
-      window.location.href = "admin.html";
-    } else {
-      window.location.href = "index.html";
-    }
+          if (data.role === "admin") {
+            window.location.href = "admin.html";
+          } else {
+            window.location.href = "index.html";
+          }
+        } catch (err) {
+          console.error(err);
+          alert("Sunucuya bağlanılamadı 🚨");
+        }
+      });
+    </script>
 
-  } catch (err) {
-    console.error(err);
-    alert("Sunucuya bağlanilamadi 🚨");
-  }
-});
-</script>
-
-
-
-  <script type="module" src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.esm.js"></script>
-  <script nomodule src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.js"></script>
-
-</body>
-
+    <script
+      type="module"
+      src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.esm.js"
+    ></script>
+    <script
+      nomodule
+      src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.js"
+    ></script>
+  </body>
 </html>

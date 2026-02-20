@@ -1,97 +1,70 @@
+// about.js
+
 document.addEventListener("DOMContentLoaded", () => {
-  fetch("/api/site-content")
-    .then((res) => res.json())
-    .then((data) => {
-      const title = document.getElementById("about_title");
-      if (title) title.innerText = data.about_title || "";
-
-      const text = document.getElementById("about_text");
-      if (text) text.innerText = data.about_text || "";
-
-      setText("feature_title1", data.feature_title1);
-      setText("feature_title2", data.feature_title2);
-      setText("feature_title3", data.feature_title3);
-
-      setText("feature_desc1", data.feature_desc1);
-      setText("feature_desc2", data.feature_desc2);
-      setText("feature_desc3", data.feature_desc3);
-
-      setText("feature1", data.feature1);
-      setText("feature2", data.feature2);
-      setText("feature3", data.feature3);
-      setText("feature4", data.feature4);
-
-      const img = document.getElementById("about_image");
-
-      if (img && data.about_image) {
-        img.src = data.about_image;
-      } else if (img) {
-        img.src = "/assets/images/about-banner.png";
-      }
-    })
-    .catch((err) => {
-      console.error("About verisi çekilemedi:", err);
-    });
+  renderAboutContent();
 });
 
-function setText(id, value) {
-  const el = document.getElementById(id);
+async function renderAboutContent() {
+  try {
+    const res = await fetch("/api/site-content");
+    const data = await res.json();
 
-  if (el) {
-    el.innerText = value || "";
+    const titleEl = document.getElementById("about_title");
+    const textEl = document.getElementById("about_text");
+    const imageEl = document.getElementById("about_image");
+
+    const fTitle1 = document.getElementById("feature_title1");
+    const fTitle2 = document.getElementById("feature_title2");
+    const fTitle3 = document.getElementById("feature_title3");
+
+    const fDesc1 = document.getElementById("feature_desc1");
+    const fDesc2 = document.getElementById("feature_desc2");
+    const fDesc3 = document.getElementById("feature_desc3");
+
+    const f1 = document.getElementById("feature1");
+    const f2 = document.getElementById("feature2");
+    const f3 = document.getElementById("feature3");
+    const f4 = document.getElementById("feature4");
+
+    if (titleEl) titleEl.textContent = data.about_title || "";
+    if (textEl) textEl.textContent = data.about_text || "";
+    if (imageEl && data.about_image) {
+      imageEl.src = data.about_image;
+    }
+
+    if (fTitle1) fTitle1.textContent = data.feature_title1 || "";
+    if (fTitle2) fTitle2.textContent = data.feature_title2 || "";
+    if (fTitle3) fTitle3.textContent = data.feature_title3 || "";
+
+    if (fDesc1) fDesc1.textContent = data.feature_desc1 || "";
+    if (fDesc2) fDesc2.textContent = data.feature_desc2 || "";
+    if (fDesc3) fDesc3.textContent = data.feature_desc3 || "";
+
+    if (f1) f1.textContent = data.feature1 || "";
+    if (f2) f2.textContent = data.feature2 || "";
+    if (f3) f3.textContent = data.feature3 || "";
+    if (f4) f4.textContent = data.feature4 || "";
+
+    // Tab mantığını yönet (Sadece aboutus.html sayfasında varsa)
+    const tabBtns = document.querySelectorAll(".tab-btn");
+    const tabText = document.querySelector(".tab-text");
+
+    if (tabBtns.length > 0 && tabText) {
+      tabBtns.forEach((btn, index) => {
+        btn.addEventListener("click", () => {
+          // Aktif sınıfını güncelle
+          tabBtns.forEach((b) => b.classList.remove("active"));
+          btn.classList.add("active");
+
+          // Metni güncelle
+          if (index === 0) tabText.textContent = data.feature_desc1;
+          if (index === 1) tabText.textContent = data.feature_desc2;
+          if (index === 2) tabText.textContent = data.feature_desc3;
+        });
+      });
+    }
+
+  } catch (err) {
+    console.error("Hakkımızda içeriği yüklenemedi:", err);
   }
 }
-
-document.addEventListener("DOMContentLoaded", () => {
-  let featureData = {};
-
-  fetch("/api/site-content")
-    .then((res) => res.json())
-    .then((data) => {
-      featureData = data;
-
-      setText("feature_title1", data.feature_title1);
-      setText("feature_title2", data.feature_title2);
-      setText("feature_title3", data.feature_title3);
-
-      showFeatureDesc(1);
-    });
-
-  document.getElementById("feature_title1")?.addEventListener("click", () => {
-    setActive(1);
-    showFeatureDesc(1);
-  });
-
-  document.getElementById("feature_title2")?.addEventListener("click", () => {
-    setActive(2);
-    showFeatureDesc(2);
-  });
-
-  document.getElementById("feature_title3")?.addEventListener("click", () => {
-    setActive(3);
-    showFeatureDesc(3);
-  });
-
-  function showFeatureDesc(no) {
-    const desc = document.getElementById("feature_desc1");
-
-    if (!desc) return;
-
-    if (no === 1) desc.innerText = featureData.feature_desc1 || "";
-    if (no === 2) desc.innerText = featureData.feature_desc2 || "";
-    if (no === 3) desc.innerText = featureData.feature_desc3 || "";
-  }
-
-  function setActive(no) {
-    document
-      .querySelectorAll(".tab-btn")
-      .forEach((btn) => btn.classList.remove("active"));
-
-    document.getElementById("feature_title" + no)?.classList.add("active");
-  }
-
-  function setText(id, value) {
-    const el = document.getElementById(id);
-    if (el) el.innerText = value || "";
-  }
-});

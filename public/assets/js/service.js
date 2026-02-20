@@ -2,15 +2,68 @@
 
 document.addEventListener("DOMContentLoaded", () => {
   loadServiceSelect();
+  renderServices();
 });
+
+// Sayfadaki hizmet listesini render et
+async function renderServices() {
+  const serviceList = document.getElementById("dynamic-service-list");
+  if (!serviceList) {
+    console.log("dynamic-service-list elementi bulunamadı.");
+    return;
+  }
+
+  try {
+    const res = await fetch("/api/services");
+    const services = await res.json();
+    console.log("Gelen Hizmetler:", services);
+
+    serviceList.innerHTML = "";
+
+    if (services.length === 0) {
+      serviceList.innerHTML = "<li>Henüz hizmet eklenmemiş.</li>";
+      return;
+    }
+
+    services.forEach((service) => {
+      const li = document.createElement("li");
+      li.innerHTML = `
+        <div class="service-card" data-reveal="bottom">
+          <div class="card-icon">
+            <img src="${service.image_path || './assets/images/message1.png'}" width="71" height="71" loading="lazy" alt="icon" onerror="this.src='./assets/images/message1.png'">
+          </div>
+          <h3 class="headline-sm card-title">
+            <a href="#">${service.title}</a>
+          </h3>
+          <p class="card-text">
+            ${service.dsc}
+          </p>
+          <button class="btn-circle" aria-label="${service.title} hakkında daha fazlasını okuyun">
+            <ion-icon name="arrow-forward" aria-hidden="true"></ion-icon>
+          </button>
+        </div>
+      `;
+      serviceList.appendChild(li);
+    });
+
+    // Scroll reveal etkisini yeni eklenen elementler için tetikle
+    if (window.revealElementOnScroll) {
+      window.revealElementOnScroll();
+    }
+  } catch (err) {
+    console.error("Hizmetler render edilemedi:", err);
+  }
+}
 
 // Combobox yükleme
 async function loadServiceSelect() {
+  const select = document.getElementById("serviceSelect");
+  if (!select) return;
+
   try {
     const res = await fetch("/api/services");
     const services = await res.json();
 
-    const select = document.getElementById("serviceSelect");
     select.innerHTML = "";
 
     const defaultOption = document.createElement("option");
@@ -26,7 +79,6 @@ async function loadServiceSelect() {
     });
   } catch (err) {
     console.error(err);
-    alert("Hizmetler yüklenemedi");
   }
 }
 // Hizmet görseli seçildiğinde önizleme
@@ -87,18 +139,24 @@ function clearServiceForm() {
 document.getElementById("addService")?.addEventListener("click", async () => {
   const title = document.getElementById("serviceTitle")?.value.trim();
   const dsc = document.getElementById("serviceDesc")?.value.trim();
-  const image_path = document.getElementById("serviceImage")?.value.trim();
+  const file = document.getElementById("serviceImage")?.files[0];
 
   if (!title || !dsc) {
     alert("Başlık ve açıklama girin");
     return;
   }
 
+  const formData = new FormData();
+  formData.append("title", title);
+  formData.append("dsc", dsc);
+  if (file) {
+    formData.append("image", file);
+  }
+
   try {
     const res = await fetch("/api/services", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ title, dsc, image_path }),
+      body: formData,
     });
 
     if (!res.ok) throw new Error("Ekleme başarısız");
@@ -106,6 +164,7 @@ document.getElementById("addService")?.addEventListener("click", async () => {
     alert("Hizmet eklendi");
     clearServiceForm();
     loadServiceSelect();
+    renderServices();
   } catch (err) {
     console.error(err);
     alert("Hizmet eklenemedi");
@@ -123,18 +182,24 @@ document
 
     const title = document.getElementById("serviceTitle")?.value.trim();
     const dsc = document.getElementById("serviceDesc")?.value.trim();
-    const image_path = document.getElementById("serviceImage")?.value.trim();
+    const file = document.getElementById("serviceImage")?.files[0];
 
     if (!title || !dsc) {
       alert("Başlık ve açıklama girin");
       return;
     }
 
+    const formData = new FormData();
+    formData.append("title", title);
+    formData.append("dsc", dsc);
+    if (file) {
+      formData.append("image", file);
+    }
+
     try {
       const res = await fetch(`/api/services/${serviceId}`, {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title, dsc, image_path }),
+        body: formData,
       });
 
       if (!res.ok) throw new Error("Güncelleme başarısız");
@@ -142,6 +207,7 @@ document
       alert("Hizmet güncellendi");
       clearServiceForm();
       loadServiceSelect();
+      renderServices();
     } catch (err) {
       console.error(err);
       alert("Hizmet güncellenemedi");
@@ -169,6 +235,7 @@ document
       alert("Hizmet silindi");
       clearServiceForm();
       loadServiceSelect();
+      renderServices();
     } catch (err) {
       console.error(err);
       alert("Hizmet silinemedi");

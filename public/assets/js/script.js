@@ -79,9 +79,8 @@ window.addEventListener("scroll", activeElementOnScroll);
  * SCROLL REVEAL
  */
 
-const revealElements = document.querySelectorAll("[data-reveal]");
-
-const revealElementOnScroll = function () {
+window.revealElementOnScroll = function () {
+  const revealElements = document.querySelectorAll("[data-reveal]");
   for (let i = 0, len = revealElements.length; i < len; i++) {
     if (revealElements[i].getBoundingClientRect().top < window.innerHeight / 1.15) {
       revealElements[i].classList.add("revealed");
@@ -91,8 +90,8 @@ const revealElementOnScroll = function () {
   }
 }
 
-window.addEventListener("scroll", revealElementOnScroll);
+window.addEventListener("scroll", window.revealElementOnScroll);
 
-window.addEventListener("load", revealElementOnScroll);
+window.addEventListener("load", window.revealElementOnScroll);
 
 
