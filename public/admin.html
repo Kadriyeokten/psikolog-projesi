@@ -7,17 +7,15 @@
     <link rel="stylesheet" href="./assets/css/style.css">
     <style>
         html, body {
-            height: 100%; /* HTML ve body'nin yüksekliğini tam ekran yap */
+            min-height: 100%; /* İçerik uzadığında kaymaya izin ver */
             margin: 0;
             padding: 0;
-            /* overflow: hidden; */ /* Bu satır kaldırıldı */
+            overflow-y: auto; /* Kaydırmayı zorunlu kıl */
         }
         body {
             font-family: 'Rubik', sans-serif;
             background-color: var(--alice-blue);
             color: var(--eerie-black);
-            /* margin: 0; */ /* Yukarıdaki html, body tanımına taşındı */
-            /* padding: 0; */ /* Yukarıdaki html, body tanımına taşındı */
         }
         .admin-header {
             background-color: var(--verdigris);
@@ -237,6 +235,7 @@
             .admin-content {
                 max-height: none;
                 padding: 20px;
+                overflow-y: visible; /* Kendi içindeki kaydırmayı devre dışı bırakıp ana sayfayı kaydıralım */
             }
             .admin-header h1 {
                 font-size: 3rem;
