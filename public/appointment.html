@@ -161,6 +161,45 @@
       .fc-event {
         cursor: pointer;
       }
+
+      /* Responsive Düzenlemeler */
+      @media (max-width: 992px) {
+        .book .row {
+          flex-direction: column;
+        }
+        .book .row .image {
+          display: none; /* Mobilde görseli gizleyelim ki form öne çıksın */
+        }
+        .book .row .form-container {
+          width: 100%;
+        }
+        .hero .container {
+          grid-template-columns: 1fr;
+          text-align: center;
+        }
+        .hero-banner {
+          display: none;
+        }
+        .hero-content {
+          margin-inline: auto;
+        }
+        .hero-card .wrapper {
+          flex-direction: column;
+        }
+      }
+
+      @media (max-width: 768px) {
+        #calendar {
+          font-size: 1.1rem;
+        }
+        .fc .fc-toolbar {
+          flex-direction: column;
+          gap: 10px;
+        }
+        .review .box-container {
+          grid-template-columns: 1fr;
+        }
+      }
     </style>
 
     <!-- 
