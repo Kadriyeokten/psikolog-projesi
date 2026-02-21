@@ -169,7 +169,7 @@ app.post(
           feature2=$10,
           feature3=$11,
           feature4=$12,
-          about_image=$13
+          about_image=COALESCE($13, about_image)
         WHERE id=1
       `,
         [

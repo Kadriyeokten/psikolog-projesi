@@ -52,6 +52,29 @@
       width: 36px;
       height: 36px;
     }
+
+    .navbar-item .btn {
+      padding: 6px 15px !important;
+      font-size: 1.3rem !important;
+      min-height: auto !important;
+    }
+
+    @media (min-width: 1200px) {
+      .navbar-list {
+        align-items: center;
+      }
+      .auth-item {
+        margin-left: 10px;
+      }
+      .auth-item:first-of-type {
+        margin-left: auto;
+      }
+      .navbar-link.btn {
+        padding: 6px 16px;
+        font-size: 1.4rem;
+        white-space: nowrap;
+      }
+    }
   </style>
 
   <!-- 
@@ -65,22 +88,31 @@
 document.addEventListener("DOMContentLoaded", function () {
 
   const token = localStorage.getItem("token");
+  const role = localStorage.getItem("role");
 
-  const loginBtn = document.getElementById("loginBtn");
-  const logoutBtn = document.getElementById("logoutBtn");
+  const loginItem = document.getElementById("loginItem");
+  const logoutItem = document.getElementById("logoutItem");
+  const adminItem = document.getElementById("adminItem");
 
   if (token) {
-    if (loginBtn) loginBtn.style.display = "none";
-    if (logoutBtn) logoutBtn.style.display = "inline-block";
+    if (loginItem) loginItem.style.display = "none";
+    if (logoutItem) logoutItem.style.display = "inline-block";
+    if (role === "admin" && adminItem) {
+      adminItem.style.display = "inline-block";
+    }
   } else {
-    if (loginBtn) loginBtn.style.display = "inline-block";
-    if (logoutBtn) logoutBtn.style.display = "none";
+    if (loginItem) loginItem.style.display = "inline-block";
+    if (logoutItem) logoutItem.style.display = "none";
+    if (adminItem) adminItem.style.display = "none";
   }
 
-  if (logoutBtn) {
-    logoutBtn.addEventListener("click", function () {
+  if (logoutItem) {
+    logoutItem.addEventListener("click", function (e) {
+      e.preventDefault();
       localStorage.removeItem("token");
+      localStorage.removeItem("role");
       localStorage.removeItem("user");
+      localStorage.removeItem("name");
 
       window.location.href = "login.html";
     });
@@ -151,22 +183,19 @@ document.addEventListener("DOMContentLoaded", function () {
             <a href="conntact.html" class="navbar-link title-md">İletişim</a>
           </li>
           <li class="navbar-item">
-            <a href="appointment.html" class="navbar-link title-md" style="background-color: hsl(182, 100%, 35%); border-radius: 6px;">Randevu Al</a>
+            <a href="appointment.html" class="navbar-link title-md btn has-before">Randevu Al</a>
           </li>
-                  <li class="navbar-item" style="margin-left: auto;">
-  <a href="login.html"
-     id="loginBtn"
-     class="navbar-link title-md btn has-before">
-     Giriş Yap
-  </a>
+          <li class="navbar-item auth-item" id="loginItem">
+            <a href="login.html" class="navbar-link title-md btn has-before">Giriş Yap</a>
+          </li>
 
-  <a href="#"
-     id="logoutBtn"
-     class="navbar-link title-md btn has-before"
-     style="display:none; margin-left:10px;">
-     Çıkış Yap
-  </a>
-</li>
+          <li class="navbar-item auth-item" id="logoutItem" style="display:none;">
+            <a href="#" class="navbar-link title-md btn has-before">Çıkış Yap</a>
+          </li>
+
+          <li class="navbar-item auth-item" id="adminItem" style="display:none;">
+            <a href="admin.html" class="navbar-link title-md btn has-before">Admin Paneli</a>
+          </li>
         </ul>
 
         <ul class="social-list">

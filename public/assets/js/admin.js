@@ -5,11 +5,15 @@ document.addEventListener("DOMContentLoaded", () => {
   // Sidebar navigasyonunu yönet
   sidebarLinks.forEach((link) => {
     link.addEventListener("click", (e) => {
+      const targetSectionId = link.getAttribute("data-section");
+      
+      // Eğer data-section yoksa default davranışı engelleme (Siteye Dön linki gibi)
+      if (!targetSectionId) return;
+
       e.preventDefault();
       sidebarLinks.forEach((item) => item.classList.remove("active"));
       link.classList.add("active");
 
-      const targetSectionId = link.getAttribute("data-section");
       adminSections.forEach((section) => {
         if (section.id === targetSectionId) {
           section.classList.add("active");

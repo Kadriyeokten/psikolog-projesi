@@ -63,6 +63,29 @@
         width: 36px;
         height: 36px;
       }
+
+      .navbar-item .btn {
+        padding: 6px 15px !important;
+        font-size: 1.3rem !important;
+        min-height: auto !important;
+      }
+
+      @media (min-width: 1200px) {
+        .navbar-list {
+          align-items: center;
+        }
+        .auth-item {
+          margin-left: 10px;
+        }
+        .auth-item:first-of-type {
+          margin-left: auto;
+        }
+        .navbar-link.btn {
+          padding: 6px 16px;
+          font-size: 1.4rem;
+          white-space: nowrap;
+        }
+      }
     </style>
 
     <!-- 
@@ -72,22 +95,38 @@
     <link rel="preload" as="image" href="./assets/images/hero-bg.png" />
   </head>
   <script>
-    const token = localStorage.getItem("token");
+    document.addEventListener("DOMContentLoaded", function () {
+      const token = localStorage.getItem("token");
+      const role = localStorage.getItem("role");
 
-    const loginBtn = document.getElementById("loginBtn");
-    const logoutBtn = document.getElementById("logoutBtn");
+      const loginItem = document.getElementById("loginItem");
+      const logoutItem = document.getElementById("logoutItem");
+      const adminItem = document.getElementById("adminItem");
 
-    if (token) {
-      if (loginBtn) loginBtn.style.display = "none";
-      if (logoutBtn) logoutBtn.style.display = "inline-block";
-    }
+      if (token) {
+        if (loginItem) loginItem.style.display = "none";
+        if (logoutItem) logoutItem.style.display = "inline-block";
+        if (role === "admin" && adminItem) {
+          adminItem.style.display = "inline-block";
+        }
+      } else {
+        if (loginItem) loginItem.style.display = "inline-block";
+        if (logoutItem) logoutItem.style.display = "none";
+        if (adminItem) adminItem.style.display = "none";
+      }
 
-    if (logoutBtn) {
-      logoutBtn.addEventListener("click", function () {
-        localStorage.clear();
-        window.location.href = "login.html";
-      });
-    }
+      if (logoutItem) {
+        logoutItem.addEventListener("click", function (e) {
+          e.preventDefault();
+          localStorage.removeItem("token");
+          localStorage.removeItem("role");
+          localStorage.removeItem("user");
+          localStorage.removeItem("name");
+
+          window.location.href = "login.html";
+        });
+      }
+    });
   </script>
   <body id="top">
     <!-- 
@@ -104,12 +143,24 @@
 
     <header class="header" data-header>
       <div class="container">
-        <a href="index.html" class="logo" style="font-size: 2.4rem; font-weight: bold; color: var(--verdigris);">
+        <a
+          href="index.html"
+          class="logo"
+          style="font-size: 2.4rem; font-weight: bold; color: var(--verdigris)"
+        >
           Past Terapi
         </a>
         <nav class="navbar" data-navbar>
           <div class="navbar-top">
-            <a href="index.html" class="logo" style="font-size: 2rem; font-weight: bold; color: var(--verdigris);">
+            <a
+              href="index.html"
+              class="logo"
+              style="
+                font-size: 2rem;
+                font-weight: bold;
+                color: var(--verdigris);
+              "
+            >
               Past Terapi
             </a>
 
@@ -145,31 +196,24 @@
             <li class="navbar-item">
               <a
                 href="appointment.html"
-                class="navbar-link title-md"
-                style="
-                  background-color: hsl(182, 100%, 35%);
-                  border-radius: 6px;
-                "
+                class="navbar-link title-md btn has-before"
                 >Randevu Al</a
               >
             </li>
-            <li class="navbar-item" style="margin-left: auto">
-              <a
-                href="login.html"
-                id="loginBtn"
-                class="navbar-link title-md btn has-before"
+            <li class="navbar-item auth-item" id="loginItem">
+              <a href="login.html" class="navbar-link title-md btn has-before"
+                >Giriş Yap</a
               >
-                Giriş Yap
-              </a>
+            </li>
 
-              <a
-                href="#"
-                id="logoutBtn"
-                class="navbar-link title-md btn has-before"
-                style="display: none; margin-left: 10px"
+            <li class="navbar-item auth-item" id="logoutItem" style="display: none">
+              <a href="#" class="navbar-link title-md btn has-before">Çıkış Yap</a>
+            </li>
+
+            <li class="navbar-item auth-item" id="adminItem" style="display: none">
+              <a href="admin.html" class="navbar-link title-md btn has-before"
+                >Admin Paneli</a
               >
-                Çıkış Yap
-              </a>
             </li>
           </ul>
 
@@ -275,9 +319,7 @@
                 class="section-subtitle title-lg has-after"
                 id="about-label"
                 data-reveal="left"
-              >
-                Terapistlerimiz Hakkında
-              </p>
+              ></p>
               <h2 class="headline-md" id="about_title" data-reveal="left">
                 Yüksek Nitelikli Profesyoneller
               </h2>
@@ -498,7 +540,7 @@
           </div>
         </section>
 
-        <!-- Gallery -->
+        <!-- Gallery 
         <div class="swiper mySwiper">
           <div class="swiper-wrapper">
             <div class="swiper-slide">
@@ -529,7 +571,7 @@
         </div>
       </article>
     </main>
-
+-->
     <!-- 
     - #FOOTER
   -->
@@ -541,7 +583,15 @@
       <div class="container">
         <div class="section footer-top">
           <div class="footer-brand" data-reveal="bottom">
-            <a href="index.html" class="logo" style="font-size: 2.4rem; font-weight: bold; color: var(--verdigris);">
+            <a
+              href="index.html"
+              class="logo"
+              style="
+                font-size: 2.4rem;
+                font-weight: bold;
+                color: var(--verdigris);
+              "
+            >
               Past Terapi
             </a>
             <ul class="contact-list has-after">

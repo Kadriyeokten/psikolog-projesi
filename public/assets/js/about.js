@@ -26,8 +26,19 @@ async function renderAboutContent() {
     const f3 = document.getElementById("feature3");
     const f4 = document.getElementById("feature4");
 
+    const isHomePage = window.location.pathname.endsWith("index.html") || window.location.pathname === "/";
+
     if (titleEl) titleEl.textContent = data.about_title || "";
-    if (textEl) textEl.textContent = data.about_text || "";
+    
+    // Ana sayfada metni kısaltalım
+    if (textEl) {
+      if (isHomePage && data.about_text && data.about_text.length > 500) {
+        textEl.textContent = data.about_text.substring(0, 500) + "...";
+      } else {
+        textEl.textContent = data.about_text || "";
+      }
+    }
+
     if (imageEl && data.about_image) {
       imageEl.src = data.about_image;
     }
@@ -45,23 +56,30 @@ async function renderAboutContent() {
     if (f3) f3.textContent = data.feature3 || "";
     if (f4) f4.textContent = data.feature4 || "";
 
-    // Tab mantığını yönet (Sadece aboutus.html sayfasında varsa)
+    // Tab mantığını yönet (Sadece aboutus.html sayfasında varsa ve ana sayfa değilse)
+    const tabList = document.querySelector(".tab-list");
     const tabBtns = document.querySelectorAll(".tab-btn");
     const tabText = document.querySelector(".tab-text");
 
-    if (tabBtns.length > 0 && tabText) {
-      tabBtns.forEach((btn, index) => {
-        btn.addEventListener("click", () => {
-          // Aktif sınıfını güncelle
-          tabBtns.forEach((b) => b.classList.remove("active"));
-          btn.classList.add("active");
+    if (isHomePage) {
+      // Ana sayfada tabları ve detay açıklamayı gizleyelim
+      if (tabList) tabList.style.display = "none";
+      if (tabText) tabText.style.display = "none";
+    } else {
+      if (tabBtns.length > 0 && tabText) {
+        tabBtns.forEach((btn, index) => {
+          btn.addEventListener("click", () => {
+            // Aktif sınıfını güncelle
+            tabBtns.forEach((b) => b.classList.remove("active"));
+            btn.classList.add("active");
 
-          // Metni güncelle
-          if (index === 0) tabText.textContent = data.feature_desc1;
-          if (index === 1) tabText.textContent = data.feature_desc2;
-          if (index === 2) tabText.textContent = data.feature_desc3;
+            // Metni güncelle
+            if (index === 0) tabText.textContent = data.feature_desc1;
+            if (index === 1) tabText.textContent = data.feature_desc2;
+            if (index === 2) tabText.textContent = data.feature_desc3;
+          });
         });
-      });
+      }
     }
 
   } catch (err) {
