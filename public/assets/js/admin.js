@@ -204,7 +204,7 @@ async function saveDoctor() {
   }
 
   try {
-    const res = await fetch("http://localhost:3000/api/doctors", {
+    const res = await fetch("/api/doctors", {
       method: "POST",
       body: formData,
     });
