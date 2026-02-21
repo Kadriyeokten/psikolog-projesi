@@ -40,6 +40,7 @@ document
     document.getElementById("doctorTwitter").value = doctor.twitter || "";
     document.getElementById("doctorFacebook").value = doctor.facebook || "";
     document.getElementById("doctorLinkedin").value = doctor.linkedin || "";
+    document.getElementById("doctorBio").value = doctor.bio || "";
 
     document.getElementById("doctorIsActive").checked =
       doctor.is_active === true;
@@ -89,6 +90,7 @@ document.getElementById("updateDoctor").addEventListener("click", async () => {
     "is_active",
     document.getElementById("doctorIsActive").checked,
   );
+  formData.append("bio", document.getElementById("doctorBio").value);
 
   const file = document.getElementById("doctorImage").files[0];
 
@@ -158,6 +160,7 @@ function clearDoctorForm() {
   document.getElementById("doctorTwitter").value = "";
   document.getElementById("doctorFacebook").value = "";
   document.getElementById("doctorLinkedin").value = "";
+  document.getElementById("doctorBio").value = "";
 
   document.getElementById("doctorIsActive").checked = false;
 

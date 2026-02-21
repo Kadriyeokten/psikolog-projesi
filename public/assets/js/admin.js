@@ -180,6 +180,7 @@ async function saveDoctor() {
   const facebook = document.getElementById("doctorFacebook").value;
   const linkedin = document.getElementById("doctorLinkedin").value;
   const isActive = document.getElementById("doctorIsActive").checked;
+  const bio = document.getElementById("doctorBio").value;
 
   const imageFile = document.getElementById("doctorImage").files[0];
 
@@ -200,6 +201,7 @@ async function saveDoctor() {
   formData.append("facebook", facebook);
   formData.append("linkedin", linkedin);
   formData.append("is_active", isActive);
+  formData.append("bio", bio);
 
   if (imageFile) {
     formData.append("image", imageFile);

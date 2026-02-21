@@ -229,6 +229,7 @@ app.post("/api/doctors", upload.single("image"), async (req, res) => {
       facebook,
       linkedin,
       is_active,
+      bio,
     } = req.body;
 
     let imagePath = null;
@@ -249,9 +250,10 @@ app.post("/api/doctors", upload.single("image"), async (req, res) => {
           twitter,
           facebook,
           linkedin,
-          is_active
+          is_active,
+          bio
         )
-        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)
+        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)
       `,
       [
         full_name,
@@ -264,6 +266,7 @@ app.post("/api/doctors", upload.single("image"), async (req, res) => {
         facebook,
         linkedin,
         is_active === "true" || is_active === true,
+        bio,
       ],
     );
 
@@ -313,6 +316,7 @@ app.put("/api/doctors/:id", upload.single("image"), async (req, res) => {
       facebook,
       linkedin,
       is_active,
+      bio,
     } = req.body;
 
     let imagePath = null;
@@ -332,8 +336,9 @@ app.put("/api/doctors/:id", upload.single("image"), async (req, res) => {
            facebook=$8, 
            linkedin=$9,
            is_active=$10,
+           bio=$11,
            updated_at=NOW()
-       WHERE id=$11`,
+       WHERE id=$12`,
       [
         full_name,
         title,
@@ -345,6 +350,7 @@ app.put("/api/doctors/:id", upload.single("image"), async (req, res) => {
         facebook,
         linkedin,
         is_active === "true" || is_active === true,
+        bio,
         id,
       ],
     );
