@@ -156,6 +156,34 @@
           white-space: nowrap;
         }
       }
+
+      /* Responsive Düzenlemeler */
+      @media (max-width: 992px) {
+        .hero .container {
+          grid-template-columns: 1fr;
+          text-align: center;
+        }
+        .hero-banner {
+          display: none;
+        }
+        .hero-content {
+          margin-inline: auto;
+        }
+        .doctors .container {
+          text-align: center;
+        }
+        .doctors .headline-md, 
+        .doctors .section-subtitle {
+          text-align: center;
+        }
+      }
+
+      @media (max-width: 600px) {
+        .box {
+          width: 100%;
+          max-width: 320px;
+        }
+      }
     </style>
 
     <!-- 
