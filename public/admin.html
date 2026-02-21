@@ -210,6 +210,54 @@
             padding: 8px 15px;
             font-size: var(--title-sm);
         }
+
+        /* Responsive Düzenlemeler */
+        @media (max-width: 992px) {
+            .admin-container {
+                flex-direction: column;
+                padding: 10px;
+            }
+            .admin-sidebar {
+                width: 100%;
+                margin-bottom: 0;
+            }
+            .admin-sidebar ul {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 5px;
+                justify-content: center;
+            }
+            .admin-sidebar ul li {
+                margin-bottom: 0;
+            }
+            .admin-sidebar ul li a {
+                padding: 8px 12px;
+                font-size: 1.3rem;
+            }
+            .admin-content {
+                max-height: none;
+                padding: 20px;
+            }
+            .admin-header h1 {
+                font-size: 3rem;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .form-group input[type="text"], 
+            .form-group textarea,
+            #doctorName, #doctorTitle, #doctorPhone, #doctorEmail,
+            #doctorInstagram, #doctorTwitter, #doctorFacebook, #doctorLinkedin,
+            #feature_title1, #feature_title2, #feature_title3,
+            #feature1, #feature2, #feature3, #feature4 {
+                width: 100% !important;
+            }
+            
+            .admin-sidebar ul li a {
+                font-size: 1.2rem;
+                padding: 6px 10px;
+            }
+        }
     </style>
 </head>
 <body>

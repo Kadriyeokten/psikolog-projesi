@@ -347,10 +347,6 @@ body.nav-active {
   #HEADER
 \*-----------------------------------*/
 
-.header .btn {
-  display: none;
-}
-
 .header {
   position: absolute;
   top: 0;
@@ -359,6 +355,30 @@ body.nav-active {
   padding-block: 16px;
   z-index: 4;
   height: 100px;
+}
+
+/* Mobil menüde butonları göster */
+.navbar-list .btn {
+  display: flex !important;
+}
+
+/* Mobil görünüm için buton düzenlemeleri */
+@media (max-width: 1199px) {
+  .navbar-item {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    border-block-start: 1px solid var(--white_a10);
+  }
+
+  .navbar-item .btn {
+    margin: 12px auto !important;
+    width: 180px !important;
+    height: 42px !important;
+    justify-content: center;
+    font-size: 1.4rem !important;
+    padding: 0 !important;
+  }
 }
 
 .header.active {
