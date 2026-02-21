@@ -179,6 +179,7 @@ async function saveDoctor() {
   const twitter = document.getElementById("doctorTwitter").value;
   const facebook = document.getElementById("doctorFacebook").value;
   const linkedin = document.getElementById("doctorLinkedin").value;
+  const isActive = document.getElementById("doctorIsActive").checked;
 
   const imageFile = document.getElementById("doctorImage").files[0];
 
@@ -198,6 +199,7 @@ async function saveDoctor() {
   formData.append("twitter", twitter);
   formData.append("facebook", facebook);
   formData.append("linkedin", linkedin);
+  formData.append("is_active", isActive);
 
   if (imageFile) {
     formData.append("image", imageFile);
