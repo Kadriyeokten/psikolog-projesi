@@ -87,6 +87,23 @@
           white-space: nowrap;
         }
       }
+
+      /* Hero Bölümü Boyutlandırma */
+      .hero {
+        padding-block: 20px 0 !important;
+        min-height: auto !important;
+      }
+
+      .hero-title {
+        margin-block: 0 !important;
+        line-height: 1 !important;
+      }
+
+      /* Bu sayfada hero içindeki gereksiz alanları gizle */
+      .hero .hero-subtitle,
+      .hero .hero-card {
+        display: none !important;
+      }
     </style>
 
     <style>
@@ -185,6 +202,13 @@
         }
         .hero-card .wrapper {
           flex-direction: column;
+        }
+        /* Mobilde hero alanını iyice daralt */
+        .hero {
+          padding-block: 80px 10px !important; /* Header payı + ince boşluk */
+        }
+        .hero-title {
+          font-size: 2.4rem !important; /* Mobilde başlığı küçültelim */
         }
       }
 
@@ -444,7 +468,7 @@
         <!-- booking section starts   -->
 
         <section class="book" id="book">
-          <h1 class="heading">Randevu</h1>
+          <h1 class="heading"></h1>
 
           <div class="row">
             <div class="image">
