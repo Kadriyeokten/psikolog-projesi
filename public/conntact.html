@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Zara Therapy - contact</title>
+    <title>Fast Terapi - contact</title>
     <meta name="title" content="Doclab - home" />
     <meta name="description" content="Fast Terapi - İletişim Bilgilerimiz" />
     <!-- font awesome cdn link  -->
@@ -85,6 +85,59 @@
           font-size: 1.4rem;
           white-space: nowrap;
         }
+      }
+
+      /* İletişim Formu Güzelleştirme */
+      .hero-card {
+        padding: 40px !important;
+        max-width: 600px !important;
+        width: 100% !important;
+      }
+
+      .hero-card .wrapper {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+      }
+
+      .hero-card .input-field {
+        background-color: var(--alice-blue);
+        border: 1px solid var(--gainsboro);
+        border-radius: var(--radius-12);
+        padding: 15px 20px !important;
+        font-size: 1.6rem;
+        transition: border-color 0.3s ease;
+      }
+
+      .hero-card .input-field:focus {
+        border-color: var(--verdigris);
+        outline: none;
+      }
+
+      .hero-card textarea.input-field {
+        min-height: 150px;
+        resize: vertical;
+      }
+
+      .hero-card .btn {
+        width: 100%;
+        justify-content: center;
+        padding: 15px;
+        font-size: 1.8rem;
+        margin-top: 10px;
+      }
+
+      .hero-card .input-wrapper {
+        position: relative;
+      }
+
+      .hero-card .input-wrapper ion-icon {
+        position: absolute;
+        top: 50%;
+        right: 20px;
+        transform: translateY(-50%);
+        color: var(--verdigris);
+        font-size: 2rem;
       }
     </style>
 
@@ -296,7 +349,7 @@
                 </p>
 
                 <div class="wrapper">
-                  <div class="input-wrapper title-lg">
+                  <div class="input-wrapper">
                     <input
                       type="text"
                       name="name"
@@ -306,7 +359,7 @@
                     <ion-icon name="person-circle-outline"></ion-icon>
                   </div>
 
-                  <div class="input-wrapper title-lg">
+                  <div class="input-wrapper">
                     <input
                       type="email"
                       name="email"
@@ -323,7 +376,7 @@
                   ></textarea>
                 </div>
 
-                <button class="btn has-before" data-reveal="left">
+                <button class="btn has-before">
                   <ion-icon name="send"></ion-icon>
                   <span class="span title-md">Gönder</span>
                 </button>
