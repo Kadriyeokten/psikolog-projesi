@@ -67,6 +67,29 @@ app.post("/api/appointments", async (req, res) => {
   }
 });
 
+// Takvim İçin Dolu Saatleri Getir (GET - Müşteriler İçin)
+app.get("/api/appointments/booked", async (req, res) => {
+  try {
+    const result = await db.query(`SELECT appointment_date FROM appointments`);
+    const bookedEvents = result.rows.map(row => {
+      // Randevuyu 1 saatlik dolu bir blok olarak takvime gönderiyoruz
+      const start = new Date(row.appointment_date);
+      const end = new Date(start.getTime() + 60 * 60 * 1000); // 1 saat eklendi
+      return {
+        title: "Dolu",
+        start: start.toISOString(),
+        end: end.toISOString(),
+        color: "#ff0000", // Kırmızı renk
+        display: "background" // Tıklanmayı engellemek için arka plan eventi yapıyoruz
+      };
+    });
+    res.json(bookedEvents);
+  } catch (err) {
+    console.error("Dolu saatleri getirme hatası:", err);
+    res.status(500).json({ error: "Dolu saatler getirilemedi." });
+  }
+});
+
 // Tüm Randevuları Getir (GET - Admin İçin)
 app.get("/api/appointments", async (req, res) => {
   try {
@@ -74,7 +97,7 @@ app.get("/api/appointments", async (req, res) => {
       SELECT 
         a.id, a.patient_name, a.patient_phone, a.patient_email, a.appointment_date, a.status, a.created_at,
         s.title as service_name,
-        d.name as doctor_name
+        d.full_name as doctor_name
       FROM appointments a
       LEFT JOIN services s ON a.service_id = s.id
       LEFT JOIN doctors d ON a.doctor_id = d.id

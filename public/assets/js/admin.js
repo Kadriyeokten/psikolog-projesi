@@ -226,4 +226,85 @@ async function saveDoctor() {
     alert("Sunucu hatası");
   }
 }
-\n// ===================================\n// RANDEVU YÖNETİMİ\n// ===================================\n\nasync function loadAppointments() {\n  const tbody = document.getElementById('appointmentsTableBody');\n  if (!tbody) return;\n\n  try {\n    const res = await fetch('/api/appointments');\n    const appointments = await res.json();\n\n    tbody.innerHTML = '';\n\n    if (appointments.length === 0) {\n      tbody.innerHTML = '<tr><td colspan="6" style="padding: 15px; text-align: center;">Henüz randevu bulunmamaktadır.</td></tr>';\n      return;\n    }\n\n    appointments.forEach(app => {\n      const date = new Date(app.appointment_date);\n      const formattedDate = date.toLocaleDateString('tr-TR') + ' ' + date.toLocaleTimeString('tr-TR', {hour: '2-digit', minute:'2-digit'});\n\n      const tr = document.createElement('tr');\n      tr.style.borderBottom = '1px solid #ddd';\n      tr.innerHTML = `\n        <td style="padding: 12px;"><strong>${formattedDate}</strong></td>\n        <td style="padding: 12px;">\n          <div>${app.patient_name}</div>\n          <div style="font-size: 0.9em; color: #555;">${app.patient_phone}</div>\n          <div style="font-size: 0.9em; color: #555;">${app.patient_email || '-'}</div>\n        </td>\n        <td style="padding: 12px;">${app.service_name || 'Silinmiş Hizmet'}</td>\n        <td style="padding: 12px;">${app.doctor_name || 'Silinmiş Terapist'}</td>\n        <td style="padding: 12px;">\n          <span style="padding: 5px 10px; border-radius: 12px; font-size: 0.9em; \n            background-color: ${app.status === 'Bekliyor' ? '#fff3cd' : '#d4edda'};\n            color: ${app.status === 'Bekliyor' ? '#856404' : '#155724'}">\n            ${app.status}\n          </span>\n        </td>\n        <td style="padding: 12px;">\n          <button class="btn" style="padding: 5px 10px; font-size: 0.9em; margin-bottom: 5px;" onclick="deleteAppointment(${app.id})">Sil</button>\n        </td>\n      `;\n      tbody.appendChild(tr);\n    });\n  } catch (err) {\n    console.error('Randevular yüklenemedi:', err);\n    tbody.innerHTML = '<tr><td colspan="6" style="padding: 15px; text-align: center; color: red;">Randevular yüklenirken hata oluştu!</td></tr>';\n  }\n}\n\nasync function deleteAppointment(id) {\n  if (!confirm('Bu randevuyu silmek istediğinize emin misiniz?')) return;\n  try {\n    const res = await fetch(`/api/appointments/${id}`, { method: 'DELETE' });\n    if (res.ok) {\n      alert('Randevu silindi.');\n      loadAppointments();\n    } else {\n      alert('Randevu silinemedi.');\n    }\n  } catch (err) {\n    console.error(err);\n  }\n}\n\n// Admin sayfasında randevular sekmesine tıklandığında yükleme tetikleyicisi\ndocument.addEventListener('DOMContentLoaded', () => {\n  loadAppointments();\n  const links = document.querySelectorAll('.admin-sidebar ul li a');\n  links.forEach(link => {\n    link.addEventListener('click', () => {\n      if(link.getAttribute('data-section') === 'appointments') {\n        loadAppointments();\n      }\n    });\n  });\n});\n
+
+// ===================================
+// RANDEVU YÖNETİMİ
+// ===================================
+
+async function loadAppointments() {
+  const tbody = document.getElementById('appointmentsTableBody');
+  if (!tbody) return;
+
+  try {
+    const res = await fetch('/api/appointments');
+    const appointments = await res.json();
+
+    tbody.innerHTML = '';
+
+    if (appointments.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="6" style="padding: 15px; text-align: center;">Henüz randevu bulunmamaktadır.</td></tr>';
+      return;
+    }
+
+    appointments.forEach(app => {
+      const date = new Date(app.appointment_date);
+      const formattedDate = date.toLocaleDateString('tr-TR') + ' ' + date.toLocaleTimeString('tr-TR', {hour: '2-digit', minute:'2-digit'});
+
+      const tr = document.createElement('tr');
+      tr.style.borderBottom = '1px solid #ddd';
+      tr.innerHTML = `
+        <td style="padding: 12px;"><strong>${formattedDate}</strong></td>
+        <td style="padding: 12px;">
+          <div>${app.patient_name}</div>
+          <div style="font-size: 0.9em; color: #555;">${app.patient_phone}</div>
+          <div style="font-size: 0.9em; color: #555;">${app.patient_email || '-'}</div>
+        </td>
+        <td style="padding: 12px;">${app.service_name || 'Silinmiş Hizmet'}</td>
+        <td style="padding: 12px;">${app.doctor_name || 'Silinmiş Terapist'}</td>
+        <td style="padding: 12px;">
+          <span style="padding: 5px 10px; border-radius: 12px; font-size: 0.9em; 
+            background-color: ${app.status === 'Bekliyor' ? '#fff3cd' : '#d4edda'};
+            color: ${app.status === 'Bekliyor' ? '#856404' : '#155724'}">
+            ${app.status}
+          </span>
+        </td>
+        <td style="padding: 12px;">
+          <button class="btn" style="padding: 5px 10px; font-size: 0.9em; margin-bottom: 5px;" onclick="deleteAppointment(${app.id})">Sil</button>
+        </td>
+      `;
+      tbody.appendChild(tr);
+    });
+  } catch (err) {
+    console.error('Randevular yüklenemedi:', err);
+    tbody.innerHTML = '<tr><td colspan="6" style="padding: 15px; text-align: center; color: red;">Randevular yüklenirken hata oluştu!</td></tr>';
+  }
+}
+
+async function deleteAppointment(id) {
+  if (!confirm('Bu randevuyu silmek istediğinize emin misiniz?')) return;
+  try {
+    const res = await fetch(`/api/appointments/${id}`, { method: 'DELETE' });
+    if (res.ok) {
+      alert('Randevu silindi.');
+      loadAppointments();
+    } else {
+      alert('Randevu silinemedi.');
+    }
+  } catch (err) {
+    console.error(err);
+  }
+}
+
+// Admin sayfasında randevular sekmesine tıklandığında yükleme tetikleyicisi
+document.addEventListener('DOMContentLoaded', () => {
+  loadAppointments();
+  const links = document.querySelectorAll('.admin-sidebar ul li a');
+  links.forEach(link => {
+    link.addEventListener('click', () => {
+      if(link.getAttribute('data-section') === 'appointments') {
+        loadAppointments();
+      }
+    });
+  });
+});
+

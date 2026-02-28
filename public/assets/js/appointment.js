@@ -14,6 +14,7 @@ function initCalendar() {
     locale: "tr",
     slotMinTime: "08:00:00",
     slotMaxTime: "20:00:00",
+    slotDuration: "01:00:00", // Sadece saat başları görünsün (08:00, 09:00, vs.)
     selectable: true,
     allDaySlot: false,
     headerToolbar: {
@@ -27,6 +28,16 @@ function initCalendar() {
       week: "Hafta",
       day: "Gün",
       list: "Liste",
+    },
+    events: "/api/appointments/booked", // Dolu saatleri API'den çeker
+    selectOverlap: false, // Dolu olan saatlerin seçilmesini/tıklanmasını engeller
+    selectAllow: function(selectInfo) {
+      // Geçmiş bir zamanın seçilmesini de engelleyelim (İsteğe bağlı ekstra güvenlik)
+      const now = new Date();
+      if (selectInfo.start < now) {
+        return false;
+      }
+      return true;
     },
     select: function (info) {
       const selectedDate = info.startStr;
