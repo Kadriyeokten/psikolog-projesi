@@ -21,8 +21,8 @@
   -->
     <link
       rel="shortcut icon"
-      href="./assets/images/logo.svg"
-      type="image/svg+xml"
+      href="./assets/images/fast-terapi-logo.png"
+      type="image/png"
     />
 
     <!-- 
@@ -476,17 +476,29 @@
             </div>
 
             <div class="form-container">
-              <form action="">
+              <form id="appointmentForm">
                 <h3>Randevu Al</h3>
                 <div class="input-box">
+                  <label for="patientName">Adınız Soyadınız:</label>
+                  <input type="text" id="patientName" name="patientName" class="box" placeholder="Örn: Ahmet Yılmaz" required />
+                </div>
+                <div class="input-box">
+                  <label for="patientPhone">Telefon Numaranız:</label>
+                  <input type="tel" id="patientPhone" name="patientPhone" class="box" placeholder="Örn: 0555 555 55 55" required />
+                </div>
+                <div class="input-box">
+                  <label for="patientEmail">E-posta Adresiniz (İsteğe bağlı):</label>
+                  <input type="email" id="patientEmail" name="patientEmail" class="box" placeholder="Örn: mail@ornek.com" />
+                </div>
+                <div class="input-box">
                   <label for="service">Hizmet Seçin:</label>
-                  <select id="service" name="service" class="box">
+                  <select id="service" name="service" class="box" required>
                     <option value="">Yükleniyor...</option>
                   </select>
                 </div>
                 <div class="input-box">
                   <label for="therapist">Terapist Seçin:</label>
-                  <select id="therapist" name="therapist" class="box">
+                  <select id="therapist" name="therapist" class="box" required>
                     <option value="">Yükleniyor...</option>
                   </select>
                 </div>

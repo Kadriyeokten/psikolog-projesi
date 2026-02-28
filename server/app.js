@@ -42,6 +42,79 @@ app.get("/", (req, res) => {
 });
 
 // Server başlat
+// ==========================================
+// APPOINTMENTS API
+// ==========================================
+
+// Randevu Al (POST)
+app.post("/api/appointments", async (req, res) => {
+  const { patientName, patientPhone, patientEmail, service, therapist, selectedDateTime } = req.body;
+
+  if (!patientName || !patientPhone || !service || !therapist || !selectedDateTime) {
+    return res.status(400).json({ error: "Lütfen gerekli tüm alanları doldurun." });
+  }
+
+  try {
+    const result = await db.query(
+      `INSERT INTO appointments (patient_name, patient_phone, patient_email, service_id, doctor_id, appointment_date)
+       VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
+      [patientName, patientPhone, patientEmail, service, therapist, selectedDateTime]
+    );
+    res.json({ message: "Randevunuz başarıyla oluşturuldu.", appointment: result.rows[0] });
+  } catch (err) {
+    console.error("Randevu oluşturma hatası:", err);
+    res.status(500).json({ error: "Randevu oluşturulamadı." });
+  }
+});
+
+// Tüm Randevuları Getir (GET - Admin İçin)
+app.get("/api/appointments", async (req, res) => {
+  try {
+    const result = await db.query(`
+      SELECT 
+        a.id, a.patient_name, a.patient_phone, a.patient_email, a.appointment_date, a.status, a.created_at,
+        s.title as service_name,
+        d.name as doctor_name
+      FROM appointments a
+      LEFT JOIN services s ON a.service_id = s.id
+      LEFT JOIN doctors d ON a.doctor_id = d.id
+      ORDER BY a.appointment_date DESC
+    `);
+    res.json(result.rows);
+  } catch (err) {
+    console.error("Randevuları getirme hatası:", err);
+    res.status(500).json({ error: "Randevular getirilemedi." });
+  }
+});
+
+// Randevu Durumunu Güncelle (PUT - Admin İçin)
+app.put("/api/appointments/:id/status", async (req, res) => {
+  const { id } = req.params;
+  const { status } = req.body;
+  try {
+    const result = await db.query(
+      "UPDATE appointments SET status = $1 WHERE id = $2 RETURNING *",
+      [status, id]
+    );
+    res.json(result.rows[0]);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Durum güncellenemedi" });
+  }
+});
+
+// Randevu Sil (DELETE - Admin İçin)
+app.delete("/api/appointments/:id", async (req, res) => {
+  const { id } = req.params;
+  try {
+    await db.query("DELETE FROM appointments WHERE id = $1", [id]);
+    res.json({ message: "Randevu silindi." });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Randevu silinemedi" });
+  }
+});
+
 app.listen(PORT, () => {
   console.log(`Server çalisiyor: http://localhost:${PORT}`);
 });

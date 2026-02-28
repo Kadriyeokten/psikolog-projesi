@@ -271,6 +271,7 @@
                 <li><a href="#about-us" data-section="about-us">Hakkımızda</a></li>
                 <li><a href="#services" data-section="services">Hizmetler</a></li>
                 <li><a href="#doctors" data-section="doctors">Doktorlar</a></li>
+                <li><a href="#appointments" data-section="appointments">Randevular</a></li>
                 <li><a href="#settings" data-section="settings">Ayarlar</a></li>
                 <li><a href="index.html">Siteye Dön</a></li>
             </ul>
@@ -431,6 +432,29 @@
  
 </div>
 
+            </section>
+
+            <section id="appointments" class="admin-section">
+                <h2>Randevular Yönetimi</h2>
+                <p>Kullanıcıların site üzerinden aldığı tüm randevuları buradan takip edebilir ve silebilirsiniz.</p>
+                
+                <div style="overflow-x: auto; margin-top: 20px;">
+                    <table style="width: 100%; border-collapse: collapse; text-align: left; background: var(--white); border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                        <thead>
+                            <tr style="background: var(--verdigris); color: var(--white);">
+                                <th style="padding: 12px; border-bottom: 1px solid #ddd;">Tarih & Saat</th>
+                                <th style="padding: 12px; border-bottom: 1px solid #ddd;">Hasta Bilgileri</th>
+                                <th style="padding: 12px; border-bottom: 1px solid #ddd;">Hizmet</th>
+                                <th style="padding: 12px; border-bottom: 1px solid #ddd;">Terapist</th>
+                                <th style="padding: 12px; border-bottom: 1px solid #ddd;">Durum</th>
+                                <th style="padding: 12px; border-bottom: 1px solid #ddd;">İşlem</th>
+                            </tr>
+                        </thead>
+                        <tbody id="appointmentsTableBody">
+                            <tr><td colspan="6" style="padding: 15px; text-align: center;">Yükleniyor...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
             </section>
 
             <section id="settings" class="admin-section">

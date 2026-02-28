@@ -75,3 +75,50 @@ async function loadDynamicData() {
     console.error("Dinamik veriler yüklenemedi:", err);
   }
 }
+
+// Form Gönderim İşlemi (Randevu Kaydı)
+document.getElementById("appointmentForm")?.addEventListener("submit", async function(e) {
+  e.preventDefault();
+
+  const patientName = document.getElementById("patientName").value.trim();
+  const patientPhone = document.getElementById("patientPhone").value.trim();
+  const patientEmail = document.getElementById("patientEmail").value.trim();
+  const service = document.getElementById("service").value;
+  const therapist = document.getElementById("therapist").value;
+  const selectedDateTime = document.getElementById("selectedDateTime").value;
+
+  if (!selectedDateTime) {
+    alert("Lütfen takvim üzerinden bir randevu tarihi ve saati seçin!");
+    return;
+  }
+
+  const data = {
+    patientName,
+    patientPhone,
+    patientEmail,
+    service,
+    therapist,
+    selectedDateTime
+  };
+
+  try {
+    const res = await fetch("/api/appointments", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data)
+    });
+
+    const result = await res.json();
+    
+    if (res.ok) {
+      alert("Randevunuz başarıyla oluşturuldu! Sizinle en kısa sürede iletişime geçeceğiz.");
+      document.getElementById("appointmentForm").reset();
+      document.getElementById("selectedDateTime").value = ""; // Takvim seçimini sıfırla
+    } else {
+      alert("Hata: " + result.error);
+    }
+  } catch (err) {
+    console.error(err);
+    alert("Sunucuyla bağlantı kurulamadı. Lütfen daha sonra tekrar deneyin.");
+  }
+});
