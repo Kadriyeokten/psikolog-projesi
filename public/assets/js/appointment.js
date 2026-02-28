@@ -102,6 +102,8 @@ document.getElementById("appointmentForm")?.addEventListener("submit", async fun
     alert("Lütfen takvim üzerinden bir randevu tarihi ve saati seçin!");
     return;
   }
+  // Seçilen zamanı UTC'ye çevir
+  const utcDateTime = new Date(selectedDateTime).toISOString();
 
   const data = {
     patientName,
@@ -109,7 +111,7 @@ document.getElementById("appointmentForm")?.addEventListener("submit", async fun
     patientEmail,
     service,
     therapist,
-    selectedDateTime
+    selectedDateTime: utcDateTime // UTC formatında gönder
   };
 
   try {
