@@ -50,19 +50,24 @@ app.get("/", (req, res) => {
 app.post("/api/appointments", async (req, res) => {
   const { patientName, patientPhone, patientEmail, service, therapist, selectedDateTime } = req.body;
 
+  console.log("Gelen Randevu Verileri:", req.body); // Debug: Gelen veriyi logla
+
   if (!patientName || !patientPhone || !service || !therapist || !selectedDateTime) {
+    console.log("Hata: Eksik randevu verisi."); // Debug: Eksik veriyi logla
     return res.status(400).json({ error: "Lütfen gerekli tüm alanları doldurun." });
   }
 
   try {
+    console.log("Veritabanına eklenecek veriler:", [patientName, patientPhone, patientEmail, service, therapist, selectedDateTime]); // Debug: Eklenecek veriyi logla
     const result = await db.query(
       `INSERT INTO appointments (patient_name, patient_phone, patient_email, service_id, doctor_id, appointment_date)
        VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
       [patientName, patientPhone, patientEmail, service, therapist, selectedDateTime]
     );
+    console.log("Randevu başarıyla oluşturuldu:", result.rows[0]); // Debug: Başarılı oluşturmayı logla
     res.json({ message: "Randevunuz başarıyla oluşturuldu.", appointment: result.rows[0] });
   } catch (err) {
-    console.error("Randevu oluşturma hatası:", err);
+    console.error("Randevu oluşturma hatası (DB):", err); // Debug: DB hatasını logla
     res.status(500).json({ error: "Randevu oluşturulamadı." });
   }
 });
