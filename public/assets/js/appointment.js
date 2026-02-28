@@ -31,13 +31,10 @@ function initCalendar() {
     },
     events: "/api/appointments/booked", // Dolu saatleri API'den çeker
     selectOverlap: false, // Dolu olan saatlerin seçilmesini/tıklanmasını engeller
-    validRange: {
-      start: new Date() // Bugünden (şu anki zamandan) itibaren seçimlere izin ver
-    },
     selectAllow: function(selectInfo) {
       // Geçmiş bir zamanın seçilmesini de engelleyelim (İsteğe bağlı ekstra güvenlik)
       const now = new Date();
-      // validRange zaten bu kontrolü yapıyor, ancak selectAllow içinde de tutmak ekstra güvenlik sağlar.
+      // validRange kaldırıldığı için bu kontrol şimdi daha kritik
       if (selectInfo.start < now) {
         return false;
       }
