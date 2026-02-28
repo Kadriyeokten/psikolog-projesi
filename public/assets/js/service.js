@@ -38,7 +38,7 @@ async function renderServices() {
           <p class="card-text">
             ${service.dsc}
           </p>
-          <button class="btn-circle" aria-label="${service.title} hakkında daha fazlasını okuyun">
+          <button class="btn-circle" aria-label="${service.title} hakkında daha fazlasını okuyun" onclick="showServiceDetails('${service.title.replace(/'/g, "\\'")}', '${service.dsc.replace(/'/g, "\\'")}', '${service.image_path || './assets/images/message1.png'}')">
             <ion-icon name="arrow-forward" aria-hidden="true"></ion-icon>
           </button>
         </div>
@@ -53,6 +53,39 @@ async function renderServices() {
   } catch (err) {
     console.error("Hizmetler render edilemedi:", err);
   }
+}
+
+// Hizmet detaylarını Terapistler kısmında göster ve oraya kaydır
+function showServiceDetails(title, dsc, image_path) {
+  const detailsSection = document.getElementById("service-details-section");
+  if (detailsSection) {
+    detailsSection.style.display = "block";
+  }
+
+  const therapistList = document.getElementById("therapist-list");
+  if (!therapistList) return;
+
+  therapistList.innerHTML = `
+    <li style="width: 100%; grid-column: 1 / -1;">
+      <div class="listing-card" style="display: flex; flex-direction: column; gap: 20px; align-items: center; text-align: center; padding: 40px; background: var(--white); border-radius: var(--radius-12); box-shadow: var(--shadow-1);">
+        <div class="card-icon" style="width: 120px; height: 120px; border-radius: 50%; overflow: hidden; display: flex; justify-content: center; align-items: center; background: var(--alice-blue); margin-bottom: 20px;">
+          <img src="${image_path}" style="max-width: 100%; max-height: 100%;" loading="lazy" alt="${title}" onerror="this.src='./assets/images/message1.png'">
+        </div>
+        <div>
+          <h3 class="headline-sm card-title" style="color: var(--midnight-green); margin-bottom: 15px;">${title}</h3>
+          <p class="card-text" style="font-size: 1.4rem; line-height: 1.8; color: var(--gray-web); max-width: 800px;">
+            ${dsc}
+          </p>
+          <div style="margin-top: 30px;">
+             <a href="#appointment" class="btn btn-primary" onclick="document.getElementById('appointment') && document.getElementById('appointment').scrollIntoView({behavior: 'smooth'})">Bu Hizmet İçin Randevu Al</a>
+          </div>
+        </div>
+      </div>
+    </li>
+  `;
+
+  // Terapistler kısmına yumuşak geçişle kaydır
+  therapistList.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 // Combobox yükleme
