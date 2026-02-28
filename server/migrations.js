@@ -39,8 +39,17 @@ async function runMigrations() {
   } catch (err) {
     console.error("Veritabanı migration hatası:", err);
   } finally {
-    await pool.end();
+    // Sadece bu dosya doğrudan çalıştırıldığında bağlantıyı kapat
+    if (require.main === module) {
+      await pool.end();
+    }
   }
 }
 
-runMigrations();
+// Sadece bu dosya doğrudan (node server/migrations.js) komutuyla çalıştırıldığında migrationları tetikle
+if (require.main === module) {
+  runMigrations();
+} else {
+  // Eğer başka bir modül tarafından çağrılırsa (örneğin app.js), sadece bir uyarı ver
+  console.log("migrations.js bir modül olarak yüklendi, migrationlar tetiklenmedi.");
+}
