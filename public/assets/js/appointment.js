@@ -13,7 +13,7 @@ function initCalendar() {
     initialView: "timeGridWeek",
     locale: "tr",
     slotMinTime: "08:00:00",
-    slotMaxTime: "20:00:00",
+    slotMaxTime: "22:00:00",
     slotDuration: "01:00:00", // Sadece saat başları görünsün (08:00, 09:00, vs.)
     selectable: true,
     allDaySlot: false,

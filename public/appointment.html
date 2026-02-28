@@ -231,6 +231,69 @@
   -->
     <link rel="preload" as="image" href="./assets/images/hero-banner.png" />
     <link rel="preload" as="image" href="./assets/images/hero-bg.png" />
+    <style>
+      /* Modern Takvim Tasarımı */
+      #calendar {
+        font-family: var(--ff-rubik, 'Rubik', sans-serif);
+        background: #ffffff;
+        border-radius: 12px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+        padding: 20px;
+        border: 1px solid #e0e6ed;
+      }
+      .fc-theme-standard th {
+        background-color: #f8fbfb;
+        color: var(--midnight-green, #0a3d42);
+        padding: 12px 0;
+        font-weight: 600;
+        border-color: #e0e6ed;
+      }
+      .fc-theme-standard td, .fc-theme-standard th {
+        border-color: #f0f4f8;
+      }
+      .fc-button-primary {
+        background-color: var(--verdigris, #0fa3a3) !important;
+        border: none !important;
+        border-radius: 8px !important;
+        box-shadow: 0 4px 10px rgba(15, 163, 163, 0.2) !important;
+        text-transform: capitalize;
+        font-weight: 500 !important;
+        transition: all 0.3s ease !important;
+      }
+      .fc-button-primary:hover {
+        background-color: var(--midnight-green, #0a3d42) !important;
+        box-shadow: 0 6px 15px rgba(10, 61, 66, 0.3) !important;
+      }
+      .fc-button-primary:not(:disabled):active, .fc-button-primary:not(:disabled).fc-button-active {
+        background-color: var(--midnight-green, #0a3d42) !important;
+      }
+      .fc-toolbar-title {
+        color: var(--midnight-green, #0a3d42);
+        font-size: 1.5rem !important;
+        font-weight: 700 !important;
+      }
+      .fc-timegrid-slot {
+        height: 40px !important;
+      }
+      .fc-highlight {
+        background: rgba(15, 163, 163, 0.2) !important;
+      }
+      .fc-event {
+        border-radius: 6px;
+        border: none;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        opacity: 0.9;
+      }
+      .fc-v-event {
+        background-color: #ff4d4d !important; /* Dolu alanları kırmızı belirginleştir */
+      }
+      .fc-timegrid-now-indicator-line {
+        border-color: var(--verdigris, #0fa3a3);
+      }
+      .fc-timegrid-now-indicator-arrow {
+        border-color: var(--verdigris, #0fa3a3);
+      }
+    </style>
   </head>
   <script>
     document.addEventListener("DOMContentLoaded", function () {
