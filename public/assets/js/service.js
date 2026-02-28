@@ -28,24 +28,42 @@ async function renderServices() {
     services.forEach((service) => {
       const shortDsc = service.dsc.length > 100 ? service.dsc.substring(0, 100) + "..." : service.dsc;
       
+      const safeTitle = service.title.replace(/"/g, '&quot;');
+      const safeImg = (service.image_path || './assets/images/message1.png').replace(/"/g, '&quot;');
+      // dsc verisini data attribute içinde güvenle tutmak için sadece encodeURIComponent kullanmak daha güvenlidir, ama replace ile de base düzeyde koruyabiliriz.
+      const safeDsc = service.dsc.replace(/"/g, '&quot;');
+      
       const li = document.createElement("li");
       li.innerHTML = `
         <div class="service-card" data-reveal="bottom">
           <div class="card-icon">
-            <img src="${service.image_path || './assets/images/message1.png'}" width="71" height="71" loading="lazy" alt="icon" onerror="this.src='./assets/images/message1.png'">
+            <img src="${safeImg}" width="71" height="71" loading="lazy" alt="icon" onerror="this.src='./assets/images/message1.png'">
           </div>
           <h3 class="headline-sm card-title">
-            <a href="#">${service.title}</a>
+            <a href="#">${safeTitle}</a>
           </h3>
           <p class="card-text">
             ${shortDsc}
           </p>
-          <button class="btn-circle" aria-label="${service.title} hakkında daha fazlasını okuyun" onclick="showServiceDetails('${service.title.replace(/'/g, "\\'")}', '${service.dsc.replace(/'/g, "\\'").replace(/\n/g, "<br>")}', '${service.image_path || './assets/images/message1.png'}')">
+          <button class="btn-circle detail-btn" aria-label="${safeTitle} hakkında daha fazlasını okuyun" data-title="${safeTitle}" data-dsc="${safeDsc}" data-img="${safeImg}">
             <ion-icon name="arrow-forward" aria-hidden="true"></ion-icon>
           </button>
         </div>
       `;
       serviceList.appendChild(li);
+    });
+
+    // Dinamik oluşturulan butonlara click event listener ekliyoruz
+    const detailButtons = document.querySelectorAll(".detail-btn");
+    detailButtons.forEach(btn => {
+      btn.addEventListener("click", function() {
+        // verileri alırken orijinal satır atlamalarını vs. bozmadan alıyoruz
+        const title = this.getAttribute("data-title");
+        // Detayda satır atlamalarını göstermek için \n'leri <br> ile değiştiriyoruz.
+        const dsc = this.getAttribute("data-dsc").replace(/\n/g, '<br>');
+        const img = this.getAttribute("data-img");
+        showServiceDetails(title, dsc, img);
+      });
     });
 
     // Scroll reveal etkisini yeni eklenen elementler için tetikle
@@ -79,7 +97,7 @@ function showServiceDetails(title, dsc, image_path) {
             ${dsc}
           </p>
           <div style="margin-top: 30px;">
-             <a href="#appointment" class="btn btn-primary" onclick="document.getElementById('appointment') && document.getElementById('appointment').scrollIntoView({behavior: 'smooth'})">Bu Hizmet İçin Randevu Al</a>
+             <a href="appointment.html" class="btn btn-primary">Bu Hizmet İçin Randevu Al</a>
           </div>
         </div>
       </div>
