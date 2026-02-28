@@ -26,6 +26,8 @@ async function renderServices() {
     }
 
     services.forEach((service) => {
+      const shortDsc = service.dsc.length > 100 ? service.dsc.substring(0, 100) + "..." : service.dsc;
+      
       const li = document.createElement("li");
       li.innerHTML = `
         <div class="service-card" data-reveal="bottom">
@@ -36,9 +38,9 @@ async function renderServices() {
             <a href="#">${service.title}</a>
           </h3>
           <p class="card-text">
-            ${service.dsc}
+            ${shortDsc}
           </p>
-          <button class="btn-circle" aria-label="${service.title} hakkında daha fazlasını okuyun" onclick="showServiceDetails('${service.title.replace(/'/g, "\\'")}', '${service.dsc.replace(/'/g, "\\'")}', '${service.image_path || './assets/images/message1.png'}')">
+          <button class="btn-circle" aria-label="${service.title} hakkında daha fazlasını okuyun" onclick="showServiceDetails('${service.title.replace(/'/g, "\\'")}', '${service.dsc.replace(/'/g, "\\'").replace(/\n/g, "<br>")}', '${service.image_path || './assets/images/message1.png'}')">
             <ion-icon name="arrow-forward" aria-hidden="true"></ion-icon>
           </button>
         </div>
