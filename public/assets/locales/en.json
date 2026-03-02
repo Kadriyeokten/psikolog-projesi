@@ -37,7 +37,17 @@
   "footer_about_title": "About Us",
   "footer_about_text": "Health is not just physical well-being but spiritual well-being and should be handled as a whole. The first session takes place by determining the therapy agenda and taking a detailed history of the client.",
   "footer_services_title": "Services",
+  "footer_consultancy": "Consultancy",
+  "footer_sessions": "Therapy Sessions",
+  "footer_workshops": "Workshops",
+  "footer_group": "Group Therapy",
+  "footer_tele": "Teletherapy",
+  "footer_mindfulness": "Mindfulness Training",
   "footer_links_title": "Useful Links",
+  "footer_privacy": "Privacy Policy",
+  "footer_terms": "Terms of Service",
+  "footer_reviews": "Client Reviews",
+  "footer_faq": "FAQ",
   "footer_subscribe_title": "Subscribe",
   "footer_subscribe_text": "Receive the latest updates by email. You can unsubscribe at any time.",
   "footer_copyright": "© Therapist Center 2026 | All Rights Reserved by SESA Software.",
@@ -110,5 +120,6 @@
   "Bilişsel Davranışçı Terapi (BDT), bireylerin duygu, düşünce ve davranışları arasındaki ilişkiyi ele alan, bilimsel araştırmalarla etkinliği kanıtlanmış modern bir psikoterapi yaklaşımıdır. Bu terapi yöntemi, kişilerin yaşadıkları zorlukların yalnızca olaylardan değil, bu olaylara yükledikleri anlam ve düşünce kalıplarından kaynaklanabileceğini temel alır.\nTerapi sürecinde danışanın günlük yaşamını olumsuz etkileyen düşünce ve davranış örüntüleri birlikte değerlendirilir; daha sağlıklı, işlevsel ve gerçekçi bakış açıları geliştirilmesi hedeflenir. Böylece danışanların duygusal dayanıklılığı artar, problem çözme becerileri güçlenir ve yaşam kalitesinde sürdürülebilir bir iyileşme sağlanır.\nBilişsel Davranışçı Terapi; kaygı, depresyon, stres yönetimi, panik atak, özgüven sorunları ve ilişki problemleri gibi birçok alanda etkili şekilde uygulanmaktadır. Yapılandırılmış ve hedef odaklı yapısı sayesinde danışanların terapi sürecinde aktif rol alması desteklenir ve kazanımların günlük yaşama aktarılması amaçlanır.\nAmacımız, danışanlarımızın yaşadıkları zorlukları anlamalarına yardımcı olmak, güçlü yönlerini keşfetmelerini sağlamak ve daha dengeli bir yaşam sürdürebilmeleri için bilimsel temelli destek sunmaktır.": "Cognitive Behavioral Therapy (CBT) is a modern psychotherapy approach that addresses the relationship between individuals' emotions, thoughts and behaviors, and whose effectiveness has been proven by scientific research. This therapy method is based on the fact that the difficulties people experience may arise not only from events, but also from the meaning and thought patterns they attribute to these events. \nDuring the therapy process, thought and behavior patterns that negatively affect the client's daily life are evaluated together; It is aimed to develop healthier, functional and realistic perspectives. Thus, clients' emotional resilience increases, their problem-solving skills are strengthened, and a sustainable improvement in their quality of life is achieved. \nCognitive Behavioral Therapy; It is effectively applied in many areas such as anxiety, depression, stress management, panic attacks, self-confidence problems and relationship problems. Thanks to its structured and goal-oriented structure, clients are supported to take an active role in the therapy process and the aim is to transfer the gains to daily life. \nOur goal is to help our clients understand the difficulties they experience, enable them to discover their strengths, and provide scientifically based support so they can live a more balanced life.",
   "Merhaba ben Salih Özgen ": "Hello, I am Salih Özgen",
   "Uzmanlık Alanları": "Areas of Expertise",
-  "Sertifikalı ve Lisanslı": "Certified and Licensed"
+  "Sertifikalı ve Lisanslı": "Certified and Licensed",
+  "Yılların Klinik Deneyimi": "Years of Clinical Experience"
 }

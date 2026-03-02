@@ -8,7 +8,6 @@ let currentLang = localStorage.getItem('preferredLanguage') || 'tr';
  * Load translations for the given language
  */
 async function loadTranslations(lang) {
-  console.log(`Loading translations for: ${lang}`);
   try {
     const response = await fetch(`./assets/locales/${lang}.json?v=${Date.now()}`);
     translations = await response.json();
@@ -24,7 +23,6 @@ async function loadTranslations(lang) {
     localStorage.setItem('preferredLanguage', lang);
     updateToggleLabel(lang);
     
-    // Trigger update for dynamic elements
     window.dispatchEvent(new CustomEvent('languageChanged', { detail: { lang, translations } }));
   } catch (error) {
     console.error('Error loading translations:', error);
@@ -40,7 +38,11 @@ function applyTranslations() {
     const key = element.getAttribute('data-i18n');
     if (translations[key]) {
       if (element.tagName === 'INPUT' || element.tagName === 'TEXTAREA') {
-        element.placeholder = translations[key];
+        if (element.type === 'submit' || element.type === 'button') {
+          element.value = translations[key];
+        } else {
+          element.placeholder = translations[key];
+        }
       } else {
         element.innerHTML = translations[key];
       }
@@ -62,26 +64,24 @@ async function switchLanguage() {
 
 /**
  * Async Translation Helper (Smart AI)
- * @param {string} input - Text to translate
- * @returns {Promise<string>} Translated text
  */
 async function t(input) {
   if (!input || typeof input !== 'string') return input || "";
-  if (currentLang === 'tr') return input;
 
-  // 1. Check local cache (key match)
+  // 1. Her zaman önce yerel çeviri tablosuna bak (Key kontrolü)
   if (translations[input]) return translations[input];
 
-  // 2. Check TR Reference for value match (Reverse lookup)
+  // 2. Eğer dil Türkçe ise ve key bulunamadıysa, input'un kendisini dön (Zaten Türkçe olduğu varsayılır)
+  if (currentLang === 'tr') return input;
+
+  // 3. Tersine arama (Reverse lookup) - DB'den gelen Türkçe metni bul
   for (let key in trReference) {
     if (trReference[key] === input) {
-      // Return English version of this key
       return translations[key] || input;
     }
   }
 
-  // 3. AI Auto Translate (Call Backend)
-  console.log(`AI Translating: "${input.substring(0, 20)}..."`);
+  // 4. AI Otomatik Çeviri (Backend çağrısı)
   try {
     const res = await fetch('/api/translate', {
       method: 'POST',
@@ -90,7 +90,6 @@ async function t(input) {
     });
     const data = await res.json();
     if (data.translatedText) {
-      // Add to current translations object to avoid re-fetching
       translations[input] = data.translatedText;
       return data.translatedText;
     }

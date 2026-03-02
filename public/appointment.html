@@ -623,7 +623,7 @@
             <div class="hero-content">
               <p class="hero-subtitle has-before" data-reveal="left"></p>
 
-              <h1 class="headline-lg hero-title" data-reveal="left">
+              <h1 class="headline-lg hero-title" data-reveal="left" data-i18n="hero_subtitle">
                 Online Randevunuzu Alın<br />
               </h1>
 
@@ -679,33 +679,33 @@
 
             <div class="form-container">
               <form id="appointmentForm">
-                <h3>Randevu Al</h3>
+                <h3 data-i18n="appointment_title">Randevu Al</h3>
                 <div class="input-box">
-                  <label for="patientName">Adınız Soyadınız:</label>
+                  <label for="patientName" data-i18n="appointment_name_label">Adınız Soyadınız:</label>
                   <input type="text" id="patientName" name="patientName" class="box" placeholder="Örn: Ahmet Yılmaz" required />
                 </div>
                 <div class="input-box">
-                  <label for="patientPhone">Telefon Numaranız:</label>
+                  <label for="patientPhone" data-i18n="appointment_phone_label">Telefon Numaranız:</label>
                   <input type="tel" id="patientPhone" name="patientPhone" class="box" placeholder="Örn: 0555 555 55 55" required />
                 </div>
                 <div class="input-box">
-                  <label for="patientEmail">E-posta Adresiniz (İsteğe bağlı):</label>
+                  <label for="patientEmail" data-i18n="appointment_email_label">E-posta Adresiniz (İsteğe bağlı):</label>
                   <input type="email" id="patientEmail" name="patientEmail" class="box" placeholder="Örn: mail@ornek.com" />
                 </div>
                 <div class="input-box">
-                  <label for="service">Hizmet Seçin:</label>
+                  <label for="service" data-i18n="appointment_service_label">Hizmet Seçin:</label>
                   <select id="service" name="service" class="box" required>
-                    <option value="">Yükleniyor...</option>
+                    <option value="" data-i18n="loading">Yükleniyor...</option>
                   </select>
                 </div>
                 <div class="input-box">
-                  <label for="therapist">Terapist Seçin:</label>
+                  <label for="therapist" data-i18n="appointment_therapist_label">Terapist Seçin:</label>
                   <select id="therapist" name="therapist" class="box" required>
-                    <option value="">Yükleniyor...</option>
+                    <option value="" data-i18n="loading">Yükleniyor...</option>
                   </select>
                 </div>
                 <div class="input-box">
-                  <label>Randevu Tarihi ve Saati Seçin:</label>
+                  <label data-i18n="appointment_datetime_label">Randevu Tarihi ve Saati Seçin:</label>
                   <div
                     id="calendar"
                     style="background: white; padding: 10px; border-radius: 8px"
@@ -716,7 +716,7 @@
                     name="appointment_date"
                   />
                 </div>
-                <input type="submit" value="Şimdi Randevu Al" class="btn" />
+                <input type="submit" value="Şimdi Randevu Al" class="btn" data-i18n="appointment_btn" />
               </form>
             </div>
           </div>
@@ -727,7 +727,7 @@
         <!-- review section starts  -->
 
         <section class="review" id="review">
-          <h1 class="heading"><span>Yorumlar</span></h1>
+          <h1 class="heading"><span data-i18n="reviews_title">Yorumlar</span></h1>
 
           <div class="box-container">
             <div class="box">
@@ -868,22 +868,22 @@
               <p class="headline-sm footer-list-title" data-i18n="footer_services_title">Hizmetler</p>
             </li>
             <li>
-              <a href="#" class="text footer-link" data-i18n="nav_services">Danışmanlık</a>
+              <a href="#" class="text footer-link" data-i18n="footer_consultancy">Danışmanlık</a>
             </li>
             <li>
-              <a href="#" class="text footer-link" data-i18n="feature_title3">Terapi Seansları</a>
+              <a href="#" class="text footer-link" data-i18n="footer_sessions">Terapi Seansları</a>
             </li>
             <li>
-              <a href="#" class="text footer-link">Atölyeler</a>
+              <a href="#" class="text footer-link" data-i18n="footer_workshops">Atölyeler</a>
             </li>
             <li>
-              <a href="#" class="text footer-link">Grup Terapisi</a>
+              <a href="#" class="text footer-link" data-i18n="footer_group">Grup Terapisi</a>
             </li>
             <li>
-              <a href="#" class="text footer-link">Teleterapi</a>
+              <a href="#" class="text footer-link" data-i18n="footer_tele">Teleterapi</a>
             </li>
             <li>
-              <a href="#" class="text footer-link">Farkındalık Eğitimi</a>
+              <a href="#" class="text footer-link" data-i18n="footer_mindfulness">Farkındalık Eğitimi</a>
             </li>
           </ul>
           <ul class="footer-list" data-reveal="bottom">
@@ -891,16 +891,16 @@
               <p class="headline-sm footer-list-title" data-i18n="footer_links_title">Faydalı Linkler</p>
             </li>
             <li>
-              <a href="#" class="text footer-link">Gizlilik Politikası</a>
+              <a href="#" class="text footer-link" data-i18n="footer_privacy">Gizlilik Politikası</a>
             </li>
             <li>
-              <a href="#" class="text footer-link">Hizmet Şartları</a>
+              <a href="#" class="text footer-link" data-i18n="footer_terms">Hizmet Şartları</a>
             </li>
             <li>
-              <a href="#" class="text footer-link">Danışan Yorumları</a>
+              <a href="#" class="text footer-link" data-i18n="footer_reviews">Danışan Yorumları</a>
             </li>
             <li>
-              <a href="#" class="text footer-link">SSS</a>
+              <a href="#" class="text footer-link" data-i18n="footer_faq">SSS</a>
             </li>
           </ul>
           <div class="footer-list" data-reveal="bottom">

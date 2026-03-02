@@ -5,7 +5,7 @@ document.addEventListener("DOMContentLoaded", () => {
   initCalendar();
 });
 
-function initCalendar() {
+async function initCalendar() {
   const calendarEl = document.getElementById("calendar");
   if (!calendarEl) return;
 
@@ -24,6 +24,15 @@ function initCalendar() {
       center: "title",
       right: "timeGridWeek,timeGridDay",
     },
+    buttonText: currentLang === 'tr' ? {
+      today: "Bugün",
+      week: "Hafta",
+      day: "Gün"
+    } : {
+      today: "Today",
+      week: "Week",
+      day: "Day"
+    },
     events: "/api/appointments/booked",
     selectOverlap: false,
     selectAllow: function(selectInfo) {
@@ -33,11 +42,12 @@ function initCalendar() {
       }
       return true;
     },
-    select: function (info) {
+    select: async function (info) {
       const selectedDate = info.startStr;
       document.getElementById("selectedDateTime").value = selectedDate;
       const formattedDate = info.start.toLocaleString(currentLang === 'tr' ? "tr-TR" : "en-US");
-      alert(window.i18n.t("appointment_datetime_label") + ": " + formattedDate);
+      const msg = await window.i18n.t("appointment_datetime_label");
+      alert(msg + ": " + formattedDate);
     },
   });
 
@@ -55,41 +65,40 @@ async function loadDynamicData() {
     const servicesRes = await fetch("/api/services");
     const services = await servicesRes.json();
 
-    serviceSelect.innerHTML = `<option value="">${window.i18n.t("select_service")}</option>`;
-    services.forEach((service) => {
+    serviceSelect.innerHTML = `<option value="">${await window.i18n.t("select_service")}</option>`;
+    for (const service of services) {
       const option = document.createElement("option");
       option.value = service.id;
-      option.textContent = service.title;
+      option.textContent = await window.i18n.t(service.title);
       serviceSelect.appendChild(option);
-    });
+    }
 
     const doctorsRes = await fetch("/api/doctors");
     const doctors = await doctorsRes.json();
 
-    therapistSelect.innerHTML = `<option value="">${window.i18n.t("select_therapist")}</option>`;
-    doctors.forEach((doc) => {
+    therapistSelect.innerHTML = `<option value="">${await window.i18n.t("select_therapist")}</option>`;
+    for (const doc of doctors) {
       if (doc.is_active !== false) {
         const option = document.createElement("option");
         option.value = doc.id;
-        option.textContent = doc.full_name + " (" + (doc.title || "Terapist") + ")";
+        const translatedTitle = await window.i18n.t(doc.title || "Terapist");
+        option.textContent = doc.full_name + " (" + translatedTitle + ")";
         therapistSelect.appendChild(option);
       }
-    });
+    }
 
   } catch (err) {
     console.error("Dinamik veriler yüklenemedi:", err);
   }
 }
 
-// ... rest of the file ...
-
 // Re-render when language changes
-window.addEventListener('languageChanged', () => {
+window.addEventListener('languageChanged', async () => {
   if (window.currentCalendar) {
     window.currentCalendar.destroy();
   }
-  initCalendar();
-  loadDynamicData();
+  await initCalendar();
+  await loadDynamicData();
 });
 
 // Form Gönderim İşlemi (Randevu Kaydı)
@@ -104,10 +113,11 @@ document.getElementById("appointmentForm")?.addEventListener("submit", async fun
   const selectedDateTime = document.getElementById("selectedDateTime").value;
 
   if (!selectedDateTime) {
-    alert("Lütfen takvim üzerinden bir randevu tarihi ve saati seçin!");
+    const errMsg = await window.i18n.t("appointment_error_date");
+    alert(errMsg);
     return;
   }
-  // Seçilen zamanı UTC'ye çevir
+  
   const utcDateTime = new Date(selectedDateTime).toISOString();
 
   const data = {
@@ -116,7 +126,7 @@ document.getElementById("appointmentForm")?.addEventListener("submit", async fun
     patientEmail,
     service,
     therapist,
-    selectedDateTime: utcDateTime // UTC formatında gönder
+    selectedDateTime: utcDateTime
   };
 
   try {
@@ -129,14 +139,16 @@ document.getElementById("appointmentForm")?.addEventListener("submit", async fun
     const result = await res.json();
     
     if (res.ok) {
-      alert("Randevunuz başarıyla oluşturuldu! Sizinle en kısa sürede iletişime geçeceğiz.");
+      const successMsg = await window.i18n.t("appointment_success");
+      alert(successMsg);
       document.getElementById("appointmentForm").reset();
-      document.getElementById("selectedDateTime").value = ""; // Takvim seçimini sıfırla
+      document.getElementById("selectedDateTime").value = "";
     } else {
       alert("Hata: " + result.error);
     }
   } catch (err) {
     console.error(err);
-    alert("Sunucuyla bağlantı kurulamadı. Lütfen daha sonra tekrar deneyin.");
+    const serverErrMsg = await window.i18n.t("alert_server_error");
+    alert(serverErrMsg);
   }
 });
