@@ -12,6 +12,7 @@
   "nav_login": "Login",
   "nav_logout": "Logout",
   "nav_admin": "Admin Panel",
+  "sidebar_settings": "Settings",
   "hero_title": "Welcome to <br /> Online Fast Terapi.",
   "hero_subtitle": "Book Your Online Appointment",
   "hero_services_title": "Explore Our Wide Range of Services.",
@@ -98,6 +99,7 @@
   "select_therapist": "Select Therapist",
   "reviews_title": "Reviews",
   "back": "Back",
+  "back_to_site": "Back to Site",
   "alert_login_welcome": "Welcome",
   "alert_login_error": "Error",
   "alert_server_error": "Could not connect to server",
@@ -121,5 +123,7 @@
   "Merhaba ben Salih Özgen ": "Hello, I am Salih Özgen",
   "Uzmanlık Alanları": "Areas of Expertise",
   "Sertifikalı ve Lisanslı": "Certified and Licensed",
-  "Yılların Klinik Deneyimi": "Years of Clinical Experience"
+  "Yılların Klinik Deneyimi": "Years of Clinical Experience",
+  "Özelleştirilmiş Tekniklerde Uzmanlık": "Expertise in Specialized Techniques",
+  "Şefkatli ve Empatik Bakım": "Compassionate and Empathic Care"
 }

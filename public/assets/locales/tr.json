@@ -9,6 +9,7 @@
   "nav_login": "Giriş Yap",
   "nav_logout": "Çıkış Yap",
   "nav_admin": "Admin Paneli",
+  "sidebar_settings": "Ayarlar",
   "hero_title": "Online Fast Terapi' ye <br /> Hoş Geldiniz.",
   "hero_subtitle": "Online Randevunuzu Alın",
   "hero_services_title": "Geniş Hizmet Yelpazemizi Keşfedin.",
@@ -95,6 +96,7 @@
   "select_therapist": "Terapist Seçin",
   "reviews_title": "Yorumlar",
   "back": "Geri",
+  "back_to_site": "Siteye Dön",
   "alert_login_welcome": "Hoşgeldin",
   "alert_login_error": "Hata",
   "alert_server_error": "Sunucuya bağlanılamadı"
