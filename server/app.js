@@ -286,6 +286,7 @@ app.post(
         feature2,
         feature3,
         feature4,
+        whatsapp_number,
       } = req.body;
 
       await db.query(
@@ -304,7 +305,8 @@ app.post(
           feature2=$10,
           feature3=$11,
           feature4=$12,
-          about_image=COALESCE($13, about_image)
+          about_image=COALESCE($13, about_image),
+          whatsapp_number=$14
         WHERE id=1
       `,
         [
@@ -321,6 +323,7 @@ app.post(
           feature3,
           feature4,
           imagePath,
+          whatsapp_number,
         ],
       );
 
@@ -335,6 +338,26 @@ app.post(
     }
   },
 );
+
+// General Settings Update
+app.post("/api/site-content/settings", async (req, res) => {
+  const { whatsapp_number } = req.body;
+  console.log("Updating settings - WhatsApp:", whatsapp_number);
+  try {
+    const result = await db.query(
+      "UPDATE site_content SET whatsapp_number = $1 WHERE id = 1 RETURNING *",
+      [whatsapp_number]
+    );
+    if (result.rowCount === 0) {
+      // Eğer id=1 yoksa oluşturmayı deneyelim (opsiyonel ama güvenli)
+      await db.query("INSERT INTO site_content (id, whatsapp_number) VALUES (1, $1)", [whatsapp_number]);
+    }
+    res.json({ success: true, message: "Ayarlar güncellendi" });
+  } catch (err) {
+    console.error("SETTINGS UPDATE ERROR:", err);
+    res.status(500).json({ error: "Sunucu hatası", detail: err.message });
+  }
+});
 
 //Doktorları getir
 app.get("/api/doctors", async (req, res) => {

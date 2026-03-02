@@ -31,6 +31,9 @@ document.addEventListener("DOMContentLoaded", () => {
   // Hakkımızda Kaydet
   document.getElementById("saveAboutUs")?.addEventListener("click", saveAbout);
   
+  // Ayarları Kaydet (WhatsApp vb)
+  document.getElementById("saveSettings")?.addEventListener("click", saveSettings);
+  
   // Hizmet İşlemleri
   document.getElementById("addService")?.addEventListener("click", addService);
   document.getElementById("updateService")?.addEventListener("click", updateService);
@@ -81,6 +84,9 @@ async function loadSiteContent() {
       if(document.getElementById("feature3")) document.getElementById("feature3").value = data.feature3 || "";
       if(document.getElementById("feature4")) document.getElementById("feature4").value = data.feature4 || "";
       
+      // WhatsApp Numarasını Yükle
+      if(document.getElementById("whatsappNumber")) document.getElementById("whatsappNumber").value = data.whatsapp_number || "";
+      
       const img = document.getElementById("about_image");
       if (img && data.about_image) {
         img.src = data.about_image;
@@ -104,6 +110,10 @@ async function saveAbout() {
   formData.append("feature2", document.getElementById("feature2").value);
   formData.append("feature3", document.getElementById("feature3").value);
   formData.append("feature4", document.getElementById("feature4").value);
+  
+  // WhatsApp numarasını da about içinden (varsa) gönderelim
+  const wa = document.getElementById("whatsappNumber")?.value;
+  if(wa) formData.append("whatsapp_number", wa);
 
   const file = document.getElementById("aboutUsImage").files[0];
   if (file) formData.append("image", file);
@@ -114,6 +124,20 @@ async function saveAbout() {
     if (data.success) alert("Hakkımızda içeriği güncellendi!");
     else alert("Hata: " + data.error);
   } catch (err) { alert("Sunucu hatası!"); }
+}
+
+async function saveSettings() {
+  const whatsapp_number = document.getElementById("whatsappNumber").value;
+  try {
+    const res = await fetch("/api/site-content/settings", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ whatsapp_number })
+    });
+    const data = await res.json();
+    if (data.success) alert("Ayarlar kaydedildi!");
+    else alert("Hata!");
+  } catch (err) { console.error(err); alert("Sunucu hatası!"); }
 }
 
 // --- HİZMET YÖNETİMİ ---
