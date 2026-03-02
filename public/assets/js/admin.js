@@ -352,28 +352,102 @@ function clearDoctorForm() {
 
 // --- RANDEVU YÖNETİMİ ---
 
+let allAppointments = [];
+
 async function loadAppointments() {
   const tbody = document.getElementById('appointmentsTableBody');
   if (!tbody) return;
   try {
     const res = await fetch('/api/appointments');
-    const apps = await res.json();
-    tbody.innerHTML = apps.length ? "" : '<tr><td colspan="6">Randevu yok.</td></tr>';
-    apps.forEach(app => {
-      const date = new Date(app.appointment_date).toLocaleString("tr-TR");
-      const tr = document.createElement('tr');
-      tr.innerHTML = `
-        <td>${date}</td>
-        <td>${app.patient_name}<br>${app.patient_phone}</td>
-        <td>${app.service_name || '-'}</td>
-        <td>${app.doctor_name || '-'}</td>
-        <td>${app.status}</td>
-        <td><button class="btn" onclick="deleteAppointment(${app.id})">Sil</button></td>
-      `;
-      tbody.appendChild(tr);
-    });
-  } catch (err) { console.error(err); }
+    allAppointments = await res.json();
+    renderAppointmentsTable(allAppointments);
+  } catch (err) { 
+    console.error(err); 
+    tbody.innerHTML = '<tr><td colspan="6" style="padding: 20px; text-align: center; color: red;">Veriler yüklenemedi.</td></tr>';
+  }
 }
+
+function renderAppointmentsTable(apps) {
+  const tbody = document.getElementById('appointmentsTableBody');
+  if (!tbody) return;
+  
+  if (apps.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="6" style="padding: 40px; text-align: center; color: #888; font-size: 1.4rem;">Randevu bulunamadı.</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = "";
+  apps.forEach(app => {
+    const dateObj = new Date(app.appointment_date);
+    const now = new Date();
+    const isPast = dateObj < now;
+
+    const dateStr = dateObj.toLocaleDateString('tr-TR', { day: '2-digit', month: 'short' });
+    const timeStr = dateObj.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
+    
+    // Status Badge Logic
+    let statusText = app.status || 'Bekliyor';
+    let statusColor = "#856404";
+    let statusBg = "#fff3cd";
+
+    if (isPast && statusText === 'Bekliyor') {
+      statusText = "Süresi Geçti";
+      statusColor = "#495057";
+      statusBg = "#e9ecef";
+    } else if (statusText === "Tamamlandı") { 
+      statusColor = "#155724"; 
+      statusBg = "#d4edda"; 
+    } else if (statusText === "İptal Edildi") { 
+      statusColor = "#721c24"; 
+      statusBg = "#f8d7da"; 
+    }
+
+    const tr = document.createElement('tr');
+    tr.style.borderBottom = '1px solid #eee';
+    tr.style.transition = "background 0.2s";
+    tr.onmouseover = () => tr.style.background = "#fafafa";
+    tr.onmouseout = () => tr.style.background = "transparent";
+
+    tr.innerHTML = `
+      <td style="padding: 15px; font-size: 1.4rem;">
+        <div style="font-weight: 600; color: ${isPast ? '#999' : 'var(--midnight-green)'};">${dateStr}</div>
+        <div style="color: #888; font-size: 1.2rem;">${timeStr}</div>
+      </td>
+      <td style="padding: 15px; font-size: 1.4rem;">
+        <div style="font-weight: 600;">${app.patient_name}</div>
+        <div style="color: #666; font-size: 1.2rem;">
+            <a href="tel:${app.patient_phone}" style="color: inherit; text-decoration: none;"><ion-icon name="call-outline" style="vertical-align: middle;"></ion-icon> ${app.patient_phone}</a>
+        </div>
+      </td>
+      <td style="padding: 15px; font-size: 1.4rem; color: #444;">${app.service_name || '-'}</td>
+      <td style="padding: 15px; font-size: 1.4rem; color: #444;">${app.doctor_name || '-'}</td>
+      <td style="padding: 15px; text-align: center;">
+        <span style="padding: 6px 12px; border-radius: 20px; font-size: 1.2rem; font-weight: 500; background: ${statusBg}; color: ${statusColor}; border: 1px solid rgba(0,0,0,0.05);">
+          ${statusText}
+        </span>
+      </td>
+      <td style="padding: 15px; text-align: right;">
+        <button class="btn-delete" onclick="deleteAppointment(${app.id})" 
+                style="background: #dc3545; color: white; border: none; padding: 8px 15px; border-radius: 6px; cursor: pointer; transition: all 0.2s; font-size: 1.2rem; font-weight: 500; display: inline-flex; align-items: center; gap: 5px;">
+          <ion-icon name="trash-outline"></ion-icon>
+          <span>Sil</span>
+        </button>
+      </td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+// Arama Filtresi
+document.getElementById("appointmentSearch")?.addEventListener("input", (e) => {
+  const term = e.target.value.toLowerCase();
+  const filtered = allAppointments.filter(app => 
+    app.patient_name.toLowerCase().includes(term) || 
+    (app.service_name && app.service_name.toLowerCase().includes(term)) ||
+    app.patient_phone.includes(term)
+  );
+  renderAppointmentsTable(filtered);
+});
 
 async function deleteAppointment(id) {
   if (!confirm("Silinsin mi?")) return;

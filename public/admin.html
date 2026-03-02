@@ -318,7 +318,7 @@
                     <img id="about_image" src="#" alt="Görsel Önizleme" style="max-width: 200px; margin-top: 10px; display: none;">
                 </div>
                 <div class="form-group">
-                    <button id="saveAboutUs" data-i18n="subscribe_btn">Kaydet</button>
+                    <button id="saveAboutUs" data-i18n="btn_save">Kaydet</button>
                 </div>
             </section>
 
@@ -352,8 +352,8 @@
         </div>
 
         <div class="form-group">
-            <button id="addService" data-i18n="login_signup">Ekle</button>
-            <button id="updateService" data-i18n="subscribe_btn">Güncelle</button>
+            <button id="addService" data-i18n="btn_add">Ekle</button>
+            <button id="updateService" data-i18n="btn_save">Güncelle</button>
             <button id="deleteService">Sil</button>
         </div>
     </div>
@@ -428,31 +428,40 @@
 
 <div class="form-group">
  <button id="deleteDoctor">Sil</button>
- <button id="updateDoctor" data-i18n="subscribe_btn">Güncelle</button>
-<button id="addDoctor" data-i18n="login_signup">Ekle</button>
+ <button id="updateDoctor" data-i18n="btn_save">Güncelle</button>
+<button id="addDoctor" data-i18n="btn_add">Ekle</button>
  
 </div>
 
             </section>
 
             <section id="appointments" class="admin-section">
-                <h2 data-i18n="nav_appointment">Randevular Yönetimi</h2>
-                <p data-i18n="hero_contact_subtitle">Kullanıcıların site üzerinden aldığı tüm randevuları buradan takip edebilir ve silebilirsiniz.</p>
+                <div class="section-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+                    <div>
+                        <h2 data-i18n="nav_appointment" style="margin-bottom: 5px;">Randevular Yönetimi</h2>
+                        <p data-i18n="hero_contact_subtitle" style="color: var(--gray-web); font-size: 1.4rem;">Randevuları takip edin ve durumlarını güncelleyin.</p>
+                    </div>
+                    <div class="search-box" style="position: relative; width: 300px;">
+                        <input type="text" id="appointmentSearch" placeholder="İsim veya hizmet ara..." 
+                               style="width: 100%; padding: 10px 15px 10px 40px; border-radius: 8px; border: 1px solid #ddd; font-size: 1.4rem;">
+                        <ion-icon name="search-outline" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); font-size: 20px; color: #888;"></ion-icon>
+                    </div>
+                </div>
                 
-                <div style="overflow-x: auto; margin-top: 20px;">
-                    <table style="width: 100%; border-collapse: collapse; text-align: left; background: var(--white); border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                <div class="appointment-container" style="background: white; border-radius: 12px; box-shadow: var(--shadow-1); overflow: hidden;">
+                    <table class="modern-table" style="width: 100%; border-collapse: collapse; min-width: 800px;">
                         <thead>
-                            <tr style="background: var(--verdigris); color: var(--white);">
-                                <th style="padding: 12px; border-bottom: 1px solid #ddd;" data-i18n="appointment_datetime_label">Tarih & Saat</th>
-                                <th style="padding: 12px; border-bottom: 1px solid #ddd;" data-i18n="appointment_name_label">Hasta Bilgileri</th>
-                                <th style="padding: 12px; border-bottom: 1px solid #ddd;" data-i18n="nav_services">Hizmet</th>
-                                <th style="padding: 12px; border-bottom: 1px solid #ddd;" data-i18n="nav_doctors">Terapist</th>
-                                <th style="padding: 12px; border-bottom: 1px solid #ddd;">Durum</th>
-                                <th style="padding: 12px; border-bottom: 1px solid #ddd;">İşlem</th>
+                            <tr style="background: #f8f9fa; border-bottom: 2px solid #eee;">
+                                <th style="padding: 18px 15px; text-align: left; font-size: 1.4rem; font-weight: 600; color: var(--midnight-green);" data-i18n="appointment_datetime_label">Tarih & Saat</th>
+                                <th style="padding: 18px 15px; text-align: left; font-size: 1.4rem; font-weight: 600; color: var(--midnight-green);" data-i18n="appointment_name_label">Hasta Bilgileri</th>
+                                <th style="padding: 18px 15px; text-align: left; font-size: 1.4rem; font-weight: 600; color: var(--midnight-green);" data-i18n="nav_services">Hizmet</th>
+                                <th style="padding: 18px 15px; text-align: left; font-size: 1.4rem; font-weight: 600; color: var(--midnight-green);" data-i18n="nav_doctors">Terapist</th>
+                                <th style="padding: 18px 15px; text-align: center; font-size: 1.4rem; font-weight: 600; color: var(--midnight-green);">Durum</th>
+                                <th style="padding: 18px 15px; text-align: right; font-size: 1.4rem; font-weight: 600; color: var(--midnight-green);">İşlem</th>
                             </tr>
                         </thead>
                         <tbody id="appointmentsTableBody">
-                            <tr><td colspan="6" style="padding: 15px; text-align: center;" data-i18n="loading">Yükleniyor...</td></tr>
+                            <tr><td colspan="6" style="padding: 40px; text-align: center;" data-i18n="loading">Yükleniyor...</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -469,7 +478,7 @@
                     <input type="text" id="contactEmail" value="contact@therapy.com">
                 </div>
                 <div class="form-group">
-                    <button id="saveSettings" data-i18n="subscribe_btn">Ayarları Kaydet</button>
+                    <button id="saveSettings" data-i18n="btn_save">Ayarları Kaydet</button>
                 </div>
             </section>
         </main>
