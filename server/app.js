@@ -2,6 +2,8 @@ const db = require("./db");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const multer = require("multer");
+const fs = require("fs");
+const { translate } = require("google-translate-api-x");
 require("dotenv").config();
 
 const JWT_SECRET = process.env.JWT_SECRET || "my_super_secret_key_123";
@@ -140,6 +142,38 @@ app.delete("/api/appointments/:id", async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Randevu silinemedi" });
+  }
+});
+
+// ==========================================
+// TRANSLATION API (AUTO-TRANSLATE)
+// ==========================================
+
+app.post("/api/translate", async (req, res) => {
+  const { text, target } = req.body;
+
+  if (!text) return res.status(400).json({ error: "Text is required" });
+
+  try {
+    const result = await translate(text, { to: target || 'en' });
+    const translatedText = result.text;
+
+    // Cache it in the en.json file automatically
+    if (target === 'en' || !target) {
+      const enPath = path.join(__dirname, "../public/assets/locales/en.json");
+      if (fs.existsSync(enPath)) {
+        const enData = JSON.parse(fs.readFileSync(enPath, 'utf8'));
+        if (!enData[text]) {
+          enData[text] = translatedText;
+          fs.writeFileSync(enPath, JSON.stringify(enData, null, 2));
+        }
+      }
+    }
+
+    res.json({ translatedText });
+  } catch (err) {
+    console.error("Translation Error:", err);
+    res.status(500).json({ error: "Translation failed" });
   }
 });
 

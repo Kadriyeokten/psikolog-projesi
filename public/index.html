@@ -36,8 +36,57 @@
     - custom css link
   -->
     <link rel="stylesheet" href="./assets/css/style.css" />
+    <script src="./assets/js/i18n.js"></script>
 
     <style>
+      /* Navbar Optimizasyonu */
+      @media (min-width: 1200px) {
+        .container {
+          max-width: 1450px !important; /* Yazılar büyüdüğü için alan iyice genişletildi */
+        }
+        .header .logo img {
+          height: 90px !important; /* Logo orijinal boyutuna yakın bir seviyeye büyütüldü */
+        }
+        .navbar-list {
+          gap: 20px !important;
+        }
+        .navbar-link {
+          font-size: 1.8rem !important; /* Yazılar belirgin şekilde büyütüldü */
+          padding-inline: 18px !important;
+          white-space: nowrap !important;
+          font-weight: 600 !important;
+        }
+        .navbar-item .btn {
+          padding: 10px 20px !important;
+          font-size: 1.5rem !important;
+        }
+      }
+
+      .lang-switcher {
+        margin-left: 10px;
+        display: flex;
+        align-items: center;
+      }
+      .lang-toggle-btn {
+        background: var(--verdigris);
+        color: white;
+        border: none;
+        padding: 4px 10px;
+        border-radius: 20px;
+        cursor: pointer;
+        font-weight: 500;
+        font-size: 1.1rem; /* Buton küçük kalmaya devam ediyor */
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        transition: all 0.2s ease;
+      }
+      .lang-toggle-btn:hover {
+        background: var(--midnight-green);
+      }
+      .lang-toggle-btn ion-icon {
+        font-size: 1.4rem;
+      }
       .whatsapp-fab {
         position: fixed;
         bottom: 20px;
@@ -163,33 +212,34 @@
 
           <ul class="navbar-list">
             <li class="navbar-item">
-              <a href="index.html" class="navbar-link title-md">Ana Sayfa</a>
+              <a href="index.html" class="navbar-link title-md" data-i18n="nav_home">Ana Sayfa</a>
             </li>
 
             <li class="navbar-item">
-              <a href="aboutus.html" class="navbar-link title-md">Hakkımızda</a>
+              <a href="aboutus.html" class="navbar-link title-md" data-i18n="nav_about">Hakkımızda</a>
             </li>
 
             <li class="navbar-item">
-              <a href="service.html" class="navbar-link title-md">Hizmetler</a>
+              <a href="service.html" class="navbar-link title-md" data-i18n="nav_services">Hizmetler</a>
             </li>
 
             <li class="navbar-item">
-              <a href="doctors.html" class="navbar-link title-md">Doktorlar</a>
+              <a href="doctors.html" class="navbar-link title-md" data-i18n="nav_doctors">Doktorlar</a>
             </li>
 
             <li class="navbar-item">
-              <a href="conntact.html" class="navbar-link title-md">İletişim</a>
+              <a href="conntact.html" class="navbar-link title-md" data-i18n="nav_contact">İletişim</a>
             </li>
             <li class="navbar-item">
               <a
                 href="appointment.html"
                 class="navbar-link title-md btn has-before"
+                data-i18n="nav_appointment"
                 >Randevu Al</a
               >
             </li>
             <li class="navbar-item auth-item" id="loginItem">
-              <a href="login.html" class="navbar-link title-md btn has-before"
+              <a href="login.html" class="navbar-link title-md btn has-before" data-i18n="nav_login"
                 >Giriş Yap</a
               >
             </li>
@@ -199,7 +249,7 @@
               id="logoutItem"
               style="display: none"
             >
-              <a href="#" class="navbar-link title-md btn has-before"
+              <a href="#" class="navbar-link title-md btn has-before" data-i18n="nav_logout"
                 >Çıkış Yap</a
               >
             </li>
@@ -209,9 +259,16 @@
               id="adminItem"
               style="display: none"
             >
-              <a href="admin.html" class="navbar-link title-md btn has-before"
+              <a href="admin.html" class="navbar-link title-md btn has-before" data-i18n="nav_admin"
                 >Admin Paneli</a
               >
+            </li>
+
+            <li class="navbar-item lang-switcher">
+              <button id="langToggle" class="lang-toggle-btn">
+                <ion-icon name="globe-outline"></ion-icon>
+                <span id="langLabel">TR</span>
+              </button>
             </li>
           </ul>
 
@@ -269,8 +326,8 @@
         >
           <div class="container">
             <div class="hero-content">
-              <h1 class="headline-lg hero-title" data-reveal="left">
-                Fast Terapi' ye <br />
+              <h1 class="headline-lg hero-title" data-reveal="left" data-i18n="hero_title">
+                Online Fast Terapi' ye <br />
                 Hoş Geldiniz.
               </h1>
 
@@ -452,10 +509,10 @@
                 id="about-label"
                 data-reveal="left"
               ></p>
-              <h2 class="headline-md" id="about_title" data-reveal="left">
+              <h2 class="headline-md" id="about_title" data-reveal="left" data-i18n="about_title">
                 Yüksek Nitelikli Profesyoneller
               </h2>
-              <p class="section-text" id="about_text" data-reveal="left">
+              <p class="section-text" id="about_text" data-reveal="left" data-i18n="about_text">
                 Terapist ekibimiz, danışanlarımıza olağanüstü bakım ve bütünsel
                 şifa sağlamaya kendini adamış yüksek nitelikli profesyonellerden
                 oluşmaktadır. Her terapist, uygulamamıza zengin bir bilgi ve
@@ -464,20 +521,20 @@
               </p>
               <ul class="tab-list" data-reveal="left">
                 <li>
-                  <button class="tab-btn active" id="feature_title1">
+                  <button class="tab-btn active" id="feature_title1" data-i18n="feature_title1">
                     Nitelikler
                   </button>
                 </li>
                 <li>
-                  <button class="tab-btn" id="feature_title2">Deneyim</button>
+                  <button class="tab-btn" id="feature_title2" data-i18n="feature_title2">Deneyim</button>
                 </li>
                 <li>
-                  <button class="tab-btn" id="feature_title3">
+                  <button class="tab-btn" id="feature_title3" data-i18n="feature_title3">
                     Uzmanlık Alanları
                   </button>
                 </li>
               </ul>
-              <p class="tab-text" data-reveal="left" id="feature_desc1">
+              <p class="tab-text" data-reveal="left" id="feature_desc1" data-i18n="feature_desc1">
                 Terapistlerimiz masaj terapisi, fiziksel rehabilitasyon,
                 akupunktur ve aromaterapi dahil olmak üzere çeşitli terapi
                 yöntemlerinde ileri derecelere ve sertifikalara sahiptir.
@@ -489,25 +546,25 @@
                 <ul class="about-list">
                   <li class="about-item" data-reveal="left">
                     <ion-icon name="checkmark-circle-outline"></ion-icon>
-                    <span class="span" id="feature1"
+                    <span class="span" id="feature1" data-i18n="feature1"
                       >Sertifikalı ve Lisanslı</span
                     >
                   </li>
                   <li class="about-item" data-reveal="left">
                     <ion-icon name="checkmark-circle-outline"></ion-icon>
-                    <span class="span" id="feature2"
+                    <span class="span" id="feature2" data-i18n="feature2"
                       >Yılların Klinik Deneyimi</span
                     >
                   </li>
                   <li class="about-item" data-reveal="left">
                     <ion-icon name="checkmark-circle-outline"></ion-icon>
-                    <span class="span" id="feature3"
+                    <span class="span" id="feature3" data-i18n="feature3"
                       >Özelleştirilmiş Tekniklerde Uzmanlık</span
                     >
                   </li>
                   <li class="about-item" data-reveal="left">
                     <ion-icon name="checkmark-circle-outline"></ion-icon>
-                    <span class="span" id="feature4"
+                    <span class="span" id="feature4" data-i18n="feature4"
                       >Şefkatli ve Empatik Bakım</span
                     >
                   </li>
@@ -517,6 +574,7 @@
                     href="aboutus.html"
                     class="btn has-before"
                     style="width: max-content"
+                    data-i18n="more_info"
                     >Daha Fazla Bilgi</a
                   >
                 </div>
@@ -690,12 +748,14 @@
               class="section-subtitle title-lg text-center"
               id="blog-label"
               data-reveal="bottom"
+              data-i18n="insights_from_therapist"
             >
               Terapistten İçgörüler
             </p>
             <h2
               class="section-title headline-md text-center"
               data-reveal="bottom"
+              data-i18n="latest_articles"
             >
               Son Makaleler
             </h2>
@@ -708,11 +768,11 @@
                   <div class="meta-wrapper">
                     <div class="card-meta">
                       <ion-icon name="person-outline"></ion-icon>
-                      <span class="span">Terapist Tarafından</span>
+                      <span class="span" data-i18n="by_therapist">Terapist Tarafından</span>
                     </div>
                     <div class="card-meta">
                       <ion-icon name="folder-outline"></ion-icon>
-                      <span class="span">Sağlık İpuçları</span>
+                      <span class="span" data-i18n="health_tips">Sağlık İpuçları</span>
                     </div>
                   </div>
                   <h3 class="headline-sm card-title">
@@ -725,7 +785,7 @@
                     Danışanlara kaliteli bakım sağlarken fiziksel ve duygusal
                     refahı sürdürme stratejilerini keşfetmek.
                   </p>
-                  <a href="#" class="btn-text title-lg">Daha Fazla Oku</a>
+                  <a href="#" class="btn-text title-lg" data-i18n="read_more">Daha Fazla Oku</a>
                 </div>
               </li>
               <li>
@@ -736,11 +796,11 @@
                   <div class="meta-wrapper">
                     <div class="card-meta">
                       <ion-icon name="person-outline"></ion-icon>
-                      <span class="span">Terapist Tarafından</span>
+                      <span class="span" data-i18n="by_therapist">Terapist Tarafından</span>
                     </div>
                     <div class="card-meta">
                       <ion-icon name="folder-outline"></ion-icon>
-                      <span class="span">Sağlıklı Yaşam İpuçları</span>
+                      <span class="span" data-i18n="health_tips">Sağlıklı Yaşam İpuçları</span>
                     </div>
                   </div>
                   <h3 class="headline-sm card-title">
@@ -754,7 +814,7 @@
                     etkileşimlerini iyileştirmek için farkındalık uygulamalarını
                     keşfetmek.
                   </p>
-                  <a href="#" class="btn-text title-lg">Daha Fazla Oku</a>
+                  <a href="#" class="btn-text title-lg" data-i18n="read_more">Daha Fazla Oku</a>
                 </div>
               </li>
               <li>
@@ -765,11 +825,11 @@
                   <div class="meta-wrapper">
                     <div class="card-meta">
                       <ion-icon name="person-outline"></ion-icon>
-                      <span class="span">Terapist Tarafından</span>
+                      <span class="span" data-i18n="by_therapist">Terapist Tarafından</span>
                     </div>
                     <div class="card-meta">
                       <ion-icon name="folder-outline"></ion-icon>
-                      <span class="span">Mesleki Gelişim</span>
+                      <span class="span" data-i18n="health_tips">Mesleki Gelişim</span>
                     </div>
                   </div>
                   <h3 class="headline-sm card-title">
@@ -782,7 +842,7 @@
                     Danışanlarla sınırları belirleme ve sürdürme için etik
                     hususları ve pratik stratejileri keşfetmek.
                   </p>
-                  <a href="#" class="btn-text title-lg">Daha Fazla Oku</a>
+                  <a href="#" class="btn-text title-lg" data-i18n="read_more">Daha Fazla Oku</a>
                 </div>
               </li>
             </ul>
@@ -824,13 +884,13 @@
                 </div>
                 <div>
                   <p>
-                    Ana E-posta :
+                    <span data-i18n="email_main">Ana E-posta</span> :
                     <a href="mailto:contact@fastterapi.com" class="contact-link"
                       >contact@&shy;fastterapi.com</a
                     >
                   </p>
                   <p>
-                    Sorularınız İçin :
+                    <span data-i18n="email_inquiry">Sorularınız İçin</span> :
                     <a href="mailto:Info@fastterapi.com" class="contact-link"
                       >Info@fastterapi.com</a
                     >
@@ -843,13 +903,13 @@
                 </div>
                 <div>
                   <p>
-                    Ofis Telefonu :
+                    <span data-i18n="phone_office">Ofis Telefonu</span> :
                     <a href="tel:0029129102320" class="contact-link"
                       >0029129102320</a
                     >
                   </p>
                   <p>
-                    Cep Telefonu :
+                    <span data-i18n="phone_mobile">Cep Telefonu</span> :
                     <a href="tel:000232439493" class="contact-link"
                       >000 2324 39493</a
                     >
@@ -859,8 +919,8 @@
             </ul>
           </div>
           <div class="footer-list" data-reveal="bottom">
-            <p class="headline-sm footer-list-title">Hakkımızda</p>
-            <p class="text">
+            <p class="headline-sm footer-list-title" data-i18n="footer_about_title">Hakkımızda</p>
+            <p class="text" data-i18n="footer_about_text">
               Sağlık tek başına fiziksel iyi olma hali değil ruhsal iyi olma
               halidir ve bütün olarak ele alınmalıdır. İlk seans terapi
               gündeminin belirlenmesi, danışanın detaylı öyküsünün alınması ile
@@ -868,7 +928,7 @@
             </p>
             <address class="address">
               <ion-icon name="map-outline"></ion-icon>
-              <span class="text">
+              <span class="text" data-i18n="address_label">
                 Turgut Özal Caddesi <br />
                 Adana, Çukurova 12345
               </span>
@@ -876,13 +936,13 @@
           </div>
           <ul class="footer-list" data-reveal="bottom">
             <li>
-              <p class="headline-sm footer-list-title">Hizmetler</p>
+              <p class="headline-sm footer-list-title" data-i18n="footer_services_title">Hizmetler</p>
             </li>
             <li>
-              <a href="#" class="text footer-link">Danışmanlık</a>
+              <a href="#" class="text footer-link" data-i18n="nav_services">Danışmanlık</a>
             </li>
             <li>
-              <a href="#" class="text footer-link">Terapi Seansları</a>
+              <a href="#" class="text footer-link" data-i18n="feature_title3">Terapi Seansları</a>
             </li>
             <li>
               <a href="#" class="text footer-link">Atölyeler</a>
@@ -899,7 +959,7 @@
           </ul>
           <ul class="footer-list" data-reveal="bottom">
             <li>
-              <p class="headline-sm footer-list-title">Faydalı Linkler</p>
+              <p class="headline-sm footer-list-title" data-i18n="footer_links_title">Faydalı Linkler</p>
             </li>
             <li>
               <a href="#" class="text footer-link">Gizlilik Politikası</a>
@@ -915,7 +975,7 @@
             </li>
           </ul>
           <div class="footer-list" data-reveal="bottom">
-            <p class="headline-sm footer-list-title">Abone Ol</p>
+            <p class="headline-sm footer-list-title" data-i18n="footer_subscribe_title">Abone Ol</p>
             <form action="" class="footer-form">
               <input
                 type="email"
@@ -923,18 +983,18 @@
                 placeholder="E-posta"
                 class="input-field title-lg"
               />
-              <button type="submit" class="btn has-before title-md">
+              <button type="submit" class="btn has-before title-md" data-i18n="subscribe_btn">
                 Abone Ol
               </button>
             </form>
-            <p class="text">
+            <p class="text" data-i18n="footer_subscribe_text">
               En son güncellemeleri e-posta ile alın. İstediğiniz zaman
               abonelikten çıkabilirsiniz.
             </p>
           </div>
         </div>
         <div class="footer-bottom">
-          <p class="text copyright">
+          <p class="text copyright" data-i18n="footer_copyright">
             &copy; Terapist Merkezi 2026 | Tüm Hakları SESA Yazılım Tarafından
             Saklıdır.
           </p>

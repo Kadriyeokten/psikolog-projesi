@@ -9,12 +9,14 @@ function initCalendar() {
   const calendarEl = document.getElementById("calendar");
   if (!calendarEl) return;
 
+  const currentLang = window.i18n.getLang();
+
   const calendar = new FullCalendar.Calendar(calendarEl, {
     initialView: "timeGridWeek",
-    locale: "tr",
+    locale: currentLang,
     slotMinTime: "08:00:00",
     slotMaxTime: "22:00:00",
-    slotDuration: "01:00:00", // Sadece saat başları görünsün (08:00, 09:00, vs.)
+    slotDuration: "01:00:00",
     selectable: true,
     allDaySlot: false,
     headerToolbar: {
@@ -22,19 +24,10 @@ function initCalendar() {
       center: "title",
       right: "timeGridWeek,timeGridDay",
     },
-    buttonText: {
-      today: "Bugün",
-      month: "Ay",
-      week: "Hafta",
-      day: "Gün",
-      list: "Liste",
-    },
-    events: "/api/appointments/booked", // Dolu saatleri API'den çeker
-    selectOverlap: false, // Dolu olan saatlerin seçilmesini/tıklanmasını engeller
+    events: "/api/appointments/booked",
+    selectOverlap: false,
     selectAllow: function(selectInfo) {
-      // Geçmiş bir zamanın seçilmesini de engelleyelim (İsteğe bağlı ekstra güvenlik)
       const now = new Date();
-      // validRange kaldırıldığı için bu kontrol şimdi daha kritik
       if (selectInfo.start < now) {
         return false;
       }
@@ -43,11 +36,13 @@ function initCalendar() {
     select: function (info) {
       const selectedDate = info.startStr;
       document.getElementById("selectedDateTime").value = selectedDate;
-      alert("Seçilen Randevu Zamanı: " + info.start.toLocaleString("tr-TR"));
+      const formattedDate = info.start.toLocaleString(currentLang === 'tr' ? "tr-TR" : "en-US");
+      alert(window.i18n.t("appointment_datetime_label") + ": " + formattedDate);
     },
   });
 
   calendar.render();
+  window.currentCalendar = calendar;
 }
 
 async function loadDynamicData() {
@@ -57,11 +52,10 @@ async function loadDynamicData() {
   if (!serviceSelect || !therapistSelect) return;
 
   try {
-    // Hizmetleri yükle
     const servicesRes = await fetch("/api/services");
     const services = await servicesRes.json();
 
-    serviceSelect.innerHTML = '<option value="">Hizmet Seçin</option>';
+    serviceSelect.innerHTML = `<option value="">${window.i18n.t("select_service")}</option>`;
     services.forEach((service) => {
       const option = document.createElement("option");
       option.value = service.id;
@@ -69,13 +63,12 @@ async function loadDynamicData() {
       serviceSelect.appendChild(option);
     });
 
-    // Doktorları yükle
     const doctorsRes = await fetch("/api/doctors");
     const doctors = await doctorsRes.json();
 
-    therapistSelect.innerHTML = '<option value="">Terapist Seçin</option>';
+    therapistSelect.innerHTML = `<option value="">${window.i18n.t("select_therapist")}</option>`;
     doctors.forEach((doc) => {
-      if (doc.is_active !== false) { // Sadece aktif doktorları göster
+      if (doc.is_active !== false) {
         const option = document.createElement("option");
         option.value = doc.id;
         option.textContent = doc.full_name + " (" + (doc.title || "Terapist") + ")";
@@ -87,6 +80,17 @@ async function loadDynamicData() {
     console.error("Dinamik veriler yüklenemedi:", err);
   }
 }
+
+// ... rest of the file ...
+
+// Re-render when language changes
+window.addEventListener('languageChanged', () => {
+  if (window.currentCalendar) {
+    window.currentCalendar.destroy();
+  }
+  initCalendar();
+  loadDynamicData();
+});
 
 // Form Gönderim İşlemi (Randevu Kaydı)
 document.getElementById("appointmentForm")?.addEventListener("submit", async function(e) {

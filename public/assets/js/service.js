@@ -8,30 +8,27 @@ document.addEventListener("DOMContentLoaded", () => {
 // Sayfadaki hizmet listesini render et
 async function renderServices() {
   const serviceList = document.getElementById("dynamic-service-list");
-  if (!serviceList) {
-    console.log("dynamic-service-list elementi bulunamadı.");
-    return;
-  }
+  if (!serviceList) return;
 
   try {
     const res = await fetch("/api/services");
     const services = await res.json();
-    console.log("Gelen Hizmetler:", services);
 
     serviceList.innerHTML = "";
 
     if (services.length === 0) {
-      serviceList.innerHTML = "<li>Henüz hizmet eklenmemiş.</li>";
+      serviceList.innerHTML = `<li>${await window.i18n.t("loading")}</li>`;
       return;
     }
 
-    services.forEach((service) => {
-      const shortDsc = service.dsc.length > 100 ? service.dsc.substring(0, 100) + "..." : service.dsc;
+    for (const service of services) {
+      const title = await window.i18n.t(service.title);
+      const fullDsc = await window.i18n.t(service.dsc);
+      const shortDsc = fullDsc.length > 100 ? fullDsc.substring(0, 100) + "..." : fullDsc;
       
-      const safeTitle = service.title.replace(/"/g, '&quot;');
+      const safeTitle = title.replace(/"/g, '&quot;');
       const safeImg = (service.image_path || './assets/images/message1.png').replace(/"/g, '&quot;');
-      // dsc verisini data attribute içinde güvenle tutmak için sadece encodeURIComponent kullanmak daha güvenlidir, ama replace ile de base düzeyde koruyabiliriz.
-      const safeDsc = service.dsc.replace(/"/g, '&quot;');
+      const safeDsc = fullDsc.replace(/"/g, '&quot;');
       
       const li = document.createElement("li");
       li.innerHTML = `
@@ -45,42 +42,33 @@ async function renderServices() {
           <p class="card-text">
             ${shortDsc}
           </p>
-          <button class="btn-circle detail-btn" aria-label="${safeTitle} hakkında daha fazlasını okuyun" data-title="${safeTitle}" data-dsc="${safeDsc}" data-img="${safeImg}">
+          <button class="btn-circle detail-btn" aria-label="${safeTitle}" data-title="${safeTitle}" data-dsc="${safeDsc}" data-img="${safeImg}">
             <ion-icon name="arrow-forward" aria-hidden="true"></ion-icon>
           </button>
         </div>
       `;
       serviceList.appendChild(li);
-    });
+    }
 
-    // Dinamik oluşturulan butonlara click event listener ekliyoruz
     const detailButtons = document.querySelectorAll(".detail-btn");
     detailButtons.forEach(btn => {
-      btn.addEventListener("click", function() {
-        // verileri alırken orijinal satır atlamalarını vs. bozmadan alıyoruz
+      btn.onclick = function() {
         const title = this.getAttribute("data-title");
-        // Detayda satır atlamalarını göstermek için \n'leri <br> ile değiştiriyoruz.
         const dsc = this.getAttribute("data-dsc").replace(/\n/g, '<br>');
         const img = this.getAttribute("data-img");
         showServiceDetails(title, dsc, img);
-      });
+      };
     });
 
-    // Scroll reveal etkisini yeni eklenen elementler için tetikle
-    if (window.revealElementOnScroll) {
-      window.revealElementOnScroll();
-    }
+    if (window.revealElementOnScroll) window.revealElementOnScroll();
   } catch (err) {
     console.error("Hizmetler render edilemedi:", err);
   }
 }
 
-// Hizmet detaylarını Terapistler kısmında göster ve oraya kaydır
-function showServiceDetails(title, dsc, image_path) {
+async function showServiceDetails(title, dsc, image_path) {
   const detailsSection = document.getElementById("service-details-section");
-  if (detailsSection) {
-    detailsSection.style.display = "block";
-  }
+  if (detailsSection) detailsSection.style.display = "block";
 
   const therapistList = document.getElementById("therapist-list");
   if (!therapistList) return;
@@ -97,18 +85,16 @@ function showServiceDetails(title, dsc, image_path) {
             ${dsc}
           </p>
           <div style="margin-top: 30px;">
-             <a href="appointment.html" class="btn btn-primary">Bu Hizmet İçin Randevu Al</a>
+             <a href="appointment.html" class="btn btn-primary">${await window.i18n.t("nav_appointment")}</a>
           </div>
         </div>
       </div>
     </li>
   `;
 
-  // Terapistler kısmına yumuşak geçişle kaydır
   therapistList.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
-// Combobox yükleme
 async function loadServiceSelect() {
   const select = document.getElementById("serviceSelect");
   if (!select) return;
@@ -118,179 +104,23 @@ async function loadServiceSelect() {
     const services = await res.json();
 
     select.innerHTML = "";
-
     const defaultOption = document.createElement("option");
     defaultOption.value = "";
-    defaultOption.textContent = "Hizmet seçiniz";
+    defaultOption.textContent = await window.i18n.t("select_service");
     select.appendChild(defaultOption);
 
-    services.forEach((service) => {
+    for (const service of services) {
       const option = document.createElement("option");
       option.value = service.id;
-      option.textContent = service.title;
+      option.textContent = await window.i18n.t(service.title);
       select.appendChild(option);
-    });
+    }
   } catch (err) {
     console.error(err);
   }
 }
-// Hizmet görseli seçildiğinde önizleme
-document
-  .getElementById("serviceImage")
-  ?.addEventListener("change", function () {
-    const file = this.files[0];
-    const img = document.getElementById("service_image");
 
-    if (file) {
-      img.src = URL.createObjectURL(file);
-      img.style.display = "block";
-    }
-  });
-
-// Hizmet seçildiğinde formu doldur
-document
-  .getElementById("serviceSelect")
-  ?.addEventListener("change", async function () {
-    const serviceId = this.value;
-    if (!serviceId) {
-      clearServiceForm();
-      return;
-    }
-
-    try {
-      const res = await fetch(`/api/services/${serviceId}`);
-      const service = await res.json();
-
-      document.getElementById("serviceTitle").value = service.title || "";
-      document.getElementById("serviceDesc").value = service.dsc || "";
-
-      const img = document.getElementById("service_image");
-      if (service.image_path) {
-        img.src = service.image_path;
-        img.style.display = "block";
-      } else {
-        img.style.display = "none";
-      }
-    } catch (err) {
-      console.error(err);
-      alert("Hizmet bilgileri yüklenemedi");
-    }
-  });
-
-function clearServiceForm() {
-  document.getElementById("serviceSelect").value = "";
-  document.getElementById("serviceTitle").value = "";
-  document.getElementById("serviceDesc").value = "";
-
-  document.getElementById("serviceImage").value = "";
-
-  const img = document.getElementById("service_image");
-  img.src = "#";
-  img.style.display = "none";
-}
-
-document.getElementById("addService")?.addEventListener("click", async () => {
-  const title = document.getElementById("serviceTitle")?.value.trim();
-  const dsc = document.getElementById("serviceDesc")?.value.trim();
-  const file = document.getElementById("serviceImage")?.files[0];
-
-  if (!title || !dsc) {
-    alert("Başlık ve açıklama girin");
-    return;
-  }
-
-  const formData = new FormData();
-  formData.append("title", title);
-  formData.append("dsc", dsc);
-  if (file) {
-    formData.append("image", file);
-  }
-
-  try {
-    const res = await fetch("/api/services", {
-      method: "POST",
-      body: formData,
-    });
-
-    if (!res.ok) throw new Error("Ekleme başarısız");
-
-    alert("Hizmet eklendi");
-    clearServiceForm();
-    loadServiceSelect();
-    renderServices();
-  } catch (err) {
-    console.error(err);
-    alert("Hizmet eklenemedi");
-  }
+window.addEventListener('languageChanged', () => {
+  renderServices();
+  loadServiceSelect();
 });
-
-document
-  .getElementById("updateService")
-  ?.addEventListener("click", async () => {
-    const serviceId = document.getElementById("serviceSelect")?.value;
-    if (!serviceId) {
-      alert("Lütfen güncellenecek hizmeti seçin");
-      return;
-    }
-
-    const title = document.getElementById("serviceTitle")?.value.trim();
-    const dsc = document.getElementById("serviceDesc")?.value.trim();
-    const file = document.getElementById("serviceImage")?.files[0];
-
-    if (!title || !dsc) {
-      alert("Başlık ve açıklama girin");
-      return;
-    }
-
-    const formData = new FormData();
-    formData.append("title", title);
-    formData.append("dsc", dsc);
-    if (file) {
-      formData.append("image", file);
-    }
-
-    try {
-      const res = await fetch(`/api/services/${serviceId}`, {
-        method: "PUT",
-        body: formData,
-      });
-
-      if (!res.ok) throw new Error("Güncelleme başarısız");
-
-      alert("Hizmet güncellendi");
-      clearServiceForm();
-      loadServiceSelect();
-      renderServices();
-    } catch (err) {
-      console.error(err);
-      alert("Hizmet güncellenemedi");
-    }
-  });
-
-document
-  .getElementById("deleteService")
-  ?.addEventListener("click", async () => {
-    const serviceId = document.getElementById("serviceSelect")?.value;
-    if (!serviceId) {
-      alert("Lütfen silinecek hizmeti seçin");
-      return;
-    }
-
-    if (!confirm("Bu hizmeti silmek istediğinize emin misiniz?")) return;
-
-    try {
-      const res = await fetch(`/api/services/${serviceId}`, {
-        method: "DELETE",
-      });
-
-      if (!res.ok) throw new Error("Silme başarısız");
-
-      alert("Hizmet silindi");
-      clearServiceForm();
-      loadServiceSelect();
-      renderServices();
-    } catch (err) {
-      console.error(err);
-      alert("Hizmet silinemedi");
-    }
-  });

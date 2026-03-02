@@ -7,9 +7,9 @@
     <!-- 
     - primary meta tags
   -->
-    <title>Past Terapi - Hesap Oluştur</title>
-    <meta name="title" content="Past Terapi - Hesap Oluştur" />
-    <meta name="description" content="Past Terapi hesap oluşturma sayfası" />
+    <title>Online Fast Terapi - Hesap Oluştur</title>
+    <meta name="title" content="Online Fast Terapi - Hesap Oluştur" />
+    <meta name="description" content="Online Fast Terapi hesap oluşturma sayfası" />
 
     <!-- 
     - favicon
@@ -34,6 +34,7 @@
     - custom css link
   -->
     <link rel="stylesheet" href="./assets/css/style.css" />
+    <script src="./assets/js/i18n.js"></script>
   </head>
 
   <body id="top">
@@ -49,57 +50,61 @@
       <article>
         <a href="index.html" class="back-button" title="Ana sayfaya geri dön">
           <ion-icon name="arrow-back-outline"></ion-icon>
-          Geri
+          <span data-i18n="back">Geri</span>
         </a>
         <section class="signup-container">
           <div class="signup-form-wrapper">
-            <h2>Hesap Oluştur</h2>
+            <h2 data-i18n="signup_title">Hesap Oluştur</h2>
             <form id="signupForm">
               <div class="input-field-group">
-                <label for="name">Ad Soyad</label>
+                <label for="name" data-i18n="signup_name_label">Ad Soyad</label>
                 <input
                   type="text"
                   id="name"
                   name="name"
                   placeholder="Adınızı ve soyadınızı girin"
+                  data-i18n="signup_name_placeholder"
                   required
                 />
               </div>
               <div class="input-field-group">
-                <label for="email">E-posta</label>
+                <label for="email" data-i18n="login_email_label">E-posta</label>
                 <input
                   type="email"
                   id="email"
                   name="email"
                   placeholder="E-posta adresinizi girin"
+                  data-i18n="login_email_placeholder"
                   required
                 />
               </div>
               <div class="input-field-group">
-                <label for="password">Şifre</label>
+                <label for="password" data-i18n="login_password_label">Şifre</label>
                 <input
                   type="password"
                   id="password"
                   name="password"
                   placeholder="Şifrenizi girin"
+                  data-i18n="login_password_placeholder"
                   required
                 />
               </div>
               <div class="input-field-group">
-                <label for="confirm-password">Şifreyi Onayla</label>
+                <label for="confirm-password" data-i18n="signup_confirm_password">Şifreyi Onayla</label>
                 <input
                   type="password"
                   id="confirm-password"
                   name="confirm-password"
                   placeholder="Şifrenizi tekrar girin"
+                  data-i18n="login_password_placeholder"
                   required
                 />
               </div>
-              <button type="submit" class="signup-btn">Hesap Oluştur</button>
+              <button type="submit" class="signup-btn" data-i18n="signup_btn">Hesap Oluştur</button>
             </form>
             <div class="form-links">
-              <span>Zaten bir hesabınız var mı?</span>
-              <a href="login.html" title="Giriş yap">Giriş Yap</a>
+              <span data-i18n="signup_already_account">Zaten bir hesabınız var mı?</span>
+              <a href="login.html" title="Giriş yap" data-i18n="login_title">Giriş Yap</a>
             </div>
           </div>
         </section>
@@ -123,7 +128,7 @@
                 font-size: 2.4rem;
               "
             >
-              Past Terapi
+              Online Fast Terapi
             </a>
             <ul class="contact-list has-after">
               <li class="contact-item">
@@ -132,7 +137,7 @@
                 </div>
                 <div>
                   <p>
-                    Ana E-posta :
+                    <span data-i18n="email_main">Ana E-posta</span> :
                     <a
                       href="mailto:contact@therapy.com"
                       class="contact-link"
@@ -141,7 +146,7 @@
                     >
                   </p>
                   <p>
-                    Sorularınız İçin :
+                    <span data-i18n="email_inquiry">Sorularınız İçin</span> :
                     <a
                       href="mailto:Info@therapy.com"
                       class="contact-link"
@@ -157,7 +162,7 @@
                 </div>
                 <div>
                   <p>
-                    Ofis Telefonu :
+                    <span data-i18n="phone_office">Ofis Telefonu</span> :
                     <a
                       href="tel:0029129102320"
                       class="contact-link"
@@ -166,7 +171,7 @@
                     >
                   </p>
                   <p>
-                    Cep Telefonu :
+                    <span data-i18n="phone_mobile">Cep Telefonu</span> :
                     <a
                       href="tel:000232439493"
                       class="contact-link"
@@ -179,8 +184,8 @@
             </ul>
           </div>
           <div class="footer-list" data-reveal="bottom">
-            <p class="headline-sm footer-list-title">Hakkımızda</p>
-            <p class="text">
+            <p class="headline-sm footer-list-title" data-i18n="footer_about_title">Hakkımızda</p>
+            <p class="text" data-i18n="footer_about_text">
               Sağlık tek başına fiziksel iyi olma hali değil ruhsal iyi olma
               halidir ve bütün olarak ele alınmalıdır. İlk seans terapi
               gündeminin belirlenmesi, danışanın detaylı öyküsünün alınması ile
@@ -188,7 +193,7 @@
             </p>
             <address class="address">
               <ion-icon name="map-outline"></ion-icon>
-              <span class="text">
+              <span class="text" data-i18n="address_label">
                 Turgut Özal Caddesi <br />
                 Adana, Çukurova 12345
               </span>
@@ -196,69 +201,53 @@
           </div>
           <ul class="footer-list" data-reveal="bottom">
             <li>
-              <p class="headline-sm footer-list-title">Hizmetler</p>
+              <p class="headline-sm footer-list-title" data-i18n="footer_services_title">Hizmetler</p>
             </li>
             <li>
               <a
                 href="#"
                 class="text footer-link"
-                title="Danışmanlık hizmetleri"
+                data-i18n="nav_services"
                 >Danışmanlık</a
               >
             </li>
             <li>
-              <a href="#" class="text footer-link" title="Terapi seansları"
+              <a href="#" class="text footer-link" data-i18n="feature_title3"
                 >Terapi Seansları</a
               >
             </li>
             <li>
-              <a href="#" class="text footer-link" title="Atölye çalışmaları"
-                >Atölyeler</a
-              >
+              <a href="#" class="text footer-link">Atölyeler</a>
             </li>
             <li>
-              <a href="#" class="text footer-link" title="Grup terapisi"
-                >Grup Terapisi</a
-              >
+              <a href="#" class="text footer-link">Grup Terapisi</a>
             </li>
             <li>
-              <a href="#" class="text footer-link" title="Uzaktan terapi"
-                >Teleterapi</a
-              >
+              <a href="#" class="text footer-link">Teleterapi</a>
             </li>
             <li>
-              <a href="#" class="text footer-link" title="Farkındalık eğitimi"
-                >Farkındalık Eğitimi</a
-              >
+              <a href="#" class="text footer-link">Farkındalık Eğitimi</a>
             </li>
           </ul>
           <ul class="footer-list" data-reveal="bottom">
             <li>
-              <p class="headline-sm footer-list-title">Faydalı Linkler</p>
+              <p class="headline-sm footer-list-title" data-i18n="footer_links_title">Faydalı Linkler</p>
             </li>
             <li>
-              <a href="#" class="text footer-link" title="Gizlilik politikası"
-                >Gizlilik Politikası</a
-              >
+              <a href="#" class="text footer-link">Gizlilik Politikası</a>
             </li>
             <li>
-              <a href="#" class="text footer-link" title="Hizmet şartları"
-                >Hizmet Şartları</a
-              >
+              <a href="#" class="text footer-link">Hizmet Şartları</a>
             </li>
             <li>
-              <a href="#" class="text footer-link" title="Danışan yorumları"
-                >Danışan Yorumları</a
-              >
+              <a href="#" class="text footer-link">Danışan Yorumları</a>
             </li>
             <li>
-              <a href="#" class="text footer-link" title="Sıkça sorulan sorular"
-                >SSS</a
-              >
+              <a href="#" class="text footer-link">SSS</a>
             </li>
           </ul>
           <div class="footer-list" data-reveal="bottom">
-            <p class="headline-sm footer-list-title">Abone Ol</p>
+            <p class="headline-sm footer-list-title" data-i18n="footer_subscribe_title">Abone Ol</p>
             <form action="" class="footer-form">
               <input
                 type="email"
@@ -266,18 +255,18 @@
                 placeholder="E-posta"
                 class="input-field title-lg"
               />
-              <button type="submit" class="btn has-before title-md">
+              <button type="submit" class="btn has-before title-md" data-i18n="subscribe_btn">
                 Abone Ol
               </button>
             </form>
-            <p class="text">
+            <p class="text" data-i18n="footer_subscribe_text">
               En son güncellemeleri e-posta ile alın. İstediğiniz zaman
               abonelikten çıkabilirsiniz.
             </p>
           </div>
         </div>
         <div class="footer-bottom">
-          <p class="text copyright">
+          <p class="text copyright" data-i18n="footer_copyright">
             &copy; Terapist Merkezi 2026 | Tüm Hakları SESA Yazılım Tarafından
             Saklıdır.
           </p>

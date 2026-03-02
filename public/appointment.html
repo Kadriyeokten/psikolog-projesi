@@ -37,6 +37,58 @@
 
     <!-- custom css link -->
     <link rel="stylesheet" href="./assets/css/style.css" />
+    <script src="./assets/js/i18n.js"></script>
+
+    <style>
+      /* Navbar Optimizasyonu */
+      @media (min-width: 1200px) {
+        .container {
+          max-width: 1450px !important;
+        }
+        .header .logo img {
+          height: 90px !important;
+        }
+        .navbar-list {
+          gap: 20px !important;
+        }
+        .navbar-link {
+          font-size: 1.8rem !important;
+          padding-inline: 18px !important;
+          white-space: nowrap !important;
+          font-weight: 600 !important;
+        }
+        .navbar-item .btn {
+          padding: 10px 20px !important;
+          font-size: 1.5rem !important;
+        }
+      }
+
+      .lang-switcher {
+        margin-left: 10px;
+        display: flex;
+        align-items: center;
+      }
+      .lang-toggle-btn {
+        background: var(--verdigris);
+        color: white;
+        border: none;
+        padding: 4px 10px;
+        border-radius: 20px;
+        cursor: pointer;
+        font-weight: 500;
+        font-size: 1.1rem;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        transition: all 0.2s ease;
+      }
+      .lang-toggle-btn:hover {
+        background: var(--midnight-green);
+      }
+      .lang-toggle-btn ion-icon {
+        font-size: 1.4rem;
+      }
+    </style>
 
     <!-- FullCalendar CSS -->
     <link
@@ -455,33 +507,34 @@
 
           <ul class="navbar-list">
             <li class="navbar-item">
-              <a href="index.html" class="navbar-link title-md">Ana Sayfa</a>
+              <a href="index.html" class="navbar-link title-md" data-i18n="nav_home">Ana Sayfa</a>
             </li>
 
             <li class="navbar-item">
-              <a href="aboutus.html" class="navbar-link title-md">Hakkımızda</a>
+              <a href="aboutus.html" class="navbar-link title-md" data-i18n="nav_about">Hakkımızda</a>
             </li>
 
             <li class="navbar-item">
-              <a href="service.html" class="navbar-link title-md">Hizmetler</a>
+              <a href="service.html" class="navbar-link title-md" data-i18n="nav_services">Hizmetler</a>
             </li>
 
             <li class="navbar-item">
-              <a href="doctors.html" class="navbar-link title-md">Doktorlar</a>
+              <a href="doctors.html" class="navbar-link title-md" data-i18n="nav_doctors">Doktorlar</a>
             </li>
 
             <li class="navbar-item">
-              <a href="conntact.html" class="navbar-link title-md">İletişim</a>
+              <a href="conntact.html" class="navbar-link title-md" data-i18n="nav_contact">İletişim</a>
             </li>
             <li class="navbar-item">
               <a
                 href="appointment.html"
                 class="navbar-link title-md btn has-before"
+                data-i18n="nav_appointment"
                 >Randevu Al</a
               >
             </li>
             <li class="navbar-item auth-item" id="loginItem">
-              <a href="login.html" class="navbar-link title-md btn has-before"
+              <a href="login.html" class="navbar-link title-md btn has-before" data-i18n="nav_login"
                 >Giriş Yap</a
               >
             </li>
@@ -491,7 +544,7 @@
               id="logoutItem"
               style="display: none"
             >
-              <a href="#" class="navbar-link title-md btn has-before"
+              <a href="#" class="navbar-link title-md btn has-before" data-i18n="nav_logout"
                 >Çıkış Yap</a
               >
             </li>
@@ -501,9 +554,16 @@
               id="adminItem"
               style="display: none"
             >
-              <a href="admin.html" class="navbar-link title-md btn has-before"
+              <a href="admin.html" class="navbar-link title-md btn has-before" data-i18n="nav_admin"
                 >Admin Paneli</a
               >
+            </li>
+
+            <li class="navbar-item lang-switcher">
+              <button id="langToggle" class="lang-toggle-btn">
+                <ion-icon name="globe-outline"></ion-icon>
+                <span id="langLabel">TR</span>
+              </button>
             </li>
           </ul>
 
@@ -753,13 +813,13 @@
                 </div>
                 <div>
                   <p>
-                    Ana E-posta :
+                    <span data-i18n="email_main">Ana E-posta</span> :
                     <a href="mailto:contact@therapy.com" class="contact-link"
                       >contact@&shy;therapy.com</a
                     >
                   </p>
                   <p>
-                    Sorularınız İçin :
+                    <span data-i18n="email_inquiry">Sorularınız İçin</span> :
                     <a href="mailto:Info@therapy.com" class="contact-link"
                       >Info@therapy.com</a
                     >
@@ -772,13 +832,13 @@
                 </div>
                 <div>
                   <p>
-                    Ofis Telefonu :
+                    <span data-i18n="phone_office">Ofis Telefonu</span> :
                     <a href="tel:0029129102320" class="contact-link"
                       >0029129102320</a
                     >
                   </p>
                   <p>
-                    Cep Telefonu :
+                    <span data-i18n="phone_mobile">Cep Telefonu</span> :
                     <a href="tel:000232439493" class="contact-link"
                       >000 2324 39493</a
                     >
@@ -788,8 +848,8 @@
             </ul>
           </div>
           <div class="footer-list" data-reveal="bottom">
-            <p class="headline-sm footer-list-title">Hakkımızda</p>
-            <p class="text">
+            <p class="headline-sm footer-list-title" data-i18n="footer_about_title">Hakkımızda</p>
+            <p class="text" data-i18n="footer_about_text">
               Sağlık tek başına fiziksel iyi olma hali değil ruhsal iyi olma
               halidir ve bütün olarak ele alınmalıdır. İlk seans terapi
               gündeminin belirlenmesi, danışanın detaylı öyküsünün alınması ile
@@ -797,7 +857,7 @@
             </p>
             <address class="address">
               <ion-icon name="map-outline"></ion-icon>
-              <span class="text">
+              <span class="text" data-i18n="address_label">
                 Turgut Özal Caddesi <br />
                 Adana, Çukurova 12345
               </span>
@@ -805,13 +865,13 @@
           </div>
           <ul class="footer-list" data-reveal="bottom">
             <li>
-              <p class="headline-sm footer-list-title">Hizmetler</p>
+              <p class="headline-sm footer-list-title" data-i18n="footer_services_title">Hizmetler</p>
             </li>
             <li>
-              <a href="#" class="text footer-link">Danışmanlık</a>
+              <a href="#" class="text footer-link" data-i18n="nav_services">Danışmanlık</a>
             </li>
             <li>
-              <a href="#" class="text footer-link">Terapi Seansları</a>
+              <a href="#" class="text footer-link" data-i18n="feature_title3">Terapi Seansları</a>
             </li>
             <li>
               <a href="#" class="text footer-link">Atölyeler</a>
@@ -828,7 +888,7 @@
           </ul>
           <ul class="footer-list" data-reveal="bottom">
             <li>
-              <p class="headline-sm footer-list-title">Faydalı Linkler</p>
+              <p class="headline-sm footer-list-title" data-i18n="footer_links_title">Faydalı Linkler</p>
             </li>
             <li>
               <a href="#" class="text footer-link">Gizlilik Politikası</a>
@@ -844,7 +904,7 @@
             </li>
           </ul>
           <div class="footer-list" data-reveal="bottom">
-            <p class="headline-sm footer-list-title">Abone Ol</p>
+            <p class="headline-sm footer-list-title" data-i18n="footer_subscribe_title">Abone Ol</p>
             <form action="" class="footer-form">
               <input
                 type="email"
@@ -852,18 +912,18 @@
                 placeholder="E-posta"
                 class="input-field title-lg"
               />
-              <button type="submit" class="btn has-before title-md">
+              <button type="submit" class="btn has-before title-md" data-i18n="subscribe_btn">
                 Abone Ol
               </button>
             </form>
-            <p class="text">
+            <p class="text" data-i18n="footer_subscribe_text">
               En son güncellemeleri e-posta ile alın. İstediğiniz zaman
               abonelikten çıkabilirsiniz.
             </p>
           </div>
         </div>
         <div class="footer-bottom">
-          <p class="text copyright">
+          <p class="text copyright" data-i18n="footer_copyright">
             &copy; Terapist Merkezi 2026 | Tüm Hakları SESA Yazılım Tarafından
             Saklıdır.
           </p>
