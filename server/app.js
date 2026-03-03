@@ -342,20 +342,19 @@ app.post(
 // General Settings Update
 app.post("/api/site-content/settings", async (req, res) => {
   const { whatsapp_number } = req.body;
-  console.log("Updating settings - WhatsApp:", whatsapp_number);
   try {
     const result = await db.query(
       "UPDATE site_content SET whatsapp_number = $1 WHERE id = 1 RETURNING *",
       [whatsapp_number]
     );
     if (result.rowCount === 0) {
-      // Eğer id=1 yoksa oluşturmayı deneyelim (opsiyonel ama güvenli)
       await db.query("INSERT INTO site_content (id, whatsapp_number) VALUES (1, $1)", [whatsapp_number]);
     }
-    res.json({ success: true, message: "Ayarlar güncellendi" });
+    res.json({ success: true });
   } catch (err) {
     console.error("SETTINGS UPDATE ERROR:", err);
-    res.status(500).json({ error: "Sunucu hatası", detail: err.message });
+    // Hata mesajını detayıyla dönelim ki Render'da ne olduğunu görebilelim
+    res.status(500).json({ error: "Sunucu hatası", detail: err.message, code: err.code });
   }
 });
 

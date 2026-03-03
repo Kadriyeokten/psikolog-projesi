@@ -2,7 +2,9 @@ const { Pool } = require("pg");
 require("dotenv").config();
 
 const isProduction = process.env.NODE_ENV === "production";
-const connectionString = process.env.DATABASE_URL;
+
+// db.js ile aynı bağlantı mantığı
+const connectionString = process.env.DATABASE_URL || `postgresql://${process.env.DB_USER}:${process.env.DB_PASSWORD}@${process.env.DB_HOST}:${process.env.DB_PORT}/${process.env.DB_NAME}`;
 
 const pool = new Pool({
   connectionString: connectionString,
@@ -11,9 +13,9 @@ const pool = new Pool({
 
 async function runMigrations() {
   try {
-    console.log("Migrationlar başlatılıyor...");
+    console.log("Migrationlar başlatılıyor (Render/Local)...");
 
-    // 1. appointments tablosunu oluştur
+    // 1. appointments
     await pool.query(`
       CREATE TABLE IF NOT EXISTS appointments (
         id SERIAL PRIMARY KEY,
@@ -27,9 +29,8 @@ async function runMigrations() {
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
     `);
-    console.log("Appointments tablosu hazır.");
 
-    // 2. services tablosu ve dsc sütunu
+    // 2. services
     await pool.query(`
       CREATE TABLE IF NOT EXISTS services (
         id SERIAL PRIMARY KEY,
@@ -40,11 +41,9 @@ async function runMigrations() {
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
     `);
-    // dsc sütununu TEXT'e dönüştür (eğer daha önce VARCHAR olarak oluşturulduysa)
-    await pool.query(`ALTER TABLE services ALTER COLUMN dsc TYPE TEXT;`);
-    console.log("Services tablosu hazır.");
+    try { await pool.query(`ALTER TABLE services ALTER COLUMN dsc TYPE TEXT;`); } catch(e){}
 
-    // 3. doctors tablosuna bio sütunu ekle
+    // 3. doctors
     await pool.query(`
       CREATE TABLE IF NOT EXISTS doctors (
         id SERIAL PRIMARY KEY,
@@ -62,10 +61,9 @@ async function runMigrations() {
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
     `);
-    await pool.query(`ALTER TABLE doctors ADD COLUMN IF NOT EXISTS bio TEXT;`);
-    console.log("Doctors tablosu hazır.");
+    try { await pool.query(`ALTER TABLE doctors ADD COLUMN IF NOT EXISTS bio TEXT;`); } catch(e){}
 
-    // 4. site_content tablosu ve whatsapp_number
+    // 4. site_content
     await pool.query(`
       CREATE TABLE IF NOT EXISTS site_content (
         id SERIAL PRIMARY KEY,
@@ -87,23 +85,17 @@ async function runMigrations() {
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
     `);
-    await pool.query(`ALTER TABLE site_content ADD COLUMN IF NOT EXISTS whatsapp_number VARCHAR(20);`);
+    try { await pool.query(`ALTER TABLE site_content ADD COLUMN IF NOT EXISTS whatsapp_number VARCHAR(20);`); } catch(e){}
     
-    // id=1 olan satırın varlığından emin ol (Varsayılan içerik)
+    // Varsayılan id=1 satırı
     const res = await pool.query("SELECT id FROM site_content WHERE id = 1");
     if (res.rowCount === 0) {
-      await pool.query(`
-        INSERT INTO site_content (id, about_title, whatsapp_number) 
-        VALUES (1, 'Hakkımızda', '905000000000')
-      `);
-      console.log("Site içeriği için varsayılan satır (id=1) oluşturuldu.");
+      await pool.query(`INSERT INTO site_content (id, about_title, whatsapp_number) VALUES (1, 'Hakkımızda', '905000000000')`);
     }
     
-    console.log("Site Content tablosu hazır.");
-
-    console.log("Tüm veritabanı migration işlemleri başarıyla tamamlandı.");
+    console.log("Tüm migrationlar başarıyla tamamlandı.");
   } catch (err) {
-    console.error("Veritabanı migration hatası:", err);
+    console.error("Migration HATASI:", err);
   } finally {
     if (require.main === module) {
       await pool.end();

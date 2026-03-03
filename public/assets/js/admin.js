@@ -135,9 +135,15 @@ async function saveSettings() {
       body: JSON.stringify({ whatsapp_number })
     });
     const data = await res.json();
-    if (data.success) alert("Ayarlar kaydedildi!");
-    else alert("Hata!");
-  } catch (err) { console.error(err); alert("Sunucu hatası!"); }
+    if (data.success) {
+      alert("Ayarlar kaydedildi!");
+    } else {
+      alert("Hata: " + (data.detail || "Bilinmeyen bir hata oluştu."));
+    }
+  } catch (err) { 
+    console.error(err); 
+    alert("Sunucuyla bağlantı kurulamadı!"); 
+  }
 }
 
 // --- HİZMET YÖNETİMİ ---
