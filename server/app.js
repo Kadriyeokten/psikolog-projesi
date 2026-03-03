@@ -15,8 +15,30 @@ const PORT = process.env.PORT || 3000;
 
 db.query("SELECT current_database()", (err, res) => {
   if (err) console.error("DB Hata:", err);
-  else console.log("Bağli DB:", res.rows[0].current_database);
+  else {
+    console.log("Bağli DB:", res.rows[0].current_database);
+    // OTOMATIK SÜTUN KONTROLÜ (RENDER FIX)
+    ensureColumnsExist();
+  }
 });
+
+async function ensureColumnsExist() {
+  try {
+    console.log("Veritabanı sütun kontrolü yapılıyor...");
+    // Site Content - whatsapp_number
+    await db.query(`ALTER TABLE site_content ADD COLUMN IF NOT EXISTS whatsapp_number VARCHAR(20)`);
+    // Doctors - bio
+    await db.query(`ALTER TABLE doctors ADD COLUMN IF NOT EXISTS bio TEXT`);
+    // Ensure ID=1 exists in site_content
+    const res = await db.query("SELECT id FROM site_content WHERE id = 1");
+    if (res.rowCount === 0) {
+      await db.query("INSERT INTO site_content (id, about_title) VALUES (1, 'Hakkımızda')");
+    }
+    console.log("Veritabanı sütunları doğrulandı.");
+  } catch (err) {
+    console.error("Sütun doğrulama hatası:", err.message);
+  }
+}
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
