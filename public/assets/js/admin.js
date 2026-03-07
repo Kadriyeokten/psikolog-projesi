@@ -1,5 +1,43 @@
 // public/assets/js/admin.js
 
+// Yetki Kontrolü (Giriş yapılmış mı ve rol admin mi?)
+const token = localStorage.getItem("token");
+const role = localStorage.getItem("role");
+
+if (!token || role !== "admin") {
+  alert("Yetkisiz erişim. Lütfen admin olarak giriş yapın.");
+  window.location.href = "login.html";
+}
+
+// Özel Fetch Fonksiyonu (Tüm isteklerde token gönderir ve hataları yakalar)
+async function authFetch(url, options = {}) {
+  const headers = options.headers || {};
+  
+  // FormData kullanılıyorsa Content-Type'ı manuel olarak ayarlama (tarayıcı kendi ayarlar)
+  if (!(options.body instanceof FormData)) {
+    headers['Content-Type'] = headers['Content-Type'] || 'application/json';
+  }
+
+  headers['Authorization'] = `Bearer ${localStorage.getItem("token")}`;
+
+  const config = {
+    ...options,
+    headers
+  };
+
+  const response = await authFetch(url, config);
+
+  if (response.status === 401 || response.status === 403) {
+    alert("Oturumunuz geçersiz veya süresi dolmuş. Lütfen tekrar giriş yapın.");
+    localStorage.removeItem("token");
+    localStorage.removeItem("role");
+    window.location.href = "login.html";
+    throw new Error("Yetkisiz erişim");
+  }
+
+  return response;
+}
+
 document.addEventListener("DOMContentLoaded", () => {
   // 1. Sidebar Navigasyonu
   const sidebarLinks = document.querySelectorAll(".admin-sidebar ul li a");
@@ -68,7 +106,7 @@ function setupImagePreview(inputId, imgId) {
 
 async function loadSiteContent() {
   try {
-    const res = await fetch("/api/site-content");
+    const res = await authFetch("/api/site-content");
     const data = await res.json();
     if (data) {
       if(document.getElementById("about_title")) document.getElementById("about_title").value = data.about_title || "";
@@ -119,7 +157,7 @@ async function saveAbout() {
   if (file) formData.append("image", file);
 
   try {
-    const res = await fetch("/api/site-content/about", { method: "POST", body: formData });
+    const res = await authFetch("/api/site-content/about", { method: "POST", body: formData });
     const data = await res.json();
     if (data.success) alert("Hakkımızda içeriği güncellendi!");
     else alert("Hata: " + data.error);
@@ -129,7 +167,7 @@ async function saveAbout() {
 async function saveSettings() {
   const whatsapp_number = document.getElementById("whatsappNumber").value;
   try {
-    const res = await fetch("/api/site-content/settings", {
+    const res = await authFetch("/api/site-content/settings", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ whatsapp_number })
@@ -152,7 +190,7 @@ async function loadServiceSelect() {
   const select = document.getElementById("serviceSelect");
   if (!select) return;
   try {
-    const res = await fetch("/api/services");
+    const res = await authFetch("/api/services");
     const services = await res.json();
     select.innerHTML = '<option value="">Yeni Hizmet Ekle</option>';
     services.forEach(s => {
@@ -168,7 +206,7 @@ document.getElementById("serviceSelect")?.addEventListener("change", async funct
   const id = this.value;
   if (!id) { clearServiceForm(); return; }
   try {
-    const res = await fetch(`/api/services/${id}`);
+    const res = await authFetch(`/api/services/${id}`);
     const s = await res.json();
     document.getElementById("serviceTitle").value = s.title;
     document.getElementById("serviceDesc").value = s.dsc;
@@ -190,11 +228,11 @@ async function addService() {
   if (file) formData.append("image", file);
 
   try {
-    const res = await fetch("/api/services", { method: "POST", body: formData });
+    const res = await authFetch("/api/services", { method: "POST", body: formData });
     if (res.ok) { 
       // Trigger auto-translation
-      await fetch('/api/translate', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({text: title, target: 'en'}) });
-      await fetch('/api/translate', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({text: dsc, target: 'en'}) });
+      await authFetch('/api/translate', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({text: title, target: 'en'}) });
+      await authFetch('/api/translate', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({text: dsc, target: 'en'}) });
       
       alert("Hizmet eklendi!"); 
       clearServiceForm(); 
@@ -216,11 +254,11 @@ async function updateService() {
   if (file) formData.append("image", file);
 
   try {
-    const res = await fetch(`/api/services/${id}`, { method: "PUT", body: formData });
+    const res = await authFetch(`/api/services/${id}`, { method: "PUT", body: formData });
     if (res.ok) { 
       // Trigger auto-translation
-      await fetch('/api/translate', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({text: title, target: 'en'}) });
-      await fetch('/api/translate', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({text: dsc, target: 'en'}) });
+      await authFetch('/api/translate', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({text: title, target: 'en'}) });
+      await authFetch('/api/translate', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({text: dsc, target: 'en'}) });
 
       alert("Hizmet güncellendi!"); 
       loadServiceSelect(); 
@@ -232,7 +270,7 @@ async function deleteService() {
   const id = document.getElementById("serviceSelect").value;
   if (!id || !confirm("Emin misiniz?")) return;
   try {
-    const res = await fetch(`/api/services/${id}`, { method: "DELETE" });
+    const res = await authFetch(`/api/services/${id}`, { method: "DELETE" });
     if (res.ok) { alert("Silindi!"); clearServiceForm(); loadServiceSelect(); }
   } catch (err) { alert("Silme hatası!"); }
 }
@@ -250,7 +288,7 @@ async function loadDoctorSelect() {
   const select = document.getElementById("doctorSelect");
   if (!select) return;
   try {
-    const res = await fetch("/api/doctors");
+    const res = await authFetch("/api/doctors");
     const doctors = await res.json();
     select.innerHTML = '<option value="">Doktor Seçiniz</option>';
     doctors.forEach(d => {
@@ -266,7 +304,7 @@ document.getElementById("doctorSelect")?.addEventListener("change", async functi
   const id = this.value;
   if (!id) { clearDoctorForm(); return; }
   try {
-    const res = await fetch(`/api/doctors/${id}`);
+    const res = await authFetch(`/api/doctors/${id}`);
     const d = await res.json();
     document.getElementById("doctorName").value = d.full_name;
     document.getElementById("doctorTitle").value = d.title;
@@ -288,13 +326,13 @@ document.getElementById("doctorSelect")?.addEventListener("change", async functi
 async function saveDoctor() {
   const formData = getDoctorFormData();
   try {
-    const res = await fetch("/api/doctors", { method: "POST", body: formData });
+    const res = await authFetch("/api/doctors", { method: "POST", body: formData });
     if (res.ok) { 
       // Trigger auto-translation for bio and title
       const bio = document.getElementById("doctorBio").value;
       const title = document.getElementById("doctorTitle").value;
-      if(bio) await fetch('/api/translate', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({text: bio, target: 'en'}) });
-      if(title) await fetch('/api/translate', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({text: title, target: 'en'}) });
+      if(bio) await authFetch('/api/translate', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({text: bio, target: 'en'}) });
+      if(title) await authFetch('/api/translate', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({text: title, target: 'en'}) });
       
       alert("Doktor başarıyla eklendi!"); 
       loadDoctorSelect(); 
@@ -310,13 +348,13 @@ async function updateDoctor() {
   if (!id) return alert("Lütfen güncellenecek doktoru seçin!");
   const formData = getDoctorFormData();
   try {
-    const res = await fetch(`/api/doctors/${id}`, { method: "PUT", body: formData });
+    const res = await authFetch(`/api/doctors/${id}`, { method: "PUT", body: formData });
     if (res.ok) { 
       // Trigger auto-translation updates
       const bio = document.getElementById("doctorBio").value;
       const title = document.getElementById("doctorTitle").value;
-      if(bio) await fetch('/api/translate', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({text: bio, target: 'en'}) });
-      if(title) await fetch('/api/translate', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({text: title, target: 'en'}) });
+      if(bio) await authFetch('/api/translate', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({text: bio, target: 'en'}) });
+      if(title) await authFetch('/api/translate', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({text: title, target: 'en'}) });
 
       alert("Doktor bilgileri güncellendi!"); 
       loadDoctorSelect(); 
@@ -331,7 +369,7 @@ async function deleteDoctor() {
   if (!id) return alert("Lütfen silinecek doktoru seçin!");
   if (!confirm("Bu doktoru silmek istediğinize emin misiniz?")) return;
   try {
-    const res = await fetch(`/api/doctors/${id}`, { method: "DELETE" });
+    const res = await authFetch(`/api/doctors/${id}`, { method: "DELETE" });
     if (res.ok) { 
       alert("Doktor silindi!"); 
       clearDoctorForm();
@@ -388,7 +426,7 @@ async function loadAppointments() {
   const tbody = document.getElementById('appointmentsTableBody');
   if (!tbody) return;
   try {
-    const res = await fetch('/api/appointments');
+    const res = await authFetch('/api/appointments');
     allAppointments = await res.json();
     renderAppointmentsTable(allAppointments);
   } catch (err) { 
@@ -482,7 +520,7 @@ document.getElementById("appointmentSearch")?.addEventListener("input", (e) => {
 async function deleteAppointment(id) {
   if (!confirm("Silinsin mi?")) return;
   try {
-    const res = await fetch(`/api/appointments/${id}`, { method: 'DELETE' });
+    const res = await authFetch(`/api/appointments/${id}`, { method: 'DELETE' });
     if (res.ok) { alert("Silindi."); loadAppointments(); }
   } catch (err) { console.error(err); }
 }

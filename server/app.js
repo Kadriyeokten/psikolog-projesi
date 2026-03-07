@@ -115,6 +115,22 @@ app.use(express.urlencoded({ extended: true }));
 // Public klasörünü aç
 app.use(express.static(path.join(__dirname, "../public")));
 
+// JWT Admin Authentication Middleware
+function authenticateAdmin(req, res, next) {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
+  
+  if (!token) return res.status(401).json({ error: "Erişim reddedildi. Lütfen giriş yapın." });
+
+  jwt.verify(token, JWT_SECRET, (err, user) => {
+    if (err) return res.status(403).json({ error: "Geçersiz veya süresi dolmuş oturum." });
+    if (user.role !== 'admin') return res.status(403).json({ error: "Bu işlem için admin yetkisi gerekiyor." });
+    
+    req.user = user;
+    next();
+  });
+}
+
 // Ana sayfa
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "../public/index.html"));
@@ -176,7 +192,7 @@ app.get("/api/appointments/booked", async (req, res) => {
 });
 
 // Tüm Randevuları Getir (GET - Admin İçin)
-app.get("/api/appointments", async (req, res) => {
+app.get("/api/appointments", authenticateAdmin, async (req, res) => {
   try {
     const result = await db.query(`
       SELECT 
@@ -196,7 +212,7 @@ app.get("/api/appointments", async (req, res) => {
 });
 
 // Randevu Durumunu Güncelle (PUT - Admin İçin)
-app.put("/api/appointments/:id/status", async (req, res) => {
+app.put("/api/appointments/:id/status", authenticateAdmin, async (req, res) => {
   const { id } = req.params;
   const { status } = req.body;
   try {
@@ -212,7 +228,7 @@ app.put("/api/appointments/:id/status", async (req, res) => {
 });
 
 // Randevu Sil (DELETE - Admin İçin)
-app.delete("/api/appointments/:id", async (req, res) => {
+app.delete("/api/appointments/:id", authenticateAdmin, async (req, res) => {
   const { id } = req.params;
   try {
     await db.query("DELETE FROM appointments WHERE id = $1", [id]);
@@ -340,6 +356,7 @@ app.post("/api/login", async (req, res) => {
 //ABOUT UPDATE
 app.post(
   "/api/site-content/about",
+  authenticateAdmin,
   upload.single("image"),
   async (req, res) => {
     try {
@@ -419,7 +436,7 @@ app.post(
 );
 
 // General Settings Update
-app.post("/api/site-content/settings", async (req, res) => {
+app.post("/api/site-content/settings", authenticateAdmin, async (req, res) => {
   const { whatsapp_number } = req.body;
   try {
     const result = await db.query(
@@ -453,7 +470,7 @@ app.get("/api/doctors", async (req, res) => {
 });
 
 // Doktor ekle (Admin)
-app.post("/api/doctors", upload.single("image"), async (req, res) => {
+app.post("/api/doctors", authenticateAdmin, upload.single("image"), async (req, res) => {
   try {
     const {
       full_name,
@@ -518,7 +535,7 @@ app.post("/api/doctors", upload.single("image"), async (req, res) => {
 });
 
 //Doctor Delete
-app.delete("/api/doctors/:id", async (req, res) => {
+app.delete("/api/doctors/:id", authenticateAdmin, async (req, res) => {
   const id = parseInt(req.params.id);
 
   try {
@@ -539,7 +556,7 @@ app.delete("/api/doctors/:id", async (req, res) => {
 });
 
 //Doctor update
-app.put("/api/doctors/:id", upload.single("image"), async (req, res) => {
+app.put("/api/doctors/:id", authenticateAdmin, upload.single("image"), async (req, res) => {
   try {
     const id = req.params.id;
     const {
@@ -646,7 +663,7 @@ app.get("/api/services/:id", async (req, res) => {
 });
 
 //insert service
-app.post("/api/services", upload.single("image"), async (req, res) => {
+app.post("/api/services", authenticateAdmin, upload.single("image"), async (req, res) => {
   try {
     const { title, dsc } = req.body;
     if (!title || !dsc) return res.status(400).json({ error: "Başlık ve açıklama gerekli" });
@@ -672,7 +689,7 @@ app.post("/api/services", upload.single("image"), async (req, res) => {
 // POST yeni hizmet (Tekrarlanan rota kaldırıldı ve üsttekiyle birleştirildi)
 
 // PUT güncelleme (sadece title, dsc ve image_path)
-app.put("/api/services/:id", upload.single("image"), async (req, res) => {
+app.put("/api/services/:id", authenticateAdmin, upload.single("image"), async (req, res) => {
   const { id } = req.params;
   const { title, dsc } = req.body;
 
@@ -703,7 +720,7 @@ app.put("/api/services/:id", upload.single("image"), async (req, res) => {
 });
 
 // DELETE hizmet
-app.delete("/api/services/:id", async (req, res) => {
+app.delete("/api/services/:id", authenticateAdmin, async (req, res) => {
   const { id } = req.params;
   try {
     const result = await db.query(
