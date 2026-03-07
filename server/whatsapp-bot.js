@@ -364,4 +364,12 @@ async function initWhatsAppBot() {
             }
         });
 
+    } catch (err) {
+        console.error("[WhatsApp] Hata:", err);
+        setTimeout(() => initWhatsAppBot(), 10000);
+    }
+}
+
+const getStatus = () => ({ qr: lastQr, connected: isConnected });
+
 module.exports = { initWhatsAppBot, getStatus };
