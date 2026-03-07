@@ -164,7 +164,8 @@ app.get("/api/appointments/booked", async (req, res) => {
         start: start.toISOString(),
         end: end.toISOString(),
         color: "#ff0000", // Kırmızı renk
-        display: "background" // Tıklanmayı engellemek için arka plan eventi yapıyoruz
+        textColor: "#ffffff",
+        overlap: false // Diğer seçimlerin bunun üzerine binmesini engeller
       };
     });
     res.json(bookedEvents);
