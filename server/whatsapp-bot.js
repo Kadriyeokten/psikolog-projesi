@@ -81,7 +81,7 @@ async function initWhatsAppBot() {
 
             const userId = msg.key.remoteJid;
             const text = (msg.message.conversation || msg.message.extendedTextMessage?.text || "").trim();
-            const lowText = text.toLowerCase();
+            const lowText = text.toLowerCase().replace(/[.,!]/g, ""); // Noktalama işaretlerini kaldırarak kontrol et
 
             if (!userSessions.has(userId)) {
                 userSessions.set(userId, { stage: STAGES.IDLE });
@@ -89,7 +89,7 @@ async function initWhatsAppBot() {
 
             const session = userSessions.get(userId);
 
-            if (lowText === "randevu" || lowText === "merhaba" || lowText === "iptal") {
+            if (lowText === "randevu" || lowText === "merhaba" || lowText === "iptal" || lowText === "merhaba randevu oluşturmak istiyorum" || lowText === "merhaba, randevu oluşturmak istiyorum") {
                 session.stage = STAGES.AWAITING_NAME;
                 session.data = {};
                 await sock.sendMessage(userId, { text: "Merhaba! Psikolog randevu asistanına hoş geldiniz. \n\nLütfen adınızı ve soyadınızı yazın:" });
