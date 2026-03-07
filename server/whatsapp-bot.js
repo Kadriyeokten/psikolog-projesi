@@ -89,7 +89,7 @@ async function initWhatsAppBot() {
 
             const session = userSessions.get(userId);
 
-            if (lowText === "randevu" || lowText === "merhaba" || lowText === "iptal" || lowText === "merhaba randevu oluşturmak istiyorum" || lowText === "merhaba, randevu oluşturmak istiyorum") {
+            if (lowText === "randevu" || lowText === "merhaba" || lowText === "iptal" || lowText === "merhaba randevu oluşturmak istiyorum" || lowText === "merhaba, randevu oluşturmak istiyorum." || lowText === "merhaba randevu almak istiyorum" || lowText === "merhaba, randevu almak istiyorum") {
                 session.stage = STAGES.AWAITING_NAME;
                 session.data = {};
                 await sock.sendMessage(userId, { text: "Merhaba! Psikolog randevu asistanına hoş geldiniz. \n\nLütfen adınızı ve soyadınızı yazın:" });
@@ -110,7 +110,15 @@ async function initWhatsAppBot() {
                     await sock.sendMessage(userId, { text: "Telefon numaranızı yazın:" });
                     break;
                 case STAGES.AWAITING_PHONE:
-                    session.data.phone = text;
+                    // Sadece rakamları al
+                    const cleanPhone = text.replace(/\D/g, '');
+                    
+                    if (cleanPhone.length < 10 || cleanPhone.length > 11) {
+                        await sock.sendMessage(userId, { text: "Geçersiz telefon numarası! Lütfen 10 veya 11 haneli geçerli bir numara girin (Örn: 05551234567 veya 5551234567):" });
+                        return;
+                    }
+                    
+                    session.data.phone = cleanPhone;
                     session.stage = STAGES.AWAITING_SERVICE;
                     try {
                         const services = await db.query("SELECT id, title FROM services");
