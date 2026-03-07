@@ -1,3 +1,4 @@
+process.env.TZ = "Europe/Istanbul";
 const db = require("./db");
 const path = require("path");
 const fs = require("fs");
@@ -191,7 +192,7 @@ async function initWhatsAppBot() {
                             // 3. Doluysa alternatif bul
                             // İleriye dönük aynı doktorun dolu olduğu randevuları alalım
                             const futureAppts = await db.query(
-                                "SELECT appointment_date FROM appointments WHERE doctor_id = $1 AND appointment_date > CURRENT_TIMESTAMP ORDER BY appointment_date ASC",
+                                "SELECT appointment_date FROM appointments WHERE doctor_id = $1 AND appointment_date > (NOW() AT TIME ZONE 'Europe/Istanbul') ORDER BY appointment_date ASC",
                                 [session.data.doctorId]
                             );
                             
