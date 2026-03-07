@@ -123,8 +123,12 @@ async function initWhatsAppBot() {
                     session.stage = STAGES.AWAITING_SERVICE;
                     try {
                         const services = await db.query("SELECT id, title FROM services");
-                        let message = "Hizmet numarasını seçin:\n\n";
-                        services.rows.forEach((s, index) => { message += `${index + 1}. ${s.title}\n`; });
+                        const numberEmojis = ['1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣', '6️⃣', '7️⃣', '8️⃣', '9️⃣', '🔟'];
+                        let message = "📋 *Hizmet Seçimi* 📋\n\nLütfen size uygun olan hizmetin başındaki *numarayı* yazıp gönderin:\n\n";
+                        services.rows.forEach((s, index) => { 
+                            let emoji = index < 10 ? numberEmojis[index] : `${index + 1}.`;
+                            message += `${emoji}  ${s.title}\n`; 
+                        });
                         session.services = services.rows;
                         await sock.sendMessage(userId, { text: message });
                     } catch (err) { session.stage = STAGES.IDLE; }
@@ -137,11 +141,17 @@ async function initWhatsAppBot() {
                         session.stage = STAGES.AWAITING_DOCTOR;
                         try {
                             const doctors = await db.query("SELECT id, full_name FROM doctors WHERE is_active = true");
-                            let message = "Doktor numarasını seçin:\n\n";
-                            doctors.rows.forEach((d, index) => { message += `${index + 1}. ${d.full_name}\n`; });
+                            const numberEmojis = ['1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣', '6️⃣', '7️⃣', '8️⃣', '9️⃣', '🔟'];
+                            let message = "👨‍⚕️ *Doktor Seçimi* 👩‍⚕️\n\nLütfen randevu almak istediğiniz doktorun başındaki *numarayı* yazıp gönderin:\n\n";
+                            doctors.rows.forEach((d, index) => { 
+                                let emoji = index < 10 ? numberEmojis[index] : `${index + 1}.`;
+                                message += `${emoji}  ${d.full_name}\n`; 
+                            });
                             session.doctors = doctors.rows;
                             await sock.sendMessage(userId, { text: message });
                         } catch (err) { session.stage = STAGES.IDLE; }
+                    } else {
+                        await sock.sendMessage(userId, { text: "Geçersiz seçim. Lütfen listedeki numaralardan birini yazın." });
                     }
                     break;
                 case STAGES.AWAITING_DOCTOR:
@@ -174,7 +184,7 @@ async function initWhatsAppBot() {
                                         const suggYear = checkTime.getFullYear();
                                         const suggHour = String(checkTime.getHours()).padStart(2, '0');
                                         const suggMin = String(checkTime.getMinutes()).padStart(2, '0');
-                                        options.push(`${suggDay}.${suggMonth}.${suggYear} ${suggHour}:${suggMin}`);
+                                        options.push(`${suggDay}.${suggMonth}.${suggYear} - ${suggHour}:${suggMin}`);
                                     }
                                 }
                                 checkTime.setHours(checkTime.getHours() + 1);
@@ -186,11 +196,13 @@ async function initWhatsAppBot() {
                             }
 
                             session.dateOptions = options;
-                            let msgText = "Lütfen randevu almak istediğiniz saatin numarasını seçin:\n\n";
+                            const numberEmojis = ['1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣', '6️⃣', '7️⃣', '8️⃣', '9️⃣', '🔟'];
+                            let msgText = "🗓️ *Randevu Saati Seçimi* 🗓️\n\nLütfen size uygun olan saatin başındaki *numarayı* yazıp gönderin:\n\n";
                             options.forEach((opt, idx) => {
-                                msgText += `${idx + 1}. ${opt}\n`;
+                                let emoji = idx < 10 ? numberEmojis[idx] : `${idx + 1}.`;
+                                msgText += `${emoji}  ${opt}\n`;
                             });
-                            msgText += `\nFarklı bir tarih girmek isterseniz GG.AA.YIL SAAT şeklinde yazabilirsiniz (Örn: 25.12.2024 14:30).`;
+                            msgText += `\n✍️ _Farklı bir tarih girmek isterseniz GG.AA.YIL SAAT şeklinde yazabilirsiniz._`;
                             
                             await sock.sendMessage(userId, { text: msgText });
                         } catch (err) {
