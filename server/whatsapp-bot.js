@@ -90,7 +90,7 @@ async function initWhatsAppBot() {
 
             const session = userSessions.get(userId);
 
-            if (lowText === "randevu" || lowText === "merhaba" || lowText === "iptal" || lowText === "merhaba randevu oluşturmak istiyorum" || lowText === "merhaba, randevu oluşturmak istiyorum." || lowText === "merhaba randevu almak istiyorum" || lowText === "merhaba, randevu almak istiyorum") {
+            if (lowText.includes("randevu") || lowText.includes("merhaba") || lowText.includes("iptal")) {
                 session.stage = STAGES.AWAITING_NAME;
                 session.data = {};
                 await sock.sendMessage(userId, { text: "Merhaba! Psikolog randevu asistanına hoş geldiniz. \n\nLütfen adınızı ve soyadınızı yazın:" });
