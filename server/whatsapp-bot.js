@@ -206,7 +206,7 @@ async function initWhatsAppBot() {
                             
                             await sock.sendMessage(userId, { text: msgText });
                         } catch (err) {
-                            await sock.sendMessage(userId, { text: "Randevu tarihi ve saatini gün.ay.yıl saat şeklinde girin (Örn: 25.12.2024 14:30):" });
+                            await sock.sendMessage(userId, { text: "Randevu tarihi ve saatini gün.ay.yıl saat şeklinde girin (Örn: 25.12.2024 14:00):" });
                         }
                     } else {
                         await sock.sendMessage(userId, { text: "Geçersiz seçim. Lütfen numarayı doğru yazın." });
@@ -236,7 +236,7 @@ async function initWhatsAppBot() {
                         const match = text.match(dateRegex);
                         
                         if (!match) {
-                            await sock.sendMessage(userId, { text: "Hatalı format! Lütfen listeden bir numara seçin veya Gün.Ay.Yıl Saat şeklinde yazın (Örn: 25.12.2024 14:30):" });
+                            await sock.sendMessage(userId, { text: "Hatalı format! Lütfen listeden bir numara seçin veya Gün.Ay.Yıl Saat şeklinde yazın (Örn: 25.12.2024 14:00):" });
                             return;
                         }
                         const day = match[1].padStart(2, '0');
@@ -245,6 +245,11 @@ async function initWhatsAppBot() {
                         const hour = match[4].padStart(2, '0');
                         const minute = match[5].padStart(2, '0');
                         
+                        if (minute !== '00') {
+                            await sock.sendMessage(userId, { text: "⚠️ Lütfen sadece tam saatlere randevu alın (Örn: 14:00, 15:00 gibi)." });
+                            return;
+                        }
+
                         dbDateStr = `${year}-${month}-${day} ${hour}:${minute}:00`;
                         displayDate = `${day}.${month}.${year} ${hour}:${minute}`;
                         requestedDate = new Date(dbDateStr);
