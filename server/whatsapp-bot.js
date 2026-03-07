@@ -90,22 +90,82 @@ async function initWhatsAppBot() {
 
             const session = userSessions.get(userId);
 
-            if (lowText.includes("randevu") || lowText.includes("merhaba") || lowText.includes("iptal")) {
+            // Başlangıç komutları (IDLE durumundayken veya her an randevuyu baştan başlatmak için)
+            if (lowText.includes("randevu") || lowText.includes("merhaba")) {
                 session.stage = STAGES.AWAITING_NAME;
                 session.data = {};
-                await sock.sendMessage(userId, { text: "Merhaba! Psikolog randevu asistanına hoş geldiniz. \n\nLütfen adınızı ve soyadınızı yazın:" });
+                await sock.sendMessage(userId, { text: "Merhaba! Psikolog randevu asistanına hoş geldiniz. \n(Dilediğiniz zaman çıkmak için *çıkış*, bir önceki adıma dönmek için *iptal* yazabilirsiniz.)\n\nLütfen adınızı ve soyadınızı yazın:" });
                 return;
             }
 
             if (session.stage === STAGES.IDLE) return;
 
+            // Global Çıkış / Geri Dön Komutları
+            if (lowText === "çıkış") {
+                userSessions.delete(userId);
+                await sock.sendMessage(userId, { text: "❌ Randevu işleminiz sonlandırıldı. İyi günler dileriz!" });
+                return;
+            }
+
+            if (lowText === "iptal") {
+                if (session.stage === STAGES.AWAITING_NAME) {
+                    userSessions.delete(userId);
+                    await sock.sendMessage(userId, { text: "❌ İşlem sonlandırıldı." });
+                    return;
+                } else if (session.stage === STAGES.AWAITING_EMAIL) {
+                    session.stage = STAGES.AWAITING_NAME;
+                    await sock.sendMessage(userId, { text: "⏪ Bir önceki adıma döndünüz.\n\nLütfen adınızı ve soyadınızı yazın:" });
+                    return;
+                } else if (session.stage === STAGES.AWAITING_PHONE) {
+                    session.stage = STAGES.AWAITING_EMAIL;
+                    await sock.sendMessage(userId, { text: "⏪ Bir önceki adıma döndünüz.\n\nLütfen e-posta adresinizi yazın (veya 'atla' yazın):" });
+                    return;
+                } else if (session.stage === STAGES.AWAITING_SERVICE) {
+                    session.stage = STAGES.AWAITING_PHONE;
+                    await sock.sendMessage(userId, { text: "⏪ Bir önceki adıma döndünüz.\n\nLütfen telefon numaranızı yazın:" });
+                    return;
+                } else if (session.stage === STAGES.AWAITING_DOCTOR) {
+                    session.stage = STAGES.AWAITING_SERVICE;
+                    const numberEmojis = ['1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣', '6️⃣', '7️⃣', '8️⃣', '9️⃣', '🔟'];
+                    let message = "⏪ Bir önceki adıma döndünüz.\n📋 *Hizmet Seçimi* 📋\n\nLütfen size uygun olan hizmetin başındaki *numarayı* yazıp gönderin:\n\n";
+                    session.services.forEach((s, index) => { 
+                        let emoji = index < 10 ? numberEmojis[index] : `${index + 1}.`;
+                        message += `${emoji}  ${s.title}\n`; 
+                    });
+                    await sock.sendMessage(userId, { text: message });
+                    return;
+                } else if (session.stage === STAGES.AWAITING_DATE) {
+                    session.stage = STAGES.AWAITING_DOCTOR;
+                    const numberEmojis = ['1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣', '6️⃣', '7️⃣', '8️⃣', '9️⃣', '🔟'];
+                    let message = "⏪ Bir önceki adıma döndünüz.\n👨‍⚕️ *Doktor Seçimi* 👩‍⚕️\n\nLütfen randevu almak istediğiniz doktorun başındaki *numarayı* yazıp gönderin:\n\n";
+                    session.doctors.forEach((d, index) => { 
+                        let emoji = index < 10 ? numberEmojis[index] : `${index + 1}.`;
+                        message += `${emoji}  ${d.full_name}\n`; 
+                    });
+                    await sock.sendMessage(userId, { text: message });
+                    return;
+                }
+            }
+
             switch (session.stage) {
                 case STAGES.AWAITING_NAME:
+                    const nameRegex = /^[a-zA-ZçÇğĞıİöÖşŞüÜ\s]{3,50}$/;
+                    if (!nameRegex.test(text)) {
+                        await sock.sendMessage(userId, { text: "⚠️ Geçersiz isim. Lütfen sadece harf kullanarak gerçek bir ad ve soyad girin (Örn: Ahmet Yılmaz):" });
+                        return;
+                    }
                     session.data.name = text;
                     session.stage = STAGES.AWAITING_EMAIL;
                     await sock.sendMessage(userId, { text: `Teşekkürler ${text}. E-posta adresinizi yazın (veya 'atla' yazın):` });
                     break;
                 case STAGES.AWAITING_EMAIL:
+                    if (lowText !== "atla") {
+                        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                        if (!emailRegex.test(text)) {
+                            await sock.sendMessage(userId, { text: "⚠️ Geçersiz e-posta adresi. Lütfen geçerli bir e-posta girin veya bu adımı geçmek için 'atla' yazın:" });
+                            return;
+                        }
+                    }
                     session.data.email = lowText === "atla" ? null : text;
                     session.stage = STAGES.AWAITING_PHONE;
                     await sock.sendMessage(userId, { text: "Telefon numaranızı yazın:" });
