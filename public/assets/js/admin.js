@@ -25,7 +25,7 @@ async function authFetch(url, options = {}) {
     headers
   };
 
-  const response = await authFetch(url, config);
+  const response = await fetch(url, config);
 
   if (response.status === 401 || response.status === 403) {
     alert("Oturumunuz geçersiz veya süresi dolmuş. Lütfen tekrar giriş yapın.");
