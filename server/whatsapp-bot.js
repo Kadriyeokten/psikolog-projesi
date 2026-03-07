@@ -223,11 +223,11 @@ async function initWhatsAppBot() {
                     if (!isNaN(selectedIdx) && session.dateOptions && session.dateOptions[selectedIdx]) {
                         // Numaralı seçim
                         const opt = session.dateOptions[selectedIdx];
-                        // opt formatı: "DD.MM.YYYY HH:MM"
-                        const parts = opt.match(/^(\d{2})\.(\d{2})\.(\d{4})\s+(\d{2}):(\d{2})$/);
+                        // opt formatı: "DD.MM.YYYY - HH:MM"
+                        const parts = opt.match(/^(\d{2})\.(\d{2})\.(\d{4})\s*-\s*(\d{2}):(\d{2})$/);
                         if (parts) {
                             dbDateStr = `${parts[3]}-${parts[2]}-${parts[1]} ${parts[4]}:${parts[5]}:00`;
-                            displayDate = opt;
+                            displayDate = `${parts[1]}.${parts[2]}.${parts[3]} ${parts[4]}:${parts[5]}`;
                             requestedDate = new Date(dbDateStr);
                         }
                     } else {
