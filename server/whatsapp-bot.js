@@ -85,49 +85,58 @@ async function initWhatsAppBot() {
             const lowText = text.toLowerCase().replace(/[.,!]/g, ""); // Noktalama işaretlerini kaldırarak kontrol et
 
             if (!userSessions.has(userId)) {
-                userSessions.set(userId, { stage: STAGES.IDLE });
+                userSessions.set(userId, { stage: STAGES.IDLE, lang: 'tr' });
             }
 
             const session = userSessions.get(userId);
 
             // Başlangıç komutları (IDLE durumundayken veya her an randevuyu baştan başlatmak için)
             if (lowText.includes("randevu") || lowText.includes("merhaba")) {
+                session.lang = 'tr';
                 session.stage = STAGES.AWAITING_NAME;
                 session.data = {};
                 await sock.sendMessage(userId, { text: "Merhaba! Psikolog randevu asistanına hoş geldiniz. \n(Dilediğiniz zaman çıkmak için *çıkış*, bir önceki adıma dönmek için *iptal* yazabilirsiniz.)\n\nLütfen adınızı ve soyadınızı yazın:" });
+                return;
+            } else if (lowText.includes("appointment") || lowText.includes("hello")) {
+                session.lang = 'en';
+                session.stage = STAGES.AWAITING_NAME;
+                session.data = {};
+                await sock.sendMessage(userId, { text: "Hello! Welcome to the psychologist appointment assistant. \n(You can type *exit* to cancel anytime, or *back* to return to the previous step.)\n\nPlease type your full name:" });
                 return;
             }
 
             if (session.stage === STAGES.IDLE) return;
 
+            const isEn = session.lang === 'en';
+
             // Global Çıkış / Geri Dön Komutları
-            if (lowText === "çıkış") {
+            if (lowText === "çıkış" || lowText === "exit") {
                 userSessions.delete(userId);
-                await sock.sendMessage(userId, { text: "❌ Randevu işleminiz sonlandırıldı. İyi günler dileriz!" });
+                await sock.sendMessage(userId, { text: isEn ? "❌ Appointment process canceled. Have a great day!" : "❌ Randevu işleminiz sonlandırıldı. İyi günler dileriz!" });
                 return;
             }
 
-            if (lowText === "iptal") {
+            if (lowText === "iptal" || lowText === "back") {
                 if (session.stage === STAGES.AWAITING_NAME) {
                     userSessions.delete(userId);
-                    await sock.sendMessage(userId, { text: "❌ İşlem sonlandırıldı." });
+                    await sock.sendMessage(userId, { text: isEn ? "❌ Process canceled." : "❌ İşlem sonlandırıldı." });
                     return;
                 } else if (session.stage === STAGES.AWAITING_EMAIL) {
                     session.stage = STAGES.AWAITING_NAME;
-                    await sock.sendMessage(userId, { text: "⏪ Bir önceki adıma döndünüz.\n\nLütfen adınızı ve soyadınızı yazın:" });
+                    await sock.sendMessage(userId, { text: isEn ? "⏪ Returned to the previous step.\n\nPlease type your full name:" : "⏪ Bir önceki adıma döndünüz.\n\nLütfen adınızı ve soyadınızı yazın:" });
                     return;
                 } else if (session.stage === STAGES.AWAITING_PHONE) {
                     session.stage = STAGES.AWAITING_EMAIL;
-                    await sock.sendMessage(userId, { text: "⏪ Bir önceki adıma döndünüz.\n\nLütfen e-posta adresinizi yazın (veya 'atla' yazın):" });
+                    await sock.sendMessage(userId, { text: isEn ? "⏪ Returned to the previous step.\n\nPlease type your email address (or type 'skip'):" : "⏪ Bir önceki adıma döndünüz.\n\nLütfen e-posta adresinizi yazın (veya 'atla' yazın):" });
                     return;
                 } else if (session.stage === STAGES.AWAITING_SERVICE) {
                     session.stage = STAGES.AWAITING_PHONE;
-                    await sock.sendMessage(userId, { text: "⏪ Bir önceki adıma döndünüz.\n\nLütfen telefon numaranızı yazın:" });
+                    await sock.sendMessage(userId, { text: isEn ? "⏪ Returned to the previous step.\n\nPlease type your phone number:" : "⏪ Bir önceki adıma döndünüz.\n\nLütfen telefon numaranızı yazın:" });
                     return;
                 } else if (session.stage === STAGES.AWAITING_DOCTOR) {
                     session.stage = STAGES.AWAITING_SERVICE;
                     const numberEmojis = ['1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣', '6️⃣', '7️⃣', '8️⃣', '9️⃣', '🔟'];
-                    let message = "⏪ Bir önceki adıma döndünüz.\n📋 *Hizmet Seçimi* 📋\n\nLütfen size uygun olan hizmetin başındaki *numarayı* yazıp gönderin:\n\n";
+                    let message = isEn ? "⏪ Returned to the previous step.\n📋 *Service Selection* 📋\n\nPlease type the *number* of the service you want:\n\n" : "⏪ Bir önceki adıma döndünüz.\n📋 *Hizmet Seçimi* 📋\n\nLütfen size uygun olan hizmetin başındaki *numarayı* yazıp gönderin:\n\n";
                     session.services.forEach((s, index) => { 
                         let emoji = index < 10 ? numberEmojis[index] : `${index + 1}.`;
                         message += `${emoji}  ${s.title}\n`; 
@@ -137,7 +146,7 @@ async function initWhatsAppBot() {
                 } else if (session.stage === STAGES.AWAITING_DATE) {
                     session.stage = STAGES.AWAITING_DOCTOR;
                     const numberEmojis = ['1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣', '6️⃣', '7️⃣', '8️⃣', '9️⃣', '🔟'];
-                    let message = "⏪ Bir önceki adıma döndünüz.\n👨‍⚕️ *Doktor Seçimi* 👩‍⚕️\n\nLütfen randevu almak istediğiniz doktorun başındaki *numarayı* yazıp gönderin:\n\n";
+                    let message = isEn ? "⏪ Returned to the previous step.\n👨‍⚕️ *Doctor Selection* 👩‍⚕️\n\nPlease type the *number* of the doctor you want to book:\n\n" : "⏪ Bir önceki adıma döndünüz.\n👨‍⚕️ *Doktor Seçimi* 👩‍⚕️\n\nLütfen randevu almak istediğiniz doktorun başındaki *numarayı* yazıp gönderin:\n\n";
                     session.doctors.forEach((d, index) => { 
                         let emoji = index < 10 ? numberEmojis[index] : `${index + 1}.`;
                         message += `${emoji}  ${d.full_name}\n`; 
@@ -151,31 +160,31 @@ async function initWhatsAppBot() {
                 case STAGES.AWAITING_NAME:
                     const nameRegex = /^[a-zA-ZçÇğĞıİöÖşŞüÜ\s]{3,50}$/;
                     if (!nameRegex.test(text)) {
-                        await sock.sendMessage(userId, { text: "⚠️ Geçersiz isim. Lütfen sadece harf kullanarak gerçek bir ad ve soyad girin (Örn: Ahmet Yılmaz):" });
+                        await sock.sendMessage(userId, { text: isEn ? "⚠️ Invalid name. Please use only letters (e.g., John Doe):" : "⚠️ Geçersiz isim. Lütfen sadece harf kullanarak gerçek bir ad ve soyad girin (Örn: Ahmet Yılmaz):" });
                         return;
                     }
                     session.data.name = text;
                     session.stage = STAGES.AWAITING_EMAIL;
-                    await sock.sendMessage(userId, { text: `Teşekkürler ${text}. E-posta adresinizi yazın (veya 'atla' yazın):` });
+                    await sock.sendMessage(userId, { text: isEn ? `Thank you ${text}. Please type your email address (or type 'skip'):` : `Teşekkürler ${text}. E-posta adresinizi yazın (veya 'atla' yazın):` });
                     break;
                 case STAGES.AWAITING_EMAIL:
-                    if (lowText !== "atla") {
+                    if (lowText !== "atla" && lowText !== "skip") {
                         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
                         if (!emailRegex.test(text)) {
-                            await sock.sendMessage(userId, { text: "⚠️ Geçersiz e-posta adresi. Lütfen geçerli bir e-posta girin veya bu adımı geçmek için 'atla' yazın:" });
+                            await sock.sendMessage(userId, { text: isEn ? "⚠️ Invalid email. Please enter a valid email or type 'skip':" : "⚠️ Geçersiz e-posta adresi. Lütfen geçerli bir e-posta girin veya bu adımı geçmek için 'atla' yazın:" });
                             return;
                         }
                     }
-                    session.data.email = lowText === "atla" ? null : text;
+                    session.data.email = (lowText === "atla" || lowText === "skip") ? null : text;
                     session.stage = STAGES.AWAITING_PHONE;
-                    await sock.sendMessage(userId, { text: "Telefon numaranızı yazın:" });
+                    await sock.sendMessage(userId, { text: isEn ? "Please type your phone number:" : "Telefon numaranızı yazın:" });
                     break;
                 case STAGES.AWAITING_PHONE:
                     // Sadece rakamları al
                     const cleanPhone = text.replace(/\D/g, '');
                     
                     if (cleanPhone.length < 10 || cleanPhone.length > 11) {
-                        await sock.sendMessage(userId, { text: "Geçersiz telefon numarası! Lütfen 10 veya 11 haneli geçerli bir numara girin (Örn: 05551234567 veya 5551234567):" });
+                        await sock.sendMessage(userId, { text: isEn ? "Invalid phone number! Please enter a valid 10 or 11 digit number:" : "Geçersiz telefon numarası! Lütfen 10 veya 11 haneli geçerli bir numara girin (Örn: 05551234567 veya 5551234567):" });
                         return;
                     }
                     
@@ -184,7 +193,7 @@ async function initWhatsAppBot() {
                     try {
                         const services = await db.query("SELECT id, title FROM services");
                         const numberEmojis = ['1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣', '6️⃣', '7️⃣', '8️⃣', '9️⃣', '🔟'];
-                        let message = "📋 *Hizmet Seçimi* 📋\n\nLütfen size uygun olan hizmetin başındaki *numarayı* yazıp gönderin:\n\n";
+                        let message = isEn ? "📋 *Service Selection* 📋\n\nPlease type the *number* of the service you want:\n\n" : "📋 *Hizmet Seçimi* 📋\n\nLütfen size uygun olan hizmetin başındaki *numarayı* yazıp gönderin:\n\n";
                         services.rows.forEach((s, index) => { 
                             let emoji = index < 10 ? numberEmojis[index] : `${index + 1}.`;
                             message += `${emoji}  ${s.title}\n`; 
@@ -202,7 +211,7 @@ async function initWhatsAppBot() {
                         try {
                             const doctors = await db.query("SELECT id, full_name FROM doctors WHERE is_active = true");
                             const numberEmojis = ['1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣', '6️⃣', '7️⃣', '8️⃣', '9️⃣', '🔟'];
-                            let message = "👨‍⚕️ *Doktor Seçimi* 👩‍⚕️\n\nLütfen randevu almak istediğiniz doktorun başındaki *numarayı* yazıp gönderin:\n\n";
+                            let message = isEn ? "👨‍⚕️ *Doctor Selection* 👩‍⚕️\n\nPlease type the *number* of the doctor you want:\n\n" : "👨‍⚕️ *Doktor Seçimi* 👩‍⚕️\n\nLütfen randevu almak istediğiniz doktorun başındaki *numarayı* yazıp gönderin:\n\n";
                             doctors.rows.forEach((d, index) => { 
                                 let emoji = index < 10 ? numberEmojis[index] : `${index + 1}.`;
                                 message += `${emoji}  ${d.full_name}\n`; 
@@ -211,7 +220,7 @@ async function initWhatsAppBot() {
                             await sock.sendMessage(userId, { text: message });
                         } catch (err) { session.stage = STAGES.IDLE; }
                     } else {
-                        await sock.sendMessage(userId, { text: "Geçersiz seçim. Lütfen listedeki numaralardan birini yazın." });
+                        await sock.sendMessage(userId, { text: isEn ? "Invalid selection. Please type a valid number from the list." : "Geçersiz seçim. Lütfen listedeki numaralardan birini yazın." });
                     }
                     break;
                 case STAGES.AWAITING_DOCTOR:
@@ -257,19 +266,19 @@ async function initWhatsAppBot() {
 
                             session.dateOptions = options;
                             const numberEmojis = ['1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣', '6️⃣', '7️⃣', '8️⃣', '9️⃣', '🔟'];
-                            let msgText = "🗓️ *Randevu Saati Seçimi* 🗓️\n\nLütfen size uygun olan saatin başındaki *numarayı* yazıp gönderin:\n\n";
+                            let msgText = isEn ? "🗓️ *Appointment Time Selection* 🗓️\n\nPlease type the *number* of the slot you want:\n\n" : "🗓️ *Randevu Saati Seçimi* 🗓️\n\nLütfen size uygun olan saatin başındaki *numarayı* yazıp gönderin:\n\n";
                             options.forEach((opt, idx) => {
                                 let emoji = idx < 10 ? numberEmojis[idx] : `${idx + 1}.`;
                                 msgText += `${emoji}  ${opt}\n`;
                             });
-                            msgText += `\n✍️ _Farklı bir tarih girmek isterseniz GG.AA.YIL SAAT şeklinde yazabilirsiniz._`;
+                            msgText += isEn ? "\n✍️ _If you want to enter a different date, type as DD.MM.YYYY HH:MM_" : "\n✍️ _Farklı bir tarih girmek isterseniz GG.AA.YIL SAAT şeklinde yazabilirsiniz._";
                             
                             await sock.sendMessage(userId, { text: msgText });
                         } catch (err) {
-                            await sock.sendMessage(userId, { text: "Randevu tarihi ve saatini gün.ay.yıl saat şeklinde girin (Örn: 25.12.2024 14:00):" });
+                            await sock.sendMessage(userId, { text: isEn ? "Please enter the date and time as DD.MM.YYYY HH:MM (E.g: 25.12.2024 14:00):" : "Randevu tarihi ve saatini gün.ay.yıl saat şeklinde girin (Örn: 25.12.2024 14:00):" });
                         }
                     } else {
-                        await sock.sendMessage(userId, { text: "Geçersiz seçim. Lütfen numarayı doğru yazın." });
+                        await sock.sendMessage(userId, { text: isEn ? "Invalid selection." : "Geçersiz seçim. Lütfen numarayı doğru yazın." });
                     }
                     break;
                 case STAGES.AWAITING_DATE:
@@ -296,7 +305,7 @@ async function initWhatsAppBot() {
                         const match = text.match(dateRegex);
                         
                         if (!match) {
-                            await sock.sendMessage(userId, { text: "Hatalı format! Lütfen listeden bir numara seçin veya Gün.Ay.Yıl Saat şeklinde yazın (Örn: 25.12.2024 14:00):" });
+                            await sock.sendMessage(userId, { text: isEn ? "Invalid format! Please enter as DD.MM.YYYY HH:MM (E.g: 25.12.2024 14:00):" : "Hatalı format! Lütfen listeden bir numara seçin veya Gün.Ay.Yıl Saat şeklinde yazın (Örn: 25.12.2024 14:00):" });
                             return;
                         }
                         const day = match[1].padStart(2, '0');
@@ -306,7 +315,7 @@ async function initWhatsAppBot() {
                         const minute = match[5].padStart(2, '0');
                         
                         if (minute !== '00') {
-                            await sock.sendMessage(userId, { text: "⚠️ Lütfen sadece tam saatlere randevu alın (Örn: 14:00, 15:00 gibi)." });
+                            await sock.sendMessage(userId, { text: isEn ? "⚠️ Please select a full hour (e.g. 14:00, 15:00)." : "⚠️ Lütfen sadece tam saatlere randevu alın (Örn: 14:00, 15:00 gibi)." });
                             return;
                         }
 
@@ -317,7 +326,7 @@ async function initWhatsAppBot() {
 
                     // 1. Geçmiş tarih kontrolü
                     if (requestedDate < now) {
-                        await sock.sendMessage(userId, { text: "⚠️ Geçmiş bir tarihe randevu oluşturamazsınız. Lütfen ileri bir tarih ve saat girin veya listeden seçin:" });
+                        await sock.sendMessage(userId, { text: isEn ? "⚠️ You cannot book a past date. Please enter a future date:" : "⚠️ Geçmiş bir tarihe randevu oluşturamazsınız. Lütfen ileri bir tarih ve saat girin veya listeden seçin:" });
                         return;
                     }
 
@@ -329,7 +338,7 @@ async function initWhatsAppBot() {
                         );
 
                         if (conflictCheck.rows.length > 0) {
-                            await sock.sendMessage(userId, { text: `⚠️ Seçtiğiniz tarih ve saat (${displayDate}) doludur.\n\nLütfen listedeki diğer numaralardan birini seçin veya farklı bir tarih yazın.` });
+                            await sock.sendMessage(userId, { text: isEn ? `⚠️ The time (${displayDate}) is booked.\n\nPlease select another number or enter a new date.` : `⚠️ Seçtiğiniz tarih ve saat (${displayDate}) doludur.\n\nLütfen listedeki diğer numaralardan birini seçin veya farklı bir tarih yazın.` });
                             return; // Çık ve tekrar tarih bekle
                         }
 
@@ -340,23 +349,19 @@ async function initWhatsAppBot() {
                             [session.data.name, session.data.phone, session.data.email, session.data.serviceId, session.data.doctorId, dbDateStr]
                         );
                         
-                        await sock.sendMessage(userId, { text: `✅ Randevu başarıyla oluşturuldu!\n\n👤 Hasta: ${session.data.name}\n🏥 Hizmet: ${session.data.serviceName}\n👨‍⚕️ Doktor: ${session.data.doctorName}\n📅 Tarih: ${session.data.date}\n\nSize en kısa sürede geri dönüş yapacağız.` });
+                        let finalMsg = isEn 
+                          ? `✅ Appointment successfully created!\n\n👤 Patient: ${session.data.name}\n🏥 Service: ${session.data.serviceName}\n👨‍⚕️ Doctor: ${session.data.doctorName}\n📅 Date: ${session.data.date}\n\We will contact you shortly.`
+                          : `✅ Randevu başarıyla oluşturuldu!\n\n👤 Hasta: ${session.data.name}\n🏥 Hizmet: ${session.data.serviceName}\n👨‍⚕️ Doktor: ${session.data.doctorName}\n📅 Tarih: ${session.data.date}\n\nSize en kısa sürede geri dönüş yapacağız.`;
+
+                        await sock.sendMessage(userId, { text: finalMsg });
                         userSessions.delete(userId);
 
                     } catch (err) { 
                         console.error(err);
-                        await sock.sendMessage(userId, { text: "Sistemsel bir hata oluştu, lütfen daha sonra tekrar deneyin." }); 
+                        await sock.sendMessage(userId, { text: isEn ? "System error occurred." : "Sistemsel bir hata oluştu, lütfen daha sonra tekrar deneyin." }); 
                     }
                     break;
             }
         });
-
-    } catch (err) {
-        console.error("[WhatsApp] Hata:", err);
-        setTimeout(() => initWhatsAppBot(), 10000);
-    }
-}
-
-const getStatus = () => ({ qr: lastQr, connected: isConnected });
 
 module.exports = { initWhatsAppBot, getStatus };

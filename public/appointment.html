@@ -999,18 +999,21 @@
     </a>
     <script>
       async function updateWhatsAppLink() {
-        try {
-          const res = await fetch("/api/site-content");
-          const data = await res.json();
-          if (data && data.whatsapp_number) {
-            const link = document.getElementById("whatsappLink");
-            if (link) {
-              link.href = `https://wa.me/${data.whatsapp_number}?text=merhaba%2C%20randevu%20olu%C5%9Fturmak%20istiyorum.`;
-            }
+      try {
+        const res = await fetch("/api/site-content");
+        const data = await res.json();
+        if (data && data.whatsapp_number) {
+          const link = document.getElementById("whatsappLink");
+          if (link) {
+            const lang = localStorage.getItem("preferredLanguage") || "tr";
+            const text = lang === "en" ? "hello, I would like to book an appointment." : "merhaba, randevu oluşturmak istiyorum.";
+            link.href = `https://wa.me/${data.whatsapp_number}?text=${encodeURIComponent(text)}`;
           }
-        } catch (err) { console.error("WA update error:", err); }
-      }
-      updateWhatsAppLink();
+        }
+      } catch (err) { console.error("WA update error:", err); }
+    }
+    updateWhatsAppLink();
+    window.addEventListener("languageChanged", updateWhatsAppLink);
     </script>
   </body>
 </html>
