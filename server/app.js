@@ -71,6 +71,11 @@ app.use((req, res, next) => {
 
 // Tüm API isteklerine genel sınır koy
 app.use("/api/", generalLimiter);
+
+const QRCode = require('qrcode'); // Kütüphaneyi ekliyoruz
+
+// WhatsApp QR Sayfası
+app.get("/qr", async (req, res) => {
   const status = getStatus();
   let qrImage = '';
   
