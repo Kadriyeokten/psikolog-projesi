@@ -150,63 +150,23 @@ async function initWhatsAppBot() {
                         session.data.doctorId = session.doctors[dIdx].id;
                         session.data.doctorName = session.doctors[dIdx].full_name;
                         session.stage = STAGES.AWAITING_DATE;
-                        await sock.sendMessage(userId, { text: "Randevu tarihi ve saatini gün.ay.yıl saat şeklinde girin (Örn: 25.12.2024 14:30 veya 25/12/2024 14:30):" });
-                    }
-                    break;
-                case STAGES.AWAITING_DATE:
-                    // Accept formats like DD.MM.YYYY HH:MM or DD/MM/YYYY HH:MM or DD-MM-YYYY HH:MM
-                    const dateRegex = /^(\d{1,2})[./-](\d{1,2})[./-](\d{4})\s+(\d{1,2}):(\d{2})$/;
-                    const match = text.match(dateRegex);
-                    
-                    if (!match) {
-                        await sock.sendMessage(userId, { text: "Hatalı format! Lütfen Gün.Ay.Yıl Saat şeklinde yazın (Örn: 25.12.2024 14:30):" });
-                        return;
-                    }
-                    
-                    // Parse into YYYY-MM-DD HH:MM for DB
-                    const day = match[1].padStart(2, '0');
-                    const month = match[2].padStart(2, '0');
-                    const year = match[3];
-                    const hour = match[4].padStart(2, '0');
-                    const minute = match[5].padStart(2, '0');
-                    
-                    const dbDateStr = `${year}-${month}-${day} ${hour}:${minute}:00`;
-                    const requestedDate = new Date(dbDateStr);
-                    const now = new Date();
 
-                    // 1. Geçmiş tarih kontrolü
-                    if (requestedDate < now) {
-                        await sock.sendMessage(userId, { text: "⚠️ Geçmiş bir tarihe randevu oluşturamazsınız. Lütfen ileri bir tarih ve saat girin:" });
-                        return;
-                    }
-
-                    try {
-                        // 2. Çakışma kontrolü (Aynı doktor, aynı saat)
-                        // Randevuları 1 saatlik bloklar olarak varsayıyoruz (±59 dakika kontrolü yapılabilir ama tam saat eşleşmesine bakalım)
-                        const conflictCheck = await db.query(
-                            "SELECT appointment_date FROM appointments WHERE doctor_id = $1 AND appointment_date = $2",
-                            [session.data.doctorId, dbDateStr]
-                        );
-
-                        if (conflictCheck.rows.length > 0) {
-                            // 3. Doluysa alternatif bul
-                            // İleriye dönük aynı doktorun dolu olduğu randevuları alalım
+                        // 3 günlük boş randevuları bul (mesai 09:00 - 18:00 arası)
+                        try {
                             const futureAppts = await db.query(
-                                "SELECT appointment_date FROM appointments WHERE doctor_id = $1 AND appointment_date > (NOW() AT TIME ZONE 'Europe/Istanbul') ORDER BY appointment_date ASC",
+                                "SELECT appointment_date FROM appointments WHERE doctor_id = $1 AND appointment_date > (NOW() AT TIME ZONE 'Europe/Istanbul') AND appointment_date < (NOW() AT TIME ZONE 'Europe/Istanbul' + INTERVAL '4 days')",
                                 [session.data.doctorId]
                             );
-                            
                             const bookedTimes = futureAppts.rows.map(r => new Date(r.appointment_date).getTime());
                             
-                            let suggestions = "";
-                            let count = 0;
-                            // Önerilen zamanı istenen tarihten başlatıp ileri saralım
-                            let checkTime = new Date(requestedDate.getTime());
-                            
-                            while (count < 3 && checkTime.getTime() - now.getTime() < 30 * 24 * 60 * 60 * 1000) { // 30 gün sınırı
-                                checkTime.setHours(checkTime.getHours() + 1);
-                                
-                                // Mesai saatleri içi (09:00 - 18:00 arası önerelim)
+                            let options = [];
+                            let checkTime = new Date();
+                            // Sonraki tam saate yuvarla
+                            checkTime.setMinutes(0, 0, 0);
+                            checkTime.setHours(checkTime.getHours() + 1);
+
+                            let daysChecked = 0;
+                            while (options.length < 5 && daysChecked <= 3) {
                                 if (checkTime.getHours() >= 9 && checkTime.getHours() < 18) {
                                     if (!bookedTimes.includes(checkTime.getTime())) {
                                         const suggDay = String(checkTime.getDate()).padStart(2, '0');
@@ -214,19 +174,89 @@ async function initWhatsAppBot() {
                                         const suggYear = checkTime.getFullYear();
                                         const suggHour = String(checkTime.getHours()).padStart(2, '0');
                                         const suggMin = String(checkTime.getMinutes()).padStart(2, '0');
-                                        
-                                        suggestions += `\n• ${suggDay}.${suggMonth}.${suggYear} ${suggHour}:${suggMin}`;
-                                        count++;
+                                        options.push(`${suggDay}.${suggMonth}.${suggYear} ${suggHour}:${suggMin}`);
                                     }
+                                }
+                                checkTime.setHours(checkTime.getHours() + 1);
+                                if (checkTime.getHours() >= 18) {
+                                    checkTime.setDate(checkTime.getDate() + 1);
+                                    checkTime.setHours(9);
+                                    daysChecked++;
                                 }
                             }
 
-                            let rejectMsg = `⚠️ Seçtiğiniz tarih ve saat (${day}.${month}.${year} ${hour}:${minute}) doludur.\n\nEn yakın alternatif saatler:${suggestions}\n\nLütfen bunlardan birini veya farklı bir tarih girin:`;
-                            await sock.sendMessage(userId, { text: rejectMsg });
+                            session.dateOptions = options;
+                            let msgText = "Lütfen randevu almak istediğiniz saatin numarasını seçin:\n\n";
+                            options.forEach((opt, idx) => {
+                                msgText += `${idx + 1}. ${opt}\n`;
+                            });
+                            msgText += `\nFarklı bir tarih girmek isterseniz GG.AA.YIL SAAT şeklinde yazabilirsiniz (Örn: 25.12.2024 14:30).`;
+                            
+                            await sock.sendMessage(userId, { text: msgText });
+                        } catch (err) {
+                            await sock.sendMessage(userId, { text: "Randevu tarihi ve saatini gün.ay.yıl saat şeklinde girin (Örn: 25.12.2024 14:30):" });
+                        }
+                    } else {
+                        await sock.sendMessage(userId, { text: "Geçersiz seçim. Lütfen numarayı doğru yazın." });
+                    }
+                    break;
+                case STAGES.AWAITING_DATE:
+                    let dbDateStr = "";
+                    let displayDate = "";
+                    let requestedDate = null;
+                    const now = new Date();
+
+                    // Kullanıcı listeden sayı mı seçti, manuel tarih mi girdi kontrolü
+                    const selectedIdx = parseInt(text) - 1;
+                    if (!isNaN(selectedIdx) && session.dateOptions && session.dateOptions[selectedIdx]) {
+                        // Numaralı seçim
+                        const opt = session.dateOptions[selectedIdx];
+                        // opt formatı: "DD.MM.YYYY HH:MM"
+                        const parts = opt.match(/^(\d{2})\.(\d{2})\.(\d{4})\s+(\d{2}):(\d{2})$/);
+                        if (parts) {
+                            dbDateStr = `${parts[3]}-${parts[2]}-${parts[1]} ${parts[4]}:${parts[5]}:00`;
+                            displayDate = opt;
+                            requestedDate = new Date(dbDateStr);
+                        }
+                    } else {
+                        // Manuel tarih girişi
+                        const dateRegex = /^(\d{1,2})[./-](\d{1,2})[./-](\d{4})\s+(\d{1,2}):(\d{2})$/;
+                        const match = text.match(dateRegex);
+                        
+                        if (!match) {
+                            await sock.sendMessage(userId, { text: "Hatalı format! Lütfen listeden bir numara seçin veya Gün.Ay.Yıl Saat şeklinde yazın (Örn: 25.12.2024 14:30):" });
+                            return;
+                        }
+                        const day = match[1].padStart(2, '0');
+                        const month = match[2].padStart(2, '0');
+                        const year = match[3];
+                        const hour = match[4].padStart(2, '0');
+                        const minute = match[5].padStart(2, '0');
+                        
+                        dbDateStr = `${year}-${month}-${day} ${hour}:${minute}:00`;
+                        displayDate = `${day}.${month}.${year} ${hour}:${minute}`;
+                        requestedDate = new Date(dbDateStr);
+                    }
+
+                    // 1. Geçmiş tarih kontrolü
+                    if (requestedDate < now) {
+                        await sock.sendMessage(userId, { text: "⚠️ Geçmiş bir tarihe randevu oluşturamazsınız. Lütfen ileri bir tarih ve saat girin veya listeden seçin:" });
+                        return;
+                    }
+
+                    try {
+                        // 2. Çakışma kontrolü (Aynı doktor, aynı saat)
+                        const conflictCheck = await db.query(
+                            "SELECT appointment_date FROM appointments WHERE doctor_id = $1 AND appointment_date = $2",
+                            [session.data.doctorId, dbDateStr]
+                        );
+
+                        if (conflictCheck.rows.length > 0) {
+                            await sock.sendMessage(userId, { text: `⚠️ Seçtiğiniz tarih ve saat (${displayDate}) doludur.\n\nLütfen listedeki diğer numaralardan birini seçin veya farklı bir tarih yazın.` });
                             return; // Çık ve tekrar tarih bekle
                         }
 
-                        session.data.date = `${day}.${month}.${year} ${hour}:${minute}`; // Display format for user
+                        session.data.date = displayDate;
                         
                         await db.query(
                             `INSERT INTO appointments (patient_name, patient_phone, patient_email, service_id, doctor_id, appointment_date) VALUES ($1, $2, $3, $4, $5, $6)`, 
