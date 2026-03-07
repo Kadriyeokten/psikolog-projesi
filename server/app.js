@@ -10,10 +10,33 @@ require("dotenv").config();
 const JWT_SECRET = process.env.JWT_SECRET || "my_super_secret_key_123";
 const express = require("express");
 const path = require("path");
+const helmet = require("helmet");
+const rateLimit = require("express-rate-limit");
 const { initWhatsAppBot, getStatus } = require("./whatsapp-bot");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+// Güvenlik: HTTP Başlıklarını Korumak İçin Helmet
+app.use(helmet({
+  contentSecurityPolicy: false, // Frontend'de inline script veya harici resimler kullanıldığı için CSP'yi şimdilik esnek bırakıyoruz
+}));
+
+// Güvenlik: DDoS ve Brute Force Koruması (Rate Limiting)
+const generalLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 dakika
+  max: 150, // Her IP için 15 dakikada maksimum istek
+  message: { error: "Çok fazla istek gönderdiniz. Lütfen daha sonra tekrar deneyin." }
+});
+
+const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 dakika
+  max: 5, // Giriş denemesini 5 ile sınırla (Brute Force engellemesi)
+  message: { error: "Çok fazla başarısız giriş denemesi. Lütfen 15 dakika bekleyin." }
+});
+
+// Tüm API isteklerine genel sınır koy
+app.use("/api/", generalLimiter);
 
 const QRCode = require('qrcode'); // Kütüphaneyi ekliyoruz
 
@@ -105,7 +128,23 @@ const storage = multer.diskStorage({
   },
 });
 
-const upload = multer({ storage });
+// Güvenlik: Yalnızca Resim Dosyalarına İzin Veren Filtre
+const imageFilter = (req, file, cb) => {
+  const allowedTypes = /jpeg|jpg|png|webp|gif/;
+  const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
+  const mimetype = allowedTypes.test(file.mimetype);
+
+  if (mimetype && extname) {
+    return cb(null, true);
+  }
+  cb(new Error("Güvenlik İhlali: Sadece resim formatları (.png, .jpg, .jpeg, .webp) yüklenebilir!"));
+};
+
+const upload = multer({ 
+  storage: storage,
+  limits: { fileSize: 5 * 1024 * 1024 }, // Güvenlik: Maksimum 5MB limit
+  fileFilter: imageFilter
+});
 
 // JSON okumak için
 app.use(express.static("public"));
@@ -319,7 +358,7 @@ app.post("/api/signup", async (req, res) => {
     res.status(500).json({ error: "Sunucu hatasi" });
   }
 });
-app.post("/api/login", async (req, res) => {
+app.post("/api/login", loginLimiter, async (req, res) => {
   const { email, password } = req.body;
 
   const result = await db.query("SELECT * FROM users WHERE email=$1", [email]);
