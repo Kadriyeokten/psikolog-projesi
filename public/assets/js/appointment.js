@@ -118,7 +118,13 @@ document.getElementById("appointmentForm")?.addEventListener("submit", async fun
     return;
   }
   
-  const utcDateTime = new Date(selectedDateTime).toISOString();
+  // Format the date locally without converting to UTC (which causes 3 hour offset)
+  const d = new Date(selectedDateTime);
+  const localDateTime = d.getFullYear() + "-" + 
+    String(d.getMonth() + 1).padStart(2, '0') + "-" + 
+    String(d.getDate()).padStart(2, '0') + " " + 
+    String(d.getHours()).padStart(2, '0') + ":" + 
+    String(d.getMinutes()).padStart(2, '0') + ":00";
 
   const data = {
     patientName,
@@ -126,7 +132,7 @@ document.getElementById("appointmentForm")?.addEventListener("submit", async fun
     patientEmail,
     service,
     therapist,
-    selectedDateTime: utcDateTime
+    selectedDateTime: localDateTime
   };
 
   try {
