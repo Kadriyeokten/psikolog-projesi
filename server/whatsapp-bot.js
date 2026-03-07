@@ -141,18 +141,31 @@ async function initWhatsAppBot() {
                         session.data.doctorId = session.doctors[dIdx].id;
                         session.data.doctorName = session.doctors[dIdx].full_name;
                         session.stage = STAGES.AWAITING_DATE;
-                        await sock.sendMessage(userId, { text: "Randevu tarihi ve saati girin (Örn: 2024-12-25 10:00):" });
+                        await sock.sendMessage(userId, { text: "Randevu tarihi ve saatini gün.ay.yıl saat şeklinde girin (Örn: 25.12.2024 14:30 veya 25/12/2024 14:30):" });
                     }
                     break;
                 case STAGES.AWAITING_DATE:
-                    const dateRegex = /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}$/;
-                    if (!dateRegex.test(text)) {
-                        await sock.sendMessage(userId, { text: "Hatalı format! (Örn: 2024-12-25 10:00)" });
+                    // Accept formats like DD.MM.YYYY HH:MM or DD/MM/YYYY HH:MM or DD-MM-YYYY HH:MM
+                    const dateRegex = /^(\d{1,2})[./-](\d{1,2})[./-](\d{4})\s+(\d{1,2}):(\d{2})$/;
+                    const match = text.match(dateRegex);
+                    
+                    if (!match) {
+                        await sock.sendMessage(userId, { text: "Hatalı format! Lütfen Gün.Ay.Yıl Saat şeklinde yazın (Örn: 25.12.2024 14:30):" });
                         return;
                     }
-                    session.data.date = text;
+                    
+                    // Parse into YYYY-MM-DD HH:MM for DB
+                    const day = match[1].padStart(2, '0');
+                    const month = match[2].padStart(2, '0');
+                    const year = match[3];
+                    const hour = match[4].padStart(2, '0');
+                    const minute = match[5].padStart(2, '0');
+                    
+                    const dbDateStr = `${year}-${month}-${day} ${hour}:${minute}:00`;
+                    session.data.date = `${day}.${month}.${year} ${hour}:${minute}`; // Display format for user
+                    
                     try {
-                        await db.query(`INSERT INTO appointments (patient_name, patient_phone, patient_email, service_id, doctor_id, appointment_date) VALUES ($1, $2, $3, $4, $5, $6)`, [session.data.name, session.data.phone, session.data.email, session.data.serviceId, session.data.doctorId, session.data.date]);
+                        await db.query(`INSERT INTO appointments (patient_name, patient_phone, patient_email, service_id, doctor_id, appointment_date) VALUES ($1, $2, $3, $4, $5, $6)`, [session.data.name, session.data.phone, session.data.email, session.data.serviceId, session.data.doctorId, dbDateStr]);
                         await sock.sendMessage(userId, { text: `✅ Randevu başarıyla oluşturuldu!\n\n👤 Hasta: ${session.data.name}\n🏥 Hizmet: ${session.data.serviceName}\n👨‍⚕️ Doktor: ${session.data.doctorName}\n📅 Tarih: ${session.data.date}` });
                         userSessions.delete(userId);
                     } catch (err) { await sock.sendMessage(userId, { text: "Hata oluştu." }); }
