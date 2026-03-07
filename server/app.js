@@ -12,10 +12,19 @@ const express = require("express");
 const path = require("path");
 const helmet = require("helmet");
 const rateLimit = require("express-rate-limit");
+const cors = require("cors");
 const { initWhatsAppBot, getStatus } = require("./whatsapp-bot");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+// Güvenlik: CORS (Cross-Origin Resource Sharing) - Sadece kendi domaininize izin verin
+// Canlıya aldığınızda origin kısmına kendi web sitenizin URL'sini ekleyebilirsiniz. (Örn: 'https://psikolog-projesi.onrender.com')
+app.use(cors({
+  origin: "*", // Geliştirme aşamasında herkese açık, canlıda sadece kendi alan adınızı yazın.
+  methods: ["GET", "POST", "PUT", "DELETE"],
+  credentials: true
+}));
 
 // Güvenlik: HTTP Başlıklarını Korumak İçin Helmet
 app.use(helmet({
@@ -35,13 +44,33 @@ const loginLimiter = rateLimit({
   message: { error: "Çok fazla başarısız giriş denemesi. Lütfen 15 dakika bekleyin." }
 });
 
+// JSON okumak için
+app.use(express.static("public"));
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// Güvenlik: Girdi Temizleme (Sanitization) - XSS Koruması
+// Kullanıcıdan gelen JSON verilerinin içindeki tehlikeli HTML etiketlerini (script vb.) temizler.
+const sanitizeInput = (obj) => {
+  for (let key in obj) {
+    if (typeof obj[key] === 'string') {
+      // Tehlikeli karakterleri zararsız HTML kodlarına dönüştür
+      obj[key] = obj[key].replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    } else if (typeof obj[key] === 'object' && obj[key] !== null) {
+      sanitizeInput(obj[key]);
+    }
+  }
+};
+
+app.use((req, res, next) => {
+  if (req.body) sanitizeInput(req.body);
+  if (req.query) sanitizeInput(req.query);
+  if (req.params) sanitizeInput(req.params);
+  next();
+});
+
 // Tüm API isteklerine genel sınır koy
 app.use("/api/", generalLimiter);
-
-const QRCode = require('qrcode'); // Kütüphaneyi ekliyoruz
-
-// WhatsApp QR Sayfası
-app.get("/qr", async (req, res) => {
   const status = getStatus();
   let qrImage = '';
   
