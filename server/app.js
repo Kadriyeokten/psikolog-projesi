@@ -9,9 +9,63 @@ require("dotenv").config();
 const JWT_SECRET = process.env.JWT_SECRET || "my_super_secret_key_123";
 const express = require("express");
 const path = require("path");
+const { initWhatsAppBot, getStatus } = require("./whatsapp-bot");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+const QRCode = require('qrcode'); // Kütüphaneyi ekliyoruz
+
+// WhatsApp QR Sayfası
+app.get("/qr", async (req, res) => {
+  const status = getStatus();
+  let qrImage = '';
+  
+  if (status.qr) {
+    try {
+      qrImage = await QRCode.toDataURL(status.qr);
+    } catch (err) {
+      console.error("QR Image Error:", err);
+    }
+  }
+
+  res.send(`
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <title>WhatsApp Bot Bağlantısı</title>
+      <meta http-equiv="refresh" content="5"> <!-- Sayfayı her 5 saniyede bir otomatik yenile -->
+      <style>
+        body { font-family: sans-serif; text-align: center; padding: 50px; background: #f0f2f5; }
+        .card { background: white; padding: 30px; border-radius: 10px; display: inline-block; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .qr-img { margin: 20px auto; border: 10px solid white; border-radius: 5px; box-shadow: 0 0 5px rgba(0,0,0,0.1); }
+        .status { margin-top: 20px; font-weight: bold; }
+        .connected { color: #25d366; }
+        .waiting { color: #ff9800; }
+        .btn-refresh { margin-top: 20px; padding: 10px 20px; cursor: pointer; background: #25d366; color: white; border: none; border-radius: 5px; }
+      </style>
+    </head>
+    <body>
+      <div class="card">
+        <h2>WhatsApp Bot Bağlantısı</h2>
+        ${status.connected 
+          ? '<h3 class="status connected">✅ BAĞLANTI BAŞARILI!</h3>' 
+          : status.qr 
+            ? '<p>Lütfen bu QR kodu telefonunuzdan taratın.</p><img class="qr-img" src="' + qrImage + '" width="300" /><div class="status waiting">QR kod okutulmayı bekliyor...</div>'
+            : '<div class="status waiting">QR kod bekleniyor, lütfen sayfayı yenileyin...</div>'
+        }
+        <br/>
+        <button class="btn-refresh" onclick="location.reload()">Sayfayı Yenile</button>
+      </div>
+    </body>
+    </html>
+  `);
+});
+
+// API Durum
+app.get("/api/whatsapp/status", (req, res) => {
+  res.json(getStatus());
+});
 
 db.query("SELECT current_database()", (err, res) => {
   if (err) console.error("DB Hata:", err);
@@ -201,6 +255,7 @@ app.post("/api/translate", async (req, res) => {
 
 app.listen(PORT, () => {
   console.log(`Server çalisiyor: http://localhost:${PORT}`);
+  initWhatsAppBot();
 });
 
 app.get("/api/site-content", async (req, res) => {
