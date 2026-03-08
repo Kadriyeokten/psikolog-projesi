@@ -11,17 +11,18 @@ require("dotenv").config();
 
 const JWT_SECRET = process.env.JWT_SECRET || "my_super_secret_key_123";
 
-// Nodemailer yapılandırması (Hata ayıklama modlu ve Port 587)
+// Nodemailer yapılandırması (IPv4 zorlaması ile)
 const transporter = nodemailer.createTransport({
   host: "smtp.gmail.com",
   port: 587,
-  secure: false, // Port 587 için false olmalı
+  secure: false,
   auth: {
     user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS ? process.env.EMAIL_PASS.replace(/\s/g, "") : "", // Boşlukları temizle
+    pass: process.env.EMAIL_PASS ? process.env.EMAIL_PASS.replace(/\s/g, "") : "",
   },
-  debug: true, // Render loglarında detaylı SMTP trafiğini gösterir
-  logger: true // Konsola işlem adımlarını yazar
+  family: 4, // IPv6 yerine IPv4 kullanmaya zorla (Render hatasını çözer)
+  debug: true,
+  logger: true
 });
 
 // E-posta bağlantısını başlangıçta test et
