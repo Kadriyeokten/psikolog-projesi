@@ -7,6 +7,13 @@ const fs = require("fs");
 const { translate } = require("google-translate-api-x");
 const crypto = require("crypto");
 const nodemailer = require("nodemailer");
+const dns = require("dns");
+
+// DNS çözümleme sırasını IPv4 öncelikli yap (Render ENETUNREACH hatası için kritik)
+if (dns.setDefaultResultOrder) {
+  dns.setDefaultResultOrder('ipv4first');
+}
+
 require("dotenv").config();
 
 const JWT_SECRET = process.env.JWT_SECRET || "my_super_secret_key_123";
