@@ -11,18 +11,17 @@ require("dotenv").config();
 
 const JWT_SECRET = process.env.JWT_SECRET || "my_super_secret_key_123";
 
-// Nodemailer yapılandırması (Gmail için daha güvenli SSL/Port 465 ayarı)
+// Nodemailer yapılandırması (Hata ayıklama modlu ve Port 587)
 const transporter = nodemailer.createTransport({
   host: "smtp.gmail.com",
-  port: 465,
-  secure: true, // SSL kullan
+  port: 587,
+  secure: false, // Port 587 için false olmalı
   auth: {
     user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
+    pass: process.env.EMAIL_PASS ? process.env.EMAIL_PASS.replace(/\s/g, "") : "", // Boşlukları temizle
   },
-  tls: {
-    rejectUnauthorized: false // Sertifika hatalarını görmezden gel (Render uyumu için)
-  }
+  debug: true, // Render loglarında detaylı SMTP trafiğini gösterir
+  logger: true // Konsola işlem adımlarını yazar
 });
 
 // E-posta bağlantısını başlangıçta test et
@@ -520,8 +519,11 @@ app.post("/api/forgot-password", async (req, res) => {
 
     console.log(`E-posta gönderimi başlatıldı: ${email}...`);
     
-    // E-posta gönderimi
-    await transporter.sendMail(mailOptions);
+    // E-posta gönderimi (30 saniye zaman aşımı ile)
+    await Promise.race([
+        transporter.sendMail(mailOptions),
+        new Promise((_, reject) => setTimeout(() => reject(new Error("E-posta gönderimi zaman aşımına uğradı (30s)")), 30000))
+    ]);
 
     console.log("E-posta başarıyla gönderildi! ✅");
     res.json({ message: "Şifre yenileme bağlantısı e-posta adresinize gönderildi." });
