@@ -475,8 +475,12 @@ app.post("/api/forgot-password", async (req, res) => {
     await transporter.sendMail(mailOptions);
     res.json({ message: "Şifre yenileme bağlantısı e-posta adresinize gönderildi." });
   } catch (err) {
-    console.error("Forgot password error:", err);
-    res.status(500).json({ error: "Bir hata oluştu, lütfen daha sonra tekrar deneyin." });
+    console.error("FORGOT PASSWORD DETAYLI HATA:", {
+      message: err.message,
+      stack: err.stack,
+      code: err.code
+    });
+    res.status(500).json({ error: "Bir hata oluştu, lütfen daha sonra tekrar deneyin.", detail: err.message });
   }
 });
 
