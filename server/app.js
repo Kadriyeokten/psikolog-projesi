@@ -11,13 +11,18 @@ require("dotenv").config();
 
 const JWT_SECRET = process.env.JWT_SECRET || "my_super_secret_key_123";
 
-// Nodemailer yapılandırması
+// Nodemailer yapılandırması (Gmail için daha güvenli SSL/Port 465 ayarı)
 const transporter = nodemailer.createTransport({
-  service: process.env.EMAIL_SERVICE || "gmail",
+  host: "smtp.gmail.com",
+  port: 465,
+  secure: true, // SSL kullan
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS,
   },
+  tls: {
+    rejectUnauthorized: false // Sertifika hatalarını görmezden gel (Render uyumu için)
+  }
 });
 
 // E-posta bağlantısını başlangıçta test et
@@ -476,8 +481,6 @@ app.post("/api/forgot-password", async (req, res) => {
   try {
     const userResult = await db.query("SELECT * FROM users WHERE email = $1", [email]);
     if (userResult.rows.length === 0) {
-      // Güvenlik için kullanıcı bulunmasa bile sanki mail gönderilmiş gibi davranabiliriz 
-      // ama şu anlık basitlik için hata verelim.
       return res.status(404).json({ error: "Bu e-posta adresi ile kayıtlı bir kullanıcı bulunamadı." });
     }
 
@@ -497,24 +500,28 @@ app.post("/api/forgot-password", async (req, res) => {
     }
 
     const mailOptions = {
-      from: process.env.EMAIL_USER,
+      from: `"Fast Terapi" <${process.env.EMAIL_USER}>`,
       to: email,
       subject: "Şifre Yenileme Talebi - Fast Terapi",
+      text: `Şifrenizi yenilemek için şu bağlantıya tıklayın: ${resetLink}`,
       html: `
-        <h3>Şifre Yenileme Talebi</h3>
-        <p>Aşağıdaki bağlantıya tıklayarak şifrenizi yenileyebilirsiniz. Bu bağlantı 1 saat boyunca geçerlidir.</p>
-        <a href="${resetLink}">Şifremi Yenile</a>
-        <p>Eğer bu talebi siz yapmadıysanız lütfen bu e-postayı dikkate almayın.</p>
+        <div style="font-family: Arial, sans-serif; padding: 20px; border: 1px solid #eee;">
+          <h2 style="color: #25d366;">Şifre Yenileme Talebi</h2>
+          <p>Aşağıdaki bağlantıya tıklayarak şifrenizi yenileyebilirsiniz. Bu bağlantı 1 saat boyunca geçerlidir.</p>
+          <div style="margin: 30px 0;">
+            <a href="${resetLink}" style="background-color: #25d366; color: white; padding: 12px 25px; text-decoration: none; border-radius: 5px; font-weight: bold;">Şifremi Yenile</a>
+          </div>
+          <p>Eğer bu talebi siz yapmadıysanız lütfen bu e-postayı dikkate almayın.</p>
+          <hr style="border: 0; border-top: 1px solid #eee; margin-top: 30px;">
+          <p style="color: #888; font-size: 12px;">Bu e-posta Fast Terapi sistemi tarafından otomatik olarak gönderilmiştir.</p>
+        </div>
       `,
     };
 
-    console.log(`Şu adrese e-posta gönderiliyor: ${email}...`);
+    console.log(`E-posta gönderimi başlatıldı: ${email}...`);
     
-    // E-posta gönderimini bekle (30 saniye sonra zaman aşımı verelim)
-    await Promise.race([
-        transporter.sendMail(mailOptions),
-        new Promise((_, reject) => setTimeout(() => reject(new Error("E-posta gönderimi zaman aşımına uğradı (30s)")), 30000))
-    ]);
+    // E-posta gönderimi
+    await transporter.sendMail(mailOptions);
 
     console.log("E-posta başarıyla gönderildi! ✅");
     res.json({ message: "Şifre yenileme bağlantısı e-posta adresinize gönderildi." });
