@@ -18,22 +18,21 @@ require("dotenv").config();
 
 const JWT_SECRET = process.env.JWT_SECRET || "my_super_secret_key_123";
 
-// Nodemailer yapılandırması (Doğrudan IPv4 Adresi ve Port 465 SSL)
+// Nodemailer yapılandırması (Render Firewall By-pass denemesi)
 const transporter = nodemailer.createTransport({
-  host: "172.253.117.109", // smtp.gmail.com yerine doğrudan Google IPv4 adresi (ENETUNREACH Kesin Çözümü)
-  port: 465,
-  secure: true,
+  host: "smtp.gmail.com",
+  port: 587, // Genellikle bulut sunucularda en az engellenen port
+  secure: false, // 587 portu için false olmalı
+  requireTLS: true, // TLS bağlantısına zorla (Google bunu ister)
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS ? process.env.EMAIL_PASS.replace(/\s/g, "") : "",
   },
   tls: {
-    // IP adresi kullandığımız için sertifika host ismi (smtp.gmail.com) ile uyuşmayacak, bunu görmezden gel diyoruz.
+    ciphers: 'SSLv3',
     rejectUnauthorized: false
   },
-  connectionTimeout: 20000, 
-  greetingTimeout: 20000, 
-  socketTimeout: 20000,
+  connectionTimeout: 30000, 
   debug: true,
   logger: true
 });
