@@ -163,6 +163,7 @@ async function ensureColumnsExist() {
         email VARCHAR(100) UNIQUE NOT NULL,
         password VARCHAR(255) NOT NULL,
         role VARCHAR(20) DEFAULT 'user',
+        token_version INTEGER DEFAULT 1,
         reset_token VARCHAR(255),
         reset_token_expiry TIMESTAMP,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -172,6 +173,7 @@ async function ensureColumnsExist() {
     // Users tablosu için eksik sütunlar (Render/Existing Table fix)
     await db.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS reset_token VARCHAR(255)`);
     await db.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS reset_token_expiry TIMESTAMP`);
+    await db.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS token_version INTEGER DEFAULT 1`);
 
     // Site Content - whatsapp_number
     await db.query(`ALTER TABLE site_content ADD COLUMN IF NOT EXISTS whatsapp_number VARCHAR(20)`);
@@ -225,18 +227,40 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, "../public")));
 
 // JWT Admin Authentication Middleware
-function authenticateAdmin(req, res, next) {
+async function authenticateAdmin(req, res, next) {
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1];
   
   if (!token) return res.status(401).json({ error: "Erişim reddedildi. Lütfen giriş yapın." });
 
-  jwt.verify(token, JWT_SECRET, (err, user) => {
+  jwt.verify(token, JWT_SECRET, async (err, decoded) => {
     if (err) return res.status(403).json({ error: "Geçersiz veya süresi dolmuş oturum." });
-    if (user.role !== 'admin') return res.status(403).json({ error: "Bu işlem için admin yetkisi gerekiyor." });
     
-    req.user = user;
-    next();
+    try {
+      // Veritabanından kullanıcıyı ve token_version bilgisini kontrol et
+      const userResult = await db.query("SELECT id, role, token_version FROM users WHERE id = $1", [decoded.id]);
+      
+      if (userResult.rows.length === 0) {
+        return res.status(403).json({ error: "Kullanıcı bulunamadı." });
+      }
+
+      const user = userResult.rows[0];
+
+      // Eğer JWT içindeki token_version veritabanındakinden farklıysa (şifre değişmişse) girişi reddet
+      if (user.token_version !== decoded.token_version) {
+        return res.status(403).json({ error: "Şifreniz değiştirildiği için oturumunuz sonlandırıldı. Lütfen tekrar giriş yapın." });
+      }
+
+      if (user.role !== 'admin') {
+        return res.status(403).json({ error: "Bu işlem için admin yetkisi gerekiyor." });
+      }
+      
+      req.user = user;
+      next();
+    } catch (dbErr) {
+      console.error("Middleware DB Hatası:", dbErr);
+      return res.status(500).json({ error: "Kimlik doğrulaması sırasında bir hata oluştu." });
+    }
   });
 }
 
@@ -445,11 +469,12 @@ app.post("/api/login", loginLimiter, async (req, res) => {
     return res.status(400).json({ error: "Şifre hatalı" });
   }
 
-  // TOKEN içine rol koyuyoruz
+  // TOKEN içine rol ve token_version koyuyoruz
   const token = jwt.sign(
     {
       id: user.id,
       role: user.role,
+      token_version: user.token_version, // Güvenlik önlemi için eklendi
     },
     JWT_SECRET,
     { expiresIn: "1d" },
@@ -542,8 +567,9 @@ app.post("/api/reset-password", async (req, res) => {
     const email = userResult.rows[0].email;
     const hashedPassword = await bcrypt.hash(newPassword, 10);
 
+    // Şifreyi güncelle ve token_version'ı artır (tüm cihazlardan çıkış yapılması için)
     await db.query(
-      "UPDATE users SET password = $1, reset_token = NULL, reset_token_expiry = NULL WHERE email = $2",
+      "UPDATE users SET password = $1, token_version = token_version + 1, reset_token = NULL, reset_token_expiry = NULL WHERE email = $2",
       [hashedPassword, email]
     );
 
