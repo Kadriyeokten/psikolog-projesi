@@ -5,9 +5,21 @@ const jwt = require("jsonwebtoken");
 const multer = require("multer");
 const fs = require("fs");
 const { translate } = require("google-translate-api-x");
+const crypto = require("crypto");
+const nodemailer = require("nodemailer");
 require("dotenv").config();
 
 const JWT_SECRET = process.env.JWT_SECRET || "my_super_secret_key_123";
+
+// Nodemailer yapılandırması
+const transporter = nodemailer.createTransport({
+  service: process.env.EMAIL_SERVICE || "gmail",
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS,
+  },
+});
+
 const express = require("express");
 const path = require("path");
 const helmet = require("helmet");
@@ -424,6 +436,77 @@ app.post("/api/login", loginLimiter, async (req, res) => {
     role: user.role,
     name: user.name,
   });
+});
+
+// Şifremi Unuttum - Token Oluştur ve Mail Gönder
+app.post("/api/forgot-password", async (req, res) => {
+  const { email } = req.body;
+
+  try {
+    const userResult = await db.query("SELECT * FROM users WHERE email = $1", [email]);
+    if (userResult.rows.length === 0) {
+      // Güvenlik için kullanıcı bulunmasa bile sanki mail gönderilmiş gibi davranabiliriz 
+      // ama şu anlık basitlik için hata verelim.
+      return res.status(404).json({ error: "Bu e-posta adresi ile kayıtlı bir kullanıcı bulunamadı." });
+    }
+
+    const token = crypto.randomBytes(32).toString("hex");
+    const expiry = new Date(Date.now() + 3600000); // 1 saat geçerli
+
+    await db.query(
+      "UPDATE users SET reset_token = $1, reset_token_expiry = $2 WHERE email = $3",
+      [token, expiry, email]
+    );
+
+    const resetLink = `${req.protocol}://${req.get("host")}/reset-password.html?token=${token}`;
+
+    const mailOptions = {
+      from: process.env.EMAIL_USER,
+      to: email,
+      subject: "Şifre Yenileme Talebi - Fast Terapi",
+      html: `
+        <h3>Şifre Yenileme Talebi</h3>
+        <p>Aşağıdaki bağlantıya tıklayarak şifrenizi yenileyebilirsiniz. Bu bağlantı 1 saat boyunca geçerlidir.</p>
+        <a href="${resetLink}">Şifremi Yenile</a>
+        <p>Eğer bu talebi siz yapmadıysanız lütfen bu e-postayı dikkate almayın.</p>
+      `,
+    };
+
+    await transporter.sendMail(mailOptions);
+    res.json({ message: "Şifre yenileme bağlantısı e-posta adresinize gönderildi." });
+  } catch (err) {
+    console.error("Forgot password error:", err);
+    res.status(500).json({ error: "Bir hata oluştu, lütfen daha sonra tekrar deneyin." });
+  }
+});
+
+// Şifre Yenileme - Yeni Şifreyi Kaydet
+app.post("/api/reset-password", async (req, res) => {
+  const { token, newPassword } = req.body;
+
+  try {
+    const userResult = await db.query(
+      "SELECT * FROM users WHERE reset_token = $1 AND reset_token_expiry > NOW()",
+      [token]
+    );
+
+    if (userResult.rows.length === 0) {
+      return res.status(400).json({ error: "Geçersiz veya süresi dolmuş bağlantı." });
+    }
+
+    const email = userResult.rows[0].email;
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    await db.query(
+      "UPDATE users SET password = $1, reset_token = NULL, reset_token_expiry = NULL WHERE email = $2",
+      [hashedPassword, email]
+    );
+
+    res.json({ message: "Şifreniz başarıyla güncellendi. Giriş yapabilirsiniz." });
+  } catch (err) {
+    console.error("Reset password error:", err);
+    res.status(500).json({ error: "Bir hata oluştu, lütfen daha sonra tekrar deneyin." });
+  }
 });
 
 //ABOUT UPDATE

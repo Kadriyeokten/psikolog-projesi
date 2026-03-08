@@ -93,6 +93,22 @@ async function runMigrations() {
       await pool.query(`INSERT INTO site_content (id, about_title, whatsapp_number) VALUES (1, 'Hakkımızda', '905000000000')`);
     }
     
+    // 5. users
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS users (
+        id SERIAL PRIMARY KEY,
+        name VARCHAR(100),
+        email VARCHAR(100) UNIQUE NOT NULL,
+        password VARCHAR(255) NOT NULL,
+        role VARCHAR(20) DEFAULT 'user',
+        reset_token VARCHAR(255),
+        reset_token_expiry TIMESTAMP,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+    try { await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS reset_token VARCHAR(255);`); } catch(e){}
+    try { await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS reset_token_expiry TIMESTAMP;`); } catch(e){}
+
     console.log("Tüm migrationlar başarıyla tamamlandı.");
   } catch (err) {
     console.error("Migration HATASI:", err);
