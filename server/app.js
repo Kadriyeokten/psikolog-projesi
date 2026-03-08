@@ -8,6 +8,7 @@ const { translate } = require("google-translate-api-x");
 const crypto = require("crypto");
 const nodemailer = require("nodemailer");
 const dns = require("dns");
+const { Resend } = require("resend");
 
 // DNS çözümleme sırasını IPv4 öncelikli yap (Render ENETUNREACH hatası için kritik)
 if (dns.setDefaultResultOrder) {
@@ -18,33 +19,8 @@ require("dotenv").config();
 
 const JWT_SECRET = process.env.JWT_SECRET || "my_super_secret_key_123";
 
-// Nodemailer yapılandırması (Render Firewall By-pass denemesi)
-const transporter = nodemailer.createTransport({
-  host: "smtp.gmail.com",
-  port: 587, // Genellikle bulut sunucularda en az engellenen port
-  secure: false, // 587 portu için false olmalı
-  requireTLS: true, // TLS bağlantısına zorla (Google bunu ister)
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS ? process.env.EMAIL_PASS.replace(/\s/g, "") : "",
-  },
-  tls: {
-    ciphers: 'SSLv3',
-    rejectUnauthorized: false
-  },
-  connectionTimeout: 30000, 
-  debug: true,
-  logger: true
-});
-
-// E-posta bağlantısını başlangıçta test et
-transporter.verify((error, success) => {
-  if (error) {
-    console.error("E-POSTA AYARLARI HATALI (Transporter Verify):", error);
-  } else {
-    console.log("E-posta sunucusu bağlantısı başarılı! ✅");
-  }
-});
+// Resend yapılandırması (SMTP Port engellemelerini aşmak için HTTP API)
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 const express = require("express");
 const path = require("path");
@@ -506,16 +482,18 @@ app.post("/api/forgot-password", async (req, res) => {
 
     const resetLink = `${req.protocol}://${req.get("host")}/reset-password.html?token=${token}`;
 
-    if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
-        console.error("E-POSTA AYARLARI EKSİK! (EMAIL_USER veya EMAIL_PASS yok)");
+    if (!process.env.RESEND_API_KEY) {
+        console.error("E-POSTA AYARLARI EKSİK! (RESEND_API_KEY yok)");
         return res.status(500).json({ error: "Sunucu e-posta ayarları yapılmamış. Lütfen yönetici ile iletişime geçin." });
     }
 
-    const mailOptions = {
-      from: `"Fast Terapi" <${process.env.EMAIL_USER}>`,
+    console.log(`E-posta gönderimi başlatıldı (Resend HTTP API via Web): ${email}...`);
+    
+    // E-posta gönderimi (Resend API)
+    const { data, error } = await resend.emails.send({
+      from: `Fast Terapi <${process.env.EMAIL_USER || 'onboarding@resend.dev'}>`, // Eğer kendi alan adınız yoksa 'onboarding@resend.dev' kullanmalısınız.
       to: email,
       subject: "Şifre Yenileme Talebi - Fast Terapi",
-      text: `Şifrenizi yenilemek için şu bağlantıya tıklayın: ${resetLink}`,
       html: `
         <div style="font-family: Arial, sans-serif; padding: 20px; border: 1px solid #eee;">
           <h2 style="color: #25d366;">Şifre Yenileme Talebi</h2>
@@ -527,18 +505,15 @@ app.post("/api/forgot-password", async (req, res) => {
           <hr style="border: 0; border-top: 1px solid #eee; margin-top: 30px;">
           <p style="color: #888; font-size: 12px;">Bu e-posta Fast Terapi sistemi tarafından otomatik olarak gönderilmiştir.</p>
         </div>
-      `,
-    };
+      `
+    });
 
-    console.log(`E-posta gönderimi başlatıldı: ${email}...`);
-    
-    // E-posta gönderimi (30 saniye zaman aşımı ile)
-    await Promise.race([
-        transporter.sendMail(mailOptions),
-        new Promise((_, reject) => setTimeout(() => reject(new Error("E-posta gönderimi zaman aşımına uğradı (30s)")), 30000))
-    ]);
+    if (error) {
+      console.error("RESEND API HATASI:", error);
+      return res.status(500).json({ error: "E-posta gönderilemedi, lütfen tekrar deneyin.", detail: error.message });
+    }
 
-    console.log("E-posta başarıyla gönderildi! ✅");
+    console.log("E-posta başarıyla gönderildi! ✅ ID:", data?.id);
     res.json({ message: "Şifre yenileme bağlantısı e-posta adresinize gönderildi." });
   } catch (err) {
     console.error("FORGOT PASSWORD DETAYLI HATA:", {
