@@ -20,6 +20,15 @@ const transporter = nodemailer.createTransport({
   },
 });
 
+// E-posta bağlantısını başlangıçta test et
+transporter.verify((error, success) => {
+  if (error) {
+    console.error("E-POSTA AYARLARI HATALI (Transporter Verify):", error);
+  } else {
+    console.log("E-posta sunucusu bağlantısı başarılı! ✅");
+  }
+});
+
 const express = require("express");
 const path = require("path");
 const helmet = require("helmet");
@@ -482,6 +491,11 @@ app.post("/api/forgot-password", async (req, res) => {
 
     const resetLink = `${req.protocol}://${req.get("host")}/reset-password.html?token=${token}`;
 
+    if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
+        console.error("E-POSTA AYARLARI EKSİK! (EMAIL_USER veya EMAIL_PASS yok)");
+        return res.status(500).json({ error: "Sunucu e-posta ayarları yapılmamış. Lütfen yönetici ile iletişime geçin." });
+    }
+
     const mailOptions = {
       from: process.env.EMAIL_USER,
       to: email,
@@ -494,7 +508,15 @@ app.post("/api/forgot-password", async (req, res) => {
       `,
     };
 
-    await transporter.sendMail(mailOptions);
+    console.log(`Şu adrese e-posta gönderiliyor: ${email}...`);
+    
+    // E-posta gönderimini bekle (30 saniye sonra zaman aşımı verelim)
+    await Promise.race([
+        transporter.sendMail(mailOptions),
+        new Promise((_, reject) => setTimeout(() => reject(new Error("E-posta gönderimi zaman aşımına uğradı (30s)")), 30000))
+    ]);
+
+    console.log("E-posta başarıyla gönderildi! ✅");
     res.json({ message: "Şifre yenileme bağlantısı e-posta adresinize gönderildi." });
   } catch (err) {
     console.error("FORGOT PASSWORD DETAYLI HATA:", {
