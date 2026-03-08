@@ -30,6 +30,9 @@ const { initWhatsAppBot, getStatus } = require("./whatsapp-bot");
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Render/Proxy güvenliği için trust proxy ayarı (Rate limit uyarısını çözer)
+app.set("trust proxy", 1);
+
 // Güvenlik: CORS (Cross-Origin Resource Sharing) - Sadece kendi domaininize izin verin
 // Canlıya aldığınızda origin kısmına kendi web sitenizin URL'sini ekleyebilirsiniz. (Örn: 'https://psikolog-projesi.onrender.com')
 app.use(cors({
@@ -149,6 +152,25 @@ db.query("SELECT current_database()", (err, res) => {
 async function ensureColumnsExist() {
   try {
     console.log("Veritabanı sütun kontrolü yapılıyor...");
+    
+    // Users tablosu kontrolü
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS users (
+        id SERIAL PRIMARY KEY,
+        name VARCHAR(100),
+        email VARCHAR(100) UNIQUE NOT NULL,
+        password VARCHAR(255) NOT NULL,
+        role VARCHAR(20) DEFAULT 'user',
+        reset_token VARCHAR(255),
+        reset_token_expiry TIMESTAMP,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+    
+    // Users tablosu için eksik sütunlar (Render/Existing Table fix)
+    await db.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS reset_token VARCHAR(255)`);
+    await db.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS reset_token_expiry TIMESTAMP`);
+
     // Site Content - whatsapp_number
     await db.query(`ALTER TABLE site_content ADD COLUMN IF NOT EXISTS whatsapp_number VARCHAR(20)`);
     // Doctors - bio
