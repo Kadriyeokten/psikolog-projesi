@@ -514,7 +514,7 @@ body.nav-active {
   padding-block: 16px;
   z-index: 4;
   height: 100px;
-  background-color: var(--rich-black-fogra-29); /* Default dark background */
+  background-color: var(--ming); /* Lighter dark background */
 }
 
 /* Mobil menüde butonları göster */
@@ -543,7 +543,7 @@ body.nav-active {
 
 .header.active {
   position: fixed;
-  background-color: var(--rich-black-fogra-29);
+  background-color: var(--ming);
   animation: headerActive 0.5s ease forwards;
 }
 
