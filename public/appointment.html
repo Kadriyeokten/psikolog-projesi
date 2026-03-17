@@ -5,504 +5,167 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-    <!-- 
-    - primary meta tags
-  -->
-    <title>Fast Terapi</title>
-    <meta name="title" content="Fast Terapi - home" />
-    <meta name="description" content="Fast Terapi - Randevu Al" />
-    <!-- font awesome cdn link  -->
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
-    />
-    <!-- 
-    - favicon
-  -->
-    <link
-      rel="shortcut icon"
-      href="./assets/images/fast-terapi-logo.png"
-      type="image/png"
-    />
-
-    <!-- 
-    - google font link
-  -->
+    <title>Fast Terapi - Randevu Al</title>
+    <meta name="title" content="Fast Terapi - Randevu Al" />
+    <meta name="description" content="Fast Terapi - Online Randevunuzu Alın" />
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" />
+    <link rel="shortcut icon" href="./assets/images/fast-terapi-logo.png" type="image/png" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;700&family=Rubik:wght@400;500;700&display=swap"
-      rel="stylesheet"
-    />
-
-    <!-- custom css link -->
+    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;700&family=Rubik:wght@400;500;700&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="./assets/css/style.css" />
+    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.css" rel="stylesheet" />
     <script src="./assets/js/i18n.js"></script>
 
     <style>
-      /* Navbar Optimizasyonu */
+      /* --- Global & Header --- */
+      .header { background-color: var(--ming); position: fixed; width: 100%; top: 0; z-index: 100; }
+      
       @media (min-width: 1200px) {
-        .container {
-          max-width: 1450px !important;
-        }
-        .header .logo img {
-          height: 90px !important;
-        }
-        .navbar-list {
-          gap: 20px !important;
-        }
-        .navbar-link {
-          font-size: 1.8rem !important;
-          padding-inline: 18px !important;
-          white-space: nowrap !important;
-          font-weight: 600 !important;
-        }
-        .navbar-item .btn {
-          padding: 10px 20px !important;
-          font-size: 1.5rem !important;
-        }
+        .container { max-width: 1450px !important; }
+        .header .logo img { height: 90px !important; }
+        .navbar-list { gap: 20px !important; align-items: center; }
+        .navbar-link { font-size: 1.8rem !important; padding-inline: 18px !important; white-space: nowrap !important; font-weight: 600 !important; }
+        .navbar-item .btn { padding: 10px 20px !important; font-size: 1.5rem !important; }
+        .auth-item { margin-left: 10px; }
+        .auth-item:first-of-type { margin-left: auto; }
       }
 
-      .lang-switcher {
-        margin-left: 10px;
+      .lang-switcher { margin-left: 10px; display: flex; align-items: center; }
+      .lang-toggle-btn { background: var(--verdigris); color: white; border: none; padding: 4px 10px; border-radius: 20px; cursor: pointer; font-weight: 500; font-size: 1.1rem; display: flex; align-items: center; gap: 4px; transition: all 0.2s ease; }
+      .lang-toggle-btn:hover { background: var(--midnight-green); }
+      .lang-toggle-btn ion-icon { font-size: 1.4rem; }
+
+      .whatsapp-fab { position: fixed; bottom: 20px; left: 20px; width: 60px; height: 60px; background-color: #25d366; border-radius: 50%; display: flex; justify-content: center; align-items: center; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2); z-index: 1000; }
+      .whatsapp-fab img { width: 36px; height: 36px; }
+
+      /* --- Appointment Section --- */
+      .appointment-section {
+        padding-block: 140px 60px;
+        background-color: var(--alice-blue);
+        min-height: 100vh;
         display: flex;
         align-items: center;
       }
-      .lang-toggle-btn {
-        background: var(--verdigris);
-        color: white;
-        border: none;
-        padding: 4px 10px;
-        border-radius: 20px;
-        cursor: pointer;
-        font-weight: 500;
-        font-size: 1.1rem;
-        display: flex;
-        align-items: center;
-        gap: 4px;
-        transition: all 0.2s ease;
-      }
-      .lang-toggle-btn:hover {
-        background: var(--midnight-green);
-      }
-      .lang-toggle-btn ion-icon {
-        font-size: 1.4rem;
-      }
-    </style>
-
-    <!-- FullCalendar CSS -->
-    <link
-      href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.css"
-      rel="stylesheet"
-    />
-
-    <style>
-      .whatsapp-fab {
-        position: fixed;
-        bottom: 20px;
-        left: 20px;
-        width: 60px;
-        height: 60px;
-        background-color: #25d366;
-        border-radius: 50%;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
-        z-index: 1000;
-      }
-
-      .whatsapp-fab img {
-        width: 36px;
-        height: 36px;
-      }
-
-      .navbar-item .btn {
-        padding: 6px 15px !important;
-        font-size: 1.3rem !important;
-        min-height: auto !important;
-      }
-
-      @media (min-width: 1200px) {
-        .navbar-list {
-          align-items: center;
-        }
-        .auth-item {
-          margin-left: 10px;
-        }
-        .auth-item:first-of-type {
-          margin-left: auto;
-        }
-        .navbar-link.btn {
-          padding: 6px 16px;
-          font-size: 1.4rem;
-          white-space: nowrap;
-        }
-      }
-
-      /* Hero Bölümü Boyutlandırma */
-      .hero {
-        padding-block: 20px 0 !important;
-        min-height: auto !important;
-      }
-
-      .hero-title {
-        margin-block: 0 !important;
-        line-height: 1 !important;
-      }
-
-      /* Bu sayfada hero içindeki gereksiz alanları gizle */
-      .hero .hero-subtitle,
-      .hero .hero-card {
-        display: none !important;
-      }
-    </style>
-
-    <style>
-      .book .row {
-        display: flex;
-        align-items: center;
-        flex-wrap: wrap;
-        gap: 2rem;
-      }
-
-      .book .row .image {
-        flex: 1 1 45rem;
-      }
-
-      .book .row .image img {
+      
+      .appointment-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 30px;
         width: 100%;
       }
 
-      .book .row .form-container {
-        flex: 1 1 45rem;
-        background-color: #f5f5f5;
-        padding: 2rem;
-        border-radius: 0.5rem;
+      @media (min-width: 1200px) {
+        .appointment-grid { grid-template-columns: 1fr 1.4fr; align-items: start; }
+        .appointment-section { height: 100vh; padding-block: 110px 30px; overflow: hidden; }
       }
 
-      .book .row form h3 {
-        font-size: 2.5rem;
-        color: var(--black);
-        padding-bottom: 1rem;
-        text-transform: capitalize;
+      .appointment-card {
+        background: var(--white);
+        padding: 30px;
+        border-radius: var(--radius-12);
+        box-shadow: var(--shadow-2);
+        height: 100%;
       }
 
-      .book .row form .input-box {
-        margin-bottom: 1.5rem;
+      .form-container { overflow-y: auto; max-height: calc(100vh - 160px); scrollbar-width: thin; }
+      .calendar-wrapper { display: flex; flex-direction: column; }
+
+      .appointment-card h3 { 
+        font-size: 2.8rem; 
+        color: var(--black); 
+        margin-bottom: 25px; 
+        text-align: center;
+        font-family: var(--ff-oswald);
       }
 
-      .book .row form label {
-        font-size: 1.6rem;
-        color: var(--black);
+      .input-box { margin-bottom: 18px; }
+      .input-box label { display: block; font-size: 1.5rem; color: var(--black); margin-bottom: 8px; font-weight: 500; }
+      .input-box .box { 
+        width: 100%; 
+        padding: 12px 15px; 
+        font-size: 1.5rem; 
+        color: var(--black); 
+        border-radius: var(--radius-6); 
+        border: 1px solid rgba(0, 0, 0, 0.1);
+        background-color: #fcfcfc;
+        transition: border-color 0.2s ease;
       }
+      .input-box .box:focus { border-color: var(--verdigris); outline: none; }
 
-      .book .row form .box {
-        width: 100%;
-        padding: 1rem 1.2rem;
-        font-size: 1.6rem;
-        color: var(--black);
-        border-radius: 0.5rem;
-        border: 0.1rem solid rgba(0, 0, 0, 0.1);
-        margin-top: 0.5rem;
+      /* --- Calendar Customization --- */
+      #calendar { 
+        font-family: var(--ff-rubik); 
+        background: #fff; 
+        border-radius: 8px; 
+        padding: 10px; 
+        flex-grow: 1;
+        min-height: 450px;
+        max-height: 65vh;
       }
+      .fc .fc-toolbar-title { font-size: 1.6rem !important; font-weight: 700; color: var(--midnight-green); }
+      .fc .fc-button-primary { background-color: var(--verdigris) !important; border: none !important; font-size: 1.3rem !important; }
+      .fc .fc-button-primary:hover { background-color: var(--midnight-green) !important; }
+      .fc-theme-standard td, .fc-theme-standard th { border-color: #f0f4f8; }
+      .fc-day-past { background-color: #f8f9fa !important; opacity: 0.6; }
+      .fc .fc-highlight { background: rgba(20, 184, 166, 0.15) !important; }
 
-      #calendar {
-        min-height: 500px;
-        margin-top: 1rem;
-        font-size: 1.4rem;
+      /* --- Reviews Section --- */
+      .review { padding-block: var(--section-padding); }
+      .review .heading { text-align: center; margin-bottom: 40px; font-size: 3.5rem; }
+      .review .box-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(30rem, 1fr));
+        gap: 20px;
       }
-
-      .fc .fc-button-primary {
-        background-color: var(--verdigris);
-        border-color: var(--verdigris);
+      .review .box {
+        background: var(--white);
+        padding: 30px;
+        border-radius: var(--radius-12);
+        box-shadow: var(--shadow-2);
+        text-align: center;
       }
-
-      .fc .fc-button-primary:hover {
-        background-color: var(--midnight-green);
-        border-color: var(--midnight-green);
-      }
-
-      .fc .fc-highlight {
-        background: rgba(20, 184, 166, 0.2) !important;
-      }
-
-      .fc-event {
-        cursor: pointer;
-      }
-
-      /* Responsive Düzenlemeler */
-      @media (max-width: 992px) {
-        .book .row {
-          flex-direction: column;
-        }
-        .book .row .image {
-          display: none; /* Mobilde görseli gizleyelim ki form öne çıksın */
-        }
-        .book .row .form-container {
-          width: 100%;
-        }
-        .hero .container {
-          grid-template-columns: 1fr;
-          text-align: center;
-        }
-        .hero-banner {
-          display: none;
-        }
-        .hero-content {
-          margin-inline: auto;
-        }
-        .hero-card .wrapper {
-          flex-direction: column;
-        }
-        /* Mobilde hero alanını iyice daralt */
-        .hero {
-          padding-block: 80px 10px !important; /* Header payı + ince boşluk */
-        }
-        .hero-title {
-          font-size: 2.4rem !important; /* Mobilde başlığı küçültelim */
-        }
-      }
+      .review .box img { height: 10rem; width: 10rem; border-radius: 50%; margin-bottom: 15px; }
+      .review .box h3 { font-size: 2.2rem; color: var(--black); }
+      .review .box .stars i { font-size: 1.5rem; color: var(--verdigris); padding: 5px 0; }
+      .review .box .text { font-size: 1.5rem; color: var(--independece); line-height: 1.6; }
 
       @media (max-width: 768px) {
-        #calendar {
-          font-size: 1.1rem;
-        }
-        .fc .fc-toolbar {
-          flex-direction: column;
-          gap: 10px;
-        }
-        .review .box-container {
-          grid-template-columns: 1fr;
-        }
-      }
-    </style>
-
-    <!-- 
-    - preload images
-  -->
-    <link rel="preload" as="image" href="./assets/images/hero-banner.png" />
-    <link rel="preload" as="image" href="./assets/images/hero-bg.png" />
-    <style>
-      /* Modern Takvim Tasarımı */
-      #calendar {
-        font-family: var(--ff-rubik, 'Rubik', sans-serif);
-        background: #ffffff;
-        border-radius: 12px;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
-        padding: 20px;
-        border: 1px solid #e0e6ed;
-      }
-      .fc-theme-standard th {
-        background-color: #f8fbfb;
-        color: var(--midnight-green, #0a3d42);
-        padding: 12px 0;
-        font-weight: 600;
-        border-color: #e0e6ed;
-      }
-      .fc-theme-standard td, .fc-theme-standard th {
-        border-color: #f0f4f8;
-      }
-      .fc-button-primary {
-        background-color: var(--verdigris, #0fa3a3) !important;
-        border: none !important;
-        border-radius: 8px !important;
-        box-shadow: 0 4px 10px rgba(15, 163, 163, 0.2) !important;
-        text-transform: capitalize;
-        font-weight: 500 !important;
-        transition: all 0.3s ease !important;
-      }
-      .fc-button-primary:hover {
-        background-color: var(--midnight-green, #0a3d42) !important;
-        box-shadow: 0 6px 15px rgba(10, 61, 66, 0.3) !important;
-      }
-      .fc-button-primary:not(:disabled):active, .fc-button-primary:not(:disabled).fc-button-active {
-        background-color: var(--midnight-green, #0a3d42) !important;
-      }
-      .fc-toolbar-title {
-        color: var(--midnight-green, #0a3d42);
-        font-size: 1.5rem !important;
-        font-weight: 700 !important;
-      }
-      .fc-timegrid-slot {
-        height: 40px !important;
-      }
-      .fc-highlight {
-        background: rgba(15, 163, 163, 0.2) !important;
-      }
-      .fc-event {
-        border-radius: 6px;
-        border: none;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        opacity: 0.9;
-      }
-      .fc-v-event {
-        background-color: #ff4d4d !important; /* Dolu alanları kırmızı belirginleştir */
-      }
-      .fc-timegrid-now-indicator-line {
-        border-color: var(--verdigris, #0fa3a3);
-      }
-      .fc-timegrid-now-indicator-arrow {
-        border-color: var(--verdigris, #0fa3a3);
-      }
-    <style>
-      /* Modern Takvim Tasarımı */
-      #calendar {
-        font-family: var(--ff-rubik, 'Rubik', sans-serif);
-        background: #ffffff;
-        border-radius: 12px;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
-        padding: 20px;
-        border: 1px solid #e0e6ed;
-      }
-      .fc-theme-standard th {
-        background-color: #f8fbfb;
-        color: var(--midnight-green, #0a3d42);
-        padding: 12px 0;
-        font-weight: 600;
-        border-color: #e0e6ed;
-      }
-      .fc-theme-standard td, .fc-theme-standard th {
-        border-color: #f0f4f8;
-      }
-      .fc-button-primary {
-        background-color: var(--verdigris, #0fa3a3) !important;
-        border: none !important;
-        border-radius: 8px !important;
-        box-shadow: 0 4px 10px rgba(15, 163, 163, 0.2) !important;
-        text-transform: capitalize;
-        font-weight: 500 !important;
-        transition: all 0.3s ease !important;
-      }
-      .fc-button-primary:hover {
-        background-color: var(--midnight-green, #0a3d42) !important;
-        box-shadow: 0 6px 15px rgba(10, 61, 66, 0.3) !important;
-      }
-      .fc-button-primary:not(:disabled):active, .fc-button-primary:not(:disabled).fc-button-active {
-        background-color: var(--midnight-green, #0a3d42) !important;
-      }
-      .fc-toolbar-title {
-        color: var(--midnight-green, #0a3d42);
-        font-size: 1.5rem !important;
-        font-weight: 700 !important;
-      }
-      .fc-timegrid-slot {
-        height: 40px !important;
-      }
-      .fc-highlight {
-        background: rgba(15, 163, 163, 0.2) !important;
-      }
-      .fc-event {
-        border-radius: 6px;
-        border: none;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        opacity: 0.9;
-      }
-      .fc-v-event {
-        background-color: #ff4d4d !important; /* Dolu alanları kırmızı belirginleştir */
-      }
-      .fc-timegrid-now-indicator-line {
-        border-color: var(--verdigris, #0fa3a3);
-      }
-      .fc-timegrid-now-indicator-arrow {
-        border-color: var(--verdigris, #0fa3a3);
-      }
-      /* Geçmiş saatleri ve günleri gri yap */
-      .fc-day-past {
-        background-color: #f0f0f0 !important;
-        opacity: 0.7;
-      }
-      .fc-timegrid-slot-lane.fc-timegrid-slot-lane-end.fc-timegrid-slot-lane-last.fc-day-past {
-        background-color: #f0f0f0 !important;
-      }
-      .fc-timegrid-slot-lane.fc-day-past {
-        background-color: #f0f0f0 !important;
-      }
-      .fc-day-past .fc-timegrid-axis-frame {
-        color: #999;
-      }
-      .fc-daygrid-day.fc-day-past {
-        background-color: #f0f0f0 !important;
+        .appointment-section { padding-block: 100px 40px; }
+        .appointment-card { padding: 20px; }
+        #calendar { min-height: 400px; }
+        .form-container { max-height: none; }
       }
     </style>
   </head>
   <body id="top">
-    <!-- 
-    - #PRELOADER
-  -->
-
     <div class="preloader" data-preloader>
       <div class="circle"></div>
     </div>
 
-    <!-- 
-    - #HEADER
-  -->
-
     <header class="header" data-header>
       <div class="container">
-        <a
-          href="index.html"
-          class="logo"
-          style="font-size: 2.4rem; font-weight: bold; color: var(--verdigris)"
-        >
-          <img src="./assets/images/fast-terapi-logo.png" alt="Fast Terapi Logo" style="height: 90px;">
+        <a href="index.html" class="logo">
+          <img src="./assets/images/fast-terapi-logo.png" alt="Fast Terapi Logo">
         </a>
         <nav class="navbar" data-navbar>
           <div class="navbar-top">
-            <a
-              href="index.html"
-              class="logo"
-              style="
-                font-size: 2rem;
-                font-weight: bold;
-                color: var(--verdigris);
-              "
-            >
-          <img src="./assets/images/fast-terapi-logo.png" alt="Fast Terapi Logo" style="height: 90px;">
-        </a>
-
-            <button
-              class="nav-close-btn"
-              aria-label="clsoe menu"
-              data-nav-toggler
-            >
+            <a href="index.html" class="logo">
+              <img src="./assets/images/fast-terapi-logo.png" alt="Fast Terapi Logo">
+            </a>
+            <button class="nav-close-btn" aria-label="close menu" data-nav-toggler>
               <ion-icon name="close-outline" aria-hidden="true"></ion-icon>
             </button>
           </div>
-
           <ul class="navbar-list">
-            <li class="navbar-item">
-              <a href="index.html" class="navbar-link title-md" data-i18n="nav_home">Ana Sayfa</a>
-            </li>
-
-            <li class="navbar-item">
-              <a href="aboutus.html" class="navbar-link title-md" data-i18n="nav_about">Hakkımızda</a>
-            </li>
-
-            <li class="navbar-item">
-              <a href="service.html" class="navbar-link title-md" data-i18n="nav_services">Hizmetler</a>
-            </li>
-
-            <li class="navbar-item">
-              <a href="doctors.html" class="navbar-link title-md" data-i18n="nav_doctors">Doktorlar</a>
-            </li>
-
-            <li class="navbar-item">
-              <a href="conntact.html" class="navbar-link title-md" data-i18n="nav_contact">İletişim</a>
-            </li>
-            <li class="navbar-item">
-              <a
-                href="appointment.html"
-                class="navbar-link title-md"
-                data-i18n="nav_appointment"
-                >Randevu Al</a
-              >
-            </li>
-            <li class="navbar-item auth-item" id="loginItem">
-              <a href="login.html" class="navbar-link title-md" data-i18n="nav_login">Giriş Yap</a>
-            </li>
-
+            <li class="navbar-item"><a href="index.html" class="navbar-link title-md" data-i18n="nav_home">Ana Sayfa</a></li>
+            <li class="navbar-item"><a href="aboutus.html" class="navbar-link title-md" data-i18n="nav_about">Hakkımızda</a></li>
+            <li class="navbar-item"><a href="service.html" class="navbar-link title-md" data-i18n="nav_services">Hizmetler</a></li>
+            <li class="navbar-item"><a href="doctors.html" class="navbar-link title-md" data-i18n="nav_doctors">Doktorlar</a></li>
+            <li class="navbar-item"><a href="conntact.html" class="navbar-link title-md" data-i18n="nav_contact">İletişim</a></li>
+            <li class="navbar-item"><a href="appointment.html" class="navbar-link title-md" data-i18n="nav_appointment">Randevu Al</a></li>
+            <li class="navbar-item auth-item" id="loginItem"><a href="login.html" class="navbar-link title-md" data-i18n="nav_login">Giriş Yap</a></li>
             <li class="navbar-item user-dropdown" id="userMenu" style="display: none">
               <div class="user-trigger">
                 <ion-icon name="person-circle-outline" class="user-icon"></ion-icon>
@@ -515,7 +178,6 @@
                 <li><a href="#" class="dropdown-link" id="logoutBtn"><ion-icon name="log-out-outline"></ion-icon> <span data-i18n="nav_logout">Çıkış Yap</span></a></li>
               </ul>
             </li>
-
             <li class="navbar-item lang-switcher">
               <button id="langToggle" class="lang-toggle-btn">
                 <ion-icon name="globe-outline"></ion-icon>
@@ -523,459 +185,168 @@
               </button>
             </li>
           </ul>
-
-          <ul class="social-list">
-            <li>
-              <a href="#" class="social-link">
-                <ion-icon name="logo-twitter"></ion-icon>
-              </a>
-            </li>
-
-            <li>
-              <a href="#" class="social-link">
-                <ion-icon name="logo-facebook"></ion-icon>
-              </a>
-            </li>
-
-            <li>
-              <a href="#" class="social-link">
-                <ion-icon name="logo-pinterest"></ion-icon>
-              </a>
-            </li>
-
-            <li>
-              <a href="#" class="social-link">
-                <ion-icon name="logo-instagram"></ion-icon>
-              </a>
-            </li>
-
-            <li>
-              <a href="#" class="social-link">
-                <ion-icon name="logo-youtube"></ion-icon>
-              </a>
-            </li>
-          </ul>
         </nav>
-
         <button class="nav-open-btn" aria-label="open menu" data-nav-toggler>
           <ion-icon name="menu-outline"></ion-icon>
         </button>
-
         <div class="overlay" data-nav-toggler data-overlay></div>
       </div>
     </header>
 
     <main>
       <article>
-        <!-- 
-        - #HERO
-      -->
-
-        <section
-          class="section hero"
-          style="background-image: url(&quot;./assets/images/hero-bg.png&quot;)"
-          aria-label="home"
-        >
+        <section class="section appointment-section" id="book">
           <div class="container">
-            <div class="hero-content">
-              <p class="hero-subtitle has-before" data-reveal="left"></p>
-
-              <h1 class="headline-lg hero-title" data-reveal="left" data-i18n="hero_subtitle">
-                Online Randevunuzu Alın<br />
-              </h1>
-
-              <!--<div class="hero-card" data-reveal="left">
-                <p class="title-lg card-text">
-                  Doktor, klinik, hastane vb. arayın.
-                </p>
-
-                <div class="wrapper">
-                  <div class="input-wrapper title-lg">
-                    <input
-                      type="text"
-                      name="location"
-                      placeholder="Konumlar"
-                      class="input-field"
-                    />
-
-                    <ion-icon name="location"></ion-icon>
+            <div class="appointment-grid">
+              <!-- Left Column: Form -->
+              <div class="appointment-card form-container">
+                <form id="appointmentForm">
+                  <h3 data-i18n="appointment_title">Randevu Al</h3>
+                  <div class="input-box">
+                    <label for="patientName" data-i18n="appointment_name_label">Adınız Soyadınız:</label>
+                    <input type="text" id="patientName" name="patientName" class="box" placeholder="Örn: Ahmet Yılmaz" required />
                   </div>
+                  <div class="input-box">
+                    <label for="patientPhone" data-i18n="appointment_phone_label">Telefon Numaranız:</label>
+                    <input type="tel" id="patientPhone" name="patientPhone" class="box" placeholder="Örn: 0555 555 55 55" required />
+                  </div>
+                  <div class="input-box">
+                    <label for="patientEmail" data-i18n="appointment_email_label">E-posta Adresiniz (İsteğe bağlı):</label>
+                    <input type="email" id="patientEmail" name="patientEmail" class="box" placeholder="Örn: mail@ornek.com" />
+                  </div>
+                  <div class="input-box">
+                    <label for="service" data-i18n="appointment_service_label">Hizmet Seçin:</label>
+                    <select id="service" name="service" class="box" required>
+                      <option value="" data-i18n="loading">Yükleniyor...</option>
+                    </select>
+                  </div>
+                  <div class="input-box">
+                    <label for="therapist" data-i18n="appointment_therapist_label">Terapist Seçin:</label>
+                    <select id="therapist" name="therapist" class="box" required>
+                      <option value="" data-i18n="loading">Yükleniyor...</option>
+                    </select>
+                  </div>
+                  <button type="submit" class="btn has-before" style="width: 100%; margin-top: 10px;" data-i18n="appointment_btn">Şimdi Randevu Al</button>
+                </form>
+              </div>
 
-                  <button class="btn has-before">
-                    <ion-icon name="search"></ion-icon>
-
-                    <span class="span title-md">Şimdi Bul</span>
-                  </button>
-                </div>
-              </div>-->
-            </div>
-
-            <figure class="hero-banner" data-reveal="right">
-              <img
-                src="./assets/images/appoinment-removebg-preview.png"
-                width="590"
-                height="517"
-                loading="eager"
-                alt="hero banner"
-                style="padding-left: 250px"
-                class="w-100"
-              />
-            </figure>
-          </div>
-        </section>
-
-        <!-- booking section starts   -->
-
-        <section class="book" id="book">
-          <h1 class="heading"></h1>
-
-          <div class="row">
-            <div class="image">
-              <img src="./assets/images/book-img.svg" alt="" />
-            </div>
-
-            <div class="form-container">
-              <form id="appointmentForm">
-                <h3 data-i18n="appointment_title">Randevu Al</h3>
-                <div class="input-box">
-                  <label for="patientName" data-i18n="appointment_name_label">Adınız Soyadınız:</label>
-                  <input type="text" id="patientName" name="patientName" class="box" placeholder="Örn: Ahmet Yılmaz" required />
-                </div>
-                <div class="input-box">
-                  <label for="patientPhone" data-i18n="appointment_phone_label">Telefon Numaranız:</label>
-                  <input type="tel" id="patientPhone" name="patientPhone" class="box" placeholder="Örn: 0555 555 55 55" required />
-                </div>
-                <div class="input-box">
-                  <label for="patientEmail" data-i18n="appointment_email_label">E-posta Adresiniz (İsteğe bağlı):</label>
-                  <input type="email" id="patientEmail" name="patientEmail" class="box" placeholder="Örn: mail@ornek.com" />
-                </div>
-                <div class="input-box">
-                  <label for="service" data-i18n="appointment_service_label">Hizmet Seçin:</label>
-                  <select id="service" name="service" class="box" required>
-                    <option value="" data-i18n="loading">Yükleniyor...</option>
-                  </select>
-                </div>
-                <div class="input-box">
-                  <label for="therapist" data-i18n="appointment_therapist_label">Terapist Seçin:</label>
-                  <select id="therapist" name="therapist" class="box" required>
-                    <option value="" data-i18n="loading">Yükleniyor...</option>
-                  </select>
-                </div>
-                <div class="input-box">
-                  <label data-i18n="appointment_datetime_label">Randevu Tarihi ve Saati Seçin:</label>
-                  <div
-                    id="calendar"
-                    style="background: white; padding: 10px; border-radius: 8px"
-                  ></div>
-                  <input
-                    type="hidden"
-                    id="selectedDateTime"
-                    name="appointment_date"
-                  />
-                </div>
-                <input type="submit" value="Şimdi Randevu Al" class="btn" data-i18n="appointment_btn" />
-              </form>
+              <!-- Right Column: Calendar -->
+              <div class="appointment-card calendar-wrapper">
+                 <label class="title-md" data-i18n="appointment_datetime_label" style="display: block; margin-bottom: 15px; font-weight: bold; font-size: 1.8rem;">Randevu Tarihi ve Saati Seçin:</label>
+                 <div id="calendar"></div>
+                 <input type="hidden" id="selectedDateTime" name="appointment_date" />
+              </div>
             </div>
           </div>
         </section>
-
-        <!-- booking section ends -->
 
         <!-- review section starts  -->
-
         <section class="review" id="review">
           <h1 class="heading"><span data-i18n="reviews_title">Yorumlar</span></h1>
-
           <div class="box-container">
             <div class="box">
               <img src="./assets/images/pic-1.png" alt="1" />
               <h3>Ravi Goel</h3>
-              <div class="stars">
-                <i class="fas fa-star"></i>
-                <i class="fas fa-star"></i>
-                <i class="fas fa-star"></i>
-                <i class="fas fa-star"></i>
-                <i class="fas fa-star-half-alt"></i>
-              </div>
-              <p class="text">
-                Göz doktoru Dr. Uday Devgan anneme çok iyi davrandı. Doğru
-                teşhisi koydu. Ve bize ayrıntılı olarak açıkladı. Tüm operasyon
-                süreci ve sigorta süreci sorunsuz ilerliyor.
-              </p>
+              <div class="stars"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star-half-alt"></i></div>
+              <p class="text">Göz doktoru Dr. Uday Devgan anneme çok iyi davrandı. Doğru teşhisi koydu. Ve bize ayrıntılı olarak açıkladı. Tüm operasyon süreci ve sigorta süreci sorunsuz ilerliyor.</p>
             </div>
-
             <div class="box">
               <img src="./assets/images/pic-2.png" alt="1" />
               <h3>Divya Gupta</h3>
-              <div class="stars">
-                <i class="fas fa-star"></i>
-                <i class="fas fa-star"></i>
-                <i class="fas fa-star"></i>
-                <i class="fas fa-star"></i>
-                <i class="fas fa-star-half-alt"></i>
-              </div>
-              <p class="text">
-                Çok iyi huylu personel, hastalarla iyi bir koordinasyon. Dr.
-                Shree Kumar Reddy çok iyi yardımcı oldu ve hastalarla iyi
-                ilgilendi. Genel deneyim tatmin edici.
-              </p>
+              <div class="stars"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star-half-alt"></i></div>
+              <p class="text">Çok iyi huylu personel, hastalarla iyi bir koordinasyon. Dr. Shree Kumar Reddy çok iyi yardımcı oldu ve hastalarla iyi ilgilendi. Genel deneyim tatmin edici.</p>
             </div>
-
             <div class="box">
               <img src="./assets/images/pic-3.png" alt="3" />
               <h3>Ramesh Jain</h3>
-              <div class="stars">
-                <i class="fas fa-star"></i>
-                <i class="fas fa-star"></i>
-                <i class="fas fa-star"></i>
-                <i class="fas fa-star"></i>
-                <i class="fas fa-star-half-alt"></i>
-              </div>
-              <p class="text">
-                Uzun zamandır öksürükte kan şikayetim vardı ama Dr.Vijay kumar
-                chennam chetty dışında hiçbir doktor sorunumu teşhis edip
-                tedaviye başlamadı.
-              </p>
+              <div class="stars"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star-half-alt"></i></div>
+              <p class="text">Uzun zamandır öksürükte kan şikayetim vardı ama Dr.Vijay kumar chennam chetty dışında hiçbir doktor sorunumu teşhis edip tedaviye başlamadı.</p>
             </div>
           </div>
         </section>
       </article>
     </main>
 
-    <!-- 
-    - #FOOTER
-  -->
-    <footer
-      class="footer"
-      style="background-image: url(&quot;./assets/images/footer-bg.png&quot;)"
-    >
+    <footer class="footer" style="background-image: url('./assets/images/footer-bg.png')">
       <div class="container">
         <div class="section footer-top">
           <div class="footer-brand" data-reveal="bottom">
-            <a
-              href="index.html"
-              class="logo"
-              style="
-                font-size: 2.4rem;
-                font-weight: bold;
-                color: var(--verdigris);
-              "
-            >
-          <img src="./assets/images/fast-terapi-logo.png" alt="Fast Terapi Logo" style="height: 90px;">
-        </a>
+            <a href="index.html" class="logo">
+              <img src="./assets/images/fast-terapi-logo.png" alt="Fast Terapi Logo">
+            </a>
             <ul class="contact-list has-after">
               <li class="contact-item">
-                <div class="item-icon">
-                  <ion-icon name="mail-open-outline"></ion-icon>
-                </div>
+                <div class="item-icon"><ion-icon name="mail-open-outline"></ion-icon></div>
                 <div>
-                  <p>
-                    <span data-i18n="email_main">Ana E-posta</span> :
-                    <a href="mailto:contact@therapy.com" class="contact-link"
-                      >contact@&shy;therapy.com</a
-                    >
-                  </p>
-                  <p>
-                    <span data-i18n="email_inquiry">Sorularınız İçin</span> :
-                    <a href="mailto:Info@therapy.com" class="contact-link"
-                      >Info@therapy.com</a
-                    >
-                  </p>
+                  <p><span data-i18n="email_main">Ana E-posta</span> : <a href="mailto:contact@therapy.com" class="contact-link">contact@therapy.com</a></p>
+                  <p><span data-i18n="email_inquiry">Sorularınız İçin</span> : <a href="mailto:Info@therapy.com" class="contact-link">Info@therapy.com</a></p>
                 </div>
               </li>
               <li class="contact-item">
-                <div class="item-icon">
-                  <ion-icon name="call-outline"></ion-icon>
-                </div>
+                <div class="item-icon"><ion-icon name="call-outline"></ion-icon></div>
                 <div>
-                  <p>
-                    <span data-i18n="phone_office">Ofis Telefonu</span> :
-                    <a href="tel:0029129102320" class="contact-link"
-                      >0029129102320</a
-                    >
-                  </p>
-                  <p>
-                    <span data-i18n="phone_mobile">Cep Telefonu</span> :
-                    <a href="tel:000232439493" class="contact-link"
-                      >000 2324 39493</a
-                    >
-                  </p>
+                  <p><span data-i18n="phone_office">Ofis Telefonu</span> : <a href="tel:0029129102320" class="contact-link">0029129102320</a></p>
+                  <p><span data-i18n="phone_mobile">Cep Telefonu</span> : <a href="tel:000232439493" class="contact-link">000 2324 39493</a></p>
                 </div>
               </li>
             </ul>
           </div>
           <div class="footer-list" data-reveal="bottom">
             <p class="headline-sm footer-list-title" data-i18n="footer_about_title">Hakkımızda</p>
-            <p class="text" data-i18n="footer_about_text">
-              Sağlık tek başına fiziksel iyi olma hali değil ruhsal iyi olma
-              halidir ve bütün olarak ele alınmalıdır. İlk seans terapi
-              gündeminin belirlenmesi, danışanın detaylı öyküsünün alınması ile
-              gerçekleşir.
-            </p>
+            <p class="text" data-i18n="footer_about_text">Sağlık tek başına fiziksel iyi olma hali değil ruhsal iyi olma halidir ve bütün olarak ele alınmalıdır.</p>
             <address class="address">
               <ion-icon name="map-outline"></ion-icon>
-              <span class="text" data-i18n="address_label">
-                Turgut Özal Caddesi <br />
-                Adana, Çukurova 12345
-              </span>
+              <span class="text" data-i18n="address_label">Turgut Özal Caddesi <br /> Adana, Çukurova 12345</span>
             </address>
           </div>
           <ul class="footer-list" data-reveal="bottom">
-            <li>
-              <p class="headline-sm footer-list-title" data-i18n="footer_services_title">Hizmetler</p>
-            </li>
-            <li>
-              <a href="#" class="text footer-link" data-i18n="footer_consultancy">Danışmanlık</a>
-            </li>
-            <li>
-              <a href="#" class="text footer-link" data-i18n="footer_sessions">Terapi Seansları</a>
-            </li>
-            <li>
-              <a href="#" class="text footer-link" data-i18n="footer_workshops">Atölyeler</a>
-            </li>
-            <li>
-              <a href="#" class="text footer-link" data-i18n="footer_group">Grup Terapisi</a>
-            </li>
-            <li>
-              <a href="#" class="text footer-link" data-i18n="footer_tele">Teleterapi</a>
-            </li>
-            <li>
-              <a href="#" class="text footer-link" data-i18n="footer_mindfulness">Farkındalık Eğitimi</a>
-            </li>
-          </ul>
-          <ul class="footer-list" data-reveal="bottom">
-            <li>
-              <p class="headline-sm footer-list-title" data-i18n="footer_links_title">Faydalı Linkler</p>
-            </li>
-            <li>
-              <a href="#" class="text footer-link" data-i18n="footer_privacy">Gizlilik Politikası</a>
-            </li>
-            <li>
-              <a href="#" class="text footer-link" data-i18n="footer_terms">Hizmet Şartları</a>
-            </li>
-            <li>
-              <a href="#" class="text footer-link" data-i18n="footer_reviews">Danışan Yorumları</a>
-            </li>
-            <li>
-              <a href="#" class="text footer-link" data-i18n="footer_faq">SSS</a>
-            </li>
+            <li><p class="headline-sm footer-list-title" data-i18n="footer_services_title">Hizmetler</p></li>
+            <li><a href="#" class="text footer-link" data-i18n="footer_consultancy">Danışmanlık</a></li>
+            <li><a href="#" class="text footer-link" data-i18n="footer_sessions">Terapi Seansları</a></li>
           </ul>
           <div class="footer-list" data-reveal="bottom">
             <p class="headline-sm footer-list-title" data-i18n="footer_subscribe_title">Abone Ol</p>
             <form action="" class="footer-form">
-              <input
-                type="email"
-                name="email"
-                placeholder="E-posta"
-                class="input-field title-lg"
-              />
-              <button type="submit" class="btn has-before title-md" data-i18n="subscribe_btn">
-                Abone Ol
-              </button>
+              <input type="email" name="email" placeholder="E-posta" class="input-field title-lg" />
+              <button type="submit" class="btn has-before title-md" data-i18n="subscribe_btn">Abone Ol</button>
             </form>
-            <p class="text" data-i18n="footer_subscribe_text">
-              En son güncellemeleri e-posta ile alın. İstediğiniz zaman
-              abonelikten çıkabilirsiniz.
-            </p>
           </div>
         </div>
         <div class="footer-bottom">
-          <p class="text copyright" data-i18n="footer_copyright">
-            &copy; Terapist Merkezi 2026 | Tüm Hakları SESA Yazılım Tarafından
-            Saklıdır.
-          </p>
-          <ul class="social-list">
-            <li>
-              <a href="#" class="social-link">
-                <ion-icon name="logo-facebook"></ion-icon>
-              </a>
-            </li>
-            <li>
-              <a href="#" class="social-link">
-                <ion-icon name="logo-twitter"></ion-icon>
-              </a>
-            </li>
-            <li>
-              <a href="#" class="social-link">
-                <ion-icon name="logo-instagram"></ion-icon>
-              </a>
-            </li>
-            <li>
-              <a href="#" class="social-link">
-                <ion-icon name="logo-linkedin"></ion-icon>
-              </a>
-            </li>
-          </ul>
+          <p class="text copyright" data-i18n="footer_copyright">&copy; Terapist Merkezi 2026 | Tüm Hakları SESA Yazılım Tarafından Saklıdır.</p>
         </div>
       </div>
     </footer>
 
-    <!-- 
-    - #BACK TO TOP
-  -->
+    <a href="#top" class="back-top-btn" aria-label="back to top" data-back-top-btn><ion-icon name="chevron-up"></ion-icon></a>
 
-    <a
-      href="#top"
-      class="back-top-btn"
-      aria-label="back to top"
-      data-back-top-btn
-    >
-      <ion-icon name="chevron-up"></ion-icon>
-    </a>
-
-    <!-- 
-    - custom js link
-  -->
     <script src="./assets/js/script.js"></script>
-    <script>
-      document.addEventListener("DOMContentLoaded", function () {
-        if (window.initAuthUI) window.initAuthUI();
-      });
-    </script>
-    <!-- FullCalendar JS -->
+    <script>document.addEventListener("DOMContentLoaded", function () { if (window.initAuthUI) window.initAuthUI(); });</script>
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
     <script src="./assets/js/appointment.js"></script>
+    <script type="module" src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.esm.js"></script>
+    <script nomodule src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.js"></script>
 
-    <!-- 
-    - ionicon link
-  -->
-    <script
-      type="module"
-      src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.esm.js"
-    ></script>
-    <script
-      nomodule
-      src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.js"
-    ></script>
-
-    <a
-      id="whatsappLink"
-      href="https://wa.me/905000000000?text=merhaba%2C%20randevu%20olu%C5%9Fturmak%20istiyorum."
-      class="whatsapp-fab"
-      target="_blank"
-    >
-      <img
-        src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/6b/WhatsApp.svg/240px-WhatsApp.svg.png"
-        alt="WhatsApp"
-      />
+    <a id="whatsappLink" href="#" class="whatsapp-fab" target="_blank">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/6b/WhatsApp.svg/240px-WhatsApp.svg.png" alt="WhatsApp" />
     </a>
     <script>
       async function updateWhatsAppLink() {
-      try {
-        const res = await fetch("/api/site-content");
-        const data = await res.json();
-        if (data && data.whatsapp_number) {
-          const link = document.getElementById("whatsappLink");
-          if (link) {
-            const lang = localStorage.getItem("preferredLanguage") || "tr";
-            const text = lang === "en" ? "hello, I would like to book an appointment." : "merhaba, randevu oluşturmak istiyorum.";
-            link.href = `https://wa.me/${data.whatsapp_number}?text=${encodeURIComponent(text)}`;
+        try {
+          const res = await fetch("/api/site-content");
+          const data = await res.json();
+          if (data && data.whatsapp_number) {
+            const link = document.getElementById("whatsappLink");
+            if (link) {
+              const lang = localStorage.getItem("preferredLanguage") || "tr";
+              const text = lang === "en" ? "hello, I would like to book an appointment." : "merhaba, randevu oluşturmak istiyorum.";
+              link.href = `https://wa.me/${data.whatsapp_number}?text=${encodeURIComponent(text)}`;
+            }
           }
-        }
-      } catch (err) { console.error("WA update error:", err); }
-    }
-    updateWhatsAppLink();
-    window.addEventListener("languageChanged", updateWhatsAppLink);
+        } catch (err) { console.error("WA update error:", err); }
+      }
+      updateWhatsAppLink();
+      window.addEventListener("languageChanged", updateWhatsAppLink);
     </script>
   </body>
 </html>
