@@ -49,7 +49,22 @@
             <li><a href="doctors.html" class="navbar-link title-md" data-i18n="nav_doctors">Doktorlar</a></li>
             <li><a href="conntact.html" class="navbar-link title-md" data-i18n="nav_contact">İletişim</a></li>
             <li><a href="appointment.html" class="navbar-link title-md" data-i18n="nav_appointment">Randevu Al</a></li>
-            <li id="logoutItem"><a href="#" class="navbar-link title-md btn has-before" data-i18n="nav_logout">Çıkış Yap</a></li>
+            <li class="navbar-item auth-item" id="loginItem">
+              <a href="login.html" class="navbar-link title-md" data-i18n="nav_login">Giriş Yap</a>
+            </li>
+
+            <li class="navbar-item user-dropdown" id="userMenu" style="display: none">
+              <div class="user-trigger">
+                <ion-icon name="person-circle-outline" class="user-icon"></ion-icon>
+                <span id="userName" class="navbar-link title-md">Kullanıcı</span>
+                <ion-icon name="chevron-down-outline"></ion-icon>
+              </div>
+              <ul class="dropdown-list">
+                <li><a href="profile.html" class="dropdown-link"><ion-icon name="person-outline"></ion-icon> <span data-i18n="nav_profile">Profilim</span></a></li>
+                <li id="adminLink" style="display: none"><a href="admin.html" class="dropdown-link"><ion-icon name="settings-outline"></ion-icon> <span data-i18n="nav_admin">Admin Paneli</span></a></li>
+                <li><a href="#" class="dropdown-link" id="logoutBtn"><ion-icon name="log-out-outline"></ion-icon> <span data-i18n="nav_logout">Çıkış Yap</span></a></li>
+              </ul>
+            </li>
           </ul>
         </nav>
         <button class="nav-open-btn" aria-label="open menu" data-nav-toggler>
@@ -107,6 +122,13 @@
 
     <script src="./assets/js/script.js"></script>
     <script src="./assets/js/profile.js"></script>
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        if (typeof initAuthUI === 'function') {
+          initAuthUI();
+        }
+      });
+    </script>
     <script type="module" src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.esm.js"></script>
     <script nomodule src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.js"></script>
   </body>

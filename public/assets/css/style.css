@@ -347,6 +347,94 @@ body.nav-active {
   #HEADER
 \*-----------------------------------*/
 
+/* User Dropdown Styles */
+.user-dropdown {
+  position: relative;
+}
+
+.dropdown-list {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background-color: var(--white);
+  min-width: 180px;
+  box-shadow: var(--shadow-2);
+  border-radius: var(--radius-6);
+  padding: 10px 0;
+  display: none;
+  z-index: 10;
+  animation: dropdownFade 0.3s ease forwards;
+}
+
+@keyframes dropdownFade {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.user-dropdown:hover .dropdown-list {
+  display: block;
+}
+
+.dropdown-link {
+  color: var(--independece);
+  padding: 10px 20px;
+  font-size: 1.4rem;
+  font-weight: 500;
+  transition: var(--transition-1);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.dropdown-link:hover {
+  background-color: var(--alice-blue);
+  color: var(--verdigris);
+}
+
+.dropdown-link ion-icon {
+  font-size: 1.8rem;
+}
+
+.user-trigger {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.user-trigger .user-icon {
+  font-size: 2.2rem;
+  color: var(--verdigris);
+}
+
+/* Mobile Dropdown Adjustments */
+@media (max-width: 1199px) {
+  .dropdown-list {
+    position: static;
+    width: 100%;
+    background-color: transparent;
+    box-shadow: none;
+    padding: 0;
+    display: none; /* JS will toggle this on click */
+  }
+  
+  .user-dropdown.active .dropdown-list {
+    display: block;
+  }
+  
+  .dropdown-link {
+    color: var(--white);
+    padding: 12px 40px;
+    border-block-start: 1px solid var(--white_a10);
+  }
+}
+
 .header {
   position: absolute;
   top: 0;

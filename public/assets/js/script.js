@@ -96,4 +96,57 @@ window.addEventListener("scroll", window.revealElementOnScroll);
 
 window.addEventListener("load", window.revealElementOnScroll);
 
+/**
+ * AUTH UI & DROPDOWN
+ */
+
+window.initAuthUI = function () {
+  const token = localStorage.getItem("token");
+  const role = localStorage.getItem("role");
+  const userName = localStorage.getItem("name") || "Kullanıcı";
+
+  const loginItem = document.getElementById("loginItem");
+  const userMenu = document.getElementById("userMenu");
+  const userNameEl = document.getElementById("userName");
+  const adminLink = document.getElementById("adminLink");
+  const logoutBtn = document.getElementById("logoutBtn");
+
+  if (token) {
+    if (loginItem) loginItem.style.display = "none";
+    if (userMenu) userMenu.style.display = "block";
+    if (userNameEl) userNameEl.textContent = userName;
+    
+    // Show/Hide admin link based on role
+    if (role === "admin") {
+      if (adminLink) adminLink.style.display = "flex";
+    } else {
+      if (adminLink) adminLink.style.display = "none";
+    }
+  } else {
+    if (loginItem) loginItem.style.display = "block";
+    if (userMenu) userMenu.style.display = "none";
+  }
+
+  // Logout Logic
+  if (logoutBtn) {
+    logoutBtn.addEventListener("click", function (e) {
+      e.preventDefault();
+      localStorage.removeItem("token");
+      localStorage.removeItem("role");
+      localStorage.removeItem("userId");
+      localStorage.removeItem("name");
+      window.location.href = "login.html";
+    });
+  }
+
+  // Mobile Dropdown Toggle
+  const userTrigger = document.querySelector(".user-trigger");
+  if (userTrigger && window.innerWidth < 1200) {
+    userTrigger.addEventListener("click", function() {
+      const parent = this.closest(".user-dropdown");
+      parent.classList.toggle("active");
+    });
+  }
+}
+
 

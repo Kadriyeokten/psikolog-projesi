@@ -426,44 +426,6 @@
       }
     </style>
   </head>
-  <script>
-    document.addEventListener("DOMContentLoaded", function () {
-      const token = localStorage.getItem("token");
-      const role = localStorage.getItem("role");
-
-      const loginItem = document.getElementById("loginItem");
-      const logoutItem = document.getElementById("logoutItem");
-      const profileItem = document.getElementById("profileItem");
-      const adminItem = document.getElementById("adminItem");
-
-      if (token) {
-        if (loginItem) loginItem.style.display = "none";
-        if (logoutItem) logoutItem.style.display = "inline-block";
-        if (profileItem) profileItem.style.display = "inline-block";
-        if (role === "admin" && adminItem) {
-          adminItem.style.display = "inline-block";
-        }
-      } else {
-        if (loginItem) loginItem.style.display = "inline-block";
-        if (logoutItem) logoutItem.style.display = "none";
-        if (profileItem) profileItem.style.display = "none";
-        if (adminItem) adminItem.style.display = "none";
-      }
-
-      if (logoutItem) {
-        logoutItem.addEventListener("click", function (e) {
-          e.preventDefault();
-          localStorage.removeItem("token");
-          localStorage.removeItem("role");
-          localStorage.removeItem("user");
-          localStorage.removeItem("name");
-          localStorage.removeItem("userId");
-
-          window.location.href = "login.html";
-        });
-      }
-    });
-  </script>
   <body id="top">
     <!-- 
     - #PRELOADER
@@ -538,35 +500,20 @@
               >
             </li>
             <li class="navbar-item auth-item" id="loginItem">
-              <a href="login.html" class="navbar-link title-md btn has-before" data-i18n="nav_login"
-                >Giriş Yap</a
-              >
+              <a href="login.html" class="navbar-link title-md" data-i18n="nav_login">Giriş Yap</a>
             </li>
 
-            <li class="navbar-item auth-item" id="profileItem" style="display: none">
-              <a href="profile.html" class="navbar-link title-md btn has-before" data-i18n="nav_profile"
-                >Profilim</a
-              >
-            </li>
-
-            <li
-              class="navbar-item auth-item"
-              id="logoutItem"
-              style="display: none"
-            >
-              <a href="#" class="navbar-link title-md btn has-before" data-i18n="nav_logout"
-                >Çıkış Yap</a
-              >
-            </li>
-
-            <li
-              class="navbar-item auth-item"
-              id="adminItem"
-              style="display: none"
-            >
-              <a href="admin.html" class="navbar-link title-md btn has-before" data-i18n="nav_admin"
-                >Admin Paneli</a
-              >
+            <li class="navbar-item user-dropdown" id="userMenu" style="display: none">
+              <div class="user-trigger">
+                <ion-icon name="person-circle-outline" class="user-icon"></ion-icon>
+                <span id="userName" class="navbar-link title-md">Kullanıcı</span>
+                <ion-icon name="chevron-down-outline"></ion-icon>
+              </div>
+              <ul class="dropdown-list">
+                <li><a href="profile.html" class="dropdown-link"><ion-icon name="person-outline"></ion-icon> <span data-i18n="nav_profile">Profilim</span></a></li>
+                <li id="adminLink" style="display: none"><a href="admin.html" class="dropdown-link"><ion-icon name="settings-outline"></ion-icon> <span data-i18n="nav_admin">Admin Paneli</span></a></li>
+                <li><a href="#" class="dropdown-link" id="logoutBtn"><ion-icon name="log-out-outline"></ion-icon> <span data-i18n="nav_logout">Çıkış Yap</span></a></li>
+              </ul>
             </li>
 
             <li class="navbar-item lang-switcher">
@@ -980,6 +927,11 @@
     - custom js link
   -->
     <script src="./assets/js/script.js"></script>
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        if (window.initAuthUI) window.initAuthUI();
+      });
+    </script>
     <!-- FullCalendar JS -->
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
     <script src="./assets/js/appointment.js"></script>
