@@ -494,9 +494,21 @@ function renderAppointmentsTable(apps) {
           ${statusText}
         </span>
       </td>
-      <td style="padding: 15px; text-align: right;">
+      <td style="padding: 15px; text-align: right; white-space: nowrap;">
+        ${app.status === 'Bekliyor' ? `
+          <button onclick="updateAppointmentStatus(${app.id}, 'Tamamlandı')" 
+                  style="background: #28a745; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; transition: all 0.2s; font-size: 1.2rem; font-weight: 500; display: inline-flex; align-items: center; gap: 5px; margin-right: 5px;" title="Aktifleştir / Tamamla">
+            <ion-icon name="checkmark-circle-outline"></ion-icon>
+            <span>Aktifleştir</span>
+          </button>
+          <button onclick="updateAppointmentStatus(${app.id}, 'İptal Edildi')" 
+                  style="background: #ffc107; color: #212529; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; transition: all 0.2s; font-size: 1.2rem; font-weight: 500; display: inline-flex; align-items: center; gap: 5px; margin-right: 5px;" title="İptal Et">
+            <ion-icon name="close-circle-outline"></ion-icon>
+            <span>İptal</span>
+          </button>
+        ` : ''}
         <button class="btn-delete" onclick="deleteAppointment(${app.id})" 
-                style="background: #dc3545; color: white; border: none; padding: 8px 15px; border-radius: 6px; cursor: pointer; transition: all 0.2s; font-size: 1.2rem; font-weight: 500; display: inline-flex; align-items: center; gap: 5px;">
+                style="background: #dc3545; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; transition: all 0.2s; font-size: 1.2rem; font-weight: 500; display: inline-flex; align-items: center; gap: 5px;" title="Sil">
           <ion-icon name="trash-outline"></ion-icon>
           <span>Sil</span>
         </button>
@@ -504,6 +516,25 @@ function renderAppointmentsTable(apps) {
     `;
     tbody.appendChild(tr);
   });
+}
+
+async function updateAppointmentStatus(id, status) {
+  if (!confirm(`Randevu durumunu "${status}" olarak güncellemek istediğinize emin misiniz?`)) return;
+  try {
+    const res = await authFetch(`/api/appointments/${id}/status`, {
+      method: 'PUT',
+      body: JSON.stringify({ status })
+    });
+    if (res.ok) {
+      alert("Randevu durumu güncellendi.");
+      loadAppointments();
+    } else {
+      alert("Güncelleme başarısız.");
+    }
+  } catch (err) {
+    console.error(err);
+    alert("Sunucu hatası!");
+  }
 }
 
 // Arama Filtresi
