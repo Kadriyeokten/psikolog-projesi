@@ -26,9 +26,11 @@ async function runMigrations() {
         doctor_id INTEGER,
         appointment_date TIMESTAMP NOT NULL,
         status VARCHAR(20) DEFAULT 'Bekliyor',
+        user_id INTEGER,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
     `);
+    try { await pool.query(`ALTER TABLE appointments ADD COLUMN IF NOT EXISTS user_id INTEGER;`); } catch(e){}
 
     // 2. services
     await pool.query(`
@@ -98,6 +100,8 @@ async function runMigrations() {
       CREATE TABLE IF NOT EXISTS users (
         id SERIAL PRIMARY KEY,
         name VARCHAR(100),
+        surname VARCHAR(100),
+        phone VARCHAR(20),
         email VARCHAR(100) UNIQUE NOT NULL,
         password VARCHAR(255) NOT NULL,
         role VARCHAR(20) DEFAULT 'user',
@@ -107,6 +111,8 @@ async function runMigrations() {
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
     `);
+    try { await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS surname VARCHAR(100);`); } catch(e){}
+    try { await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS phone VARCHAR(20);`); } catch(e){}
     try { await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS reset_token VARCHAR(255);`); } catch(e){}
     try { await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS reset_token_expiry TIMESTAMP;`); } catch(e){}
     try { await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS token_version INTEGER DEFAULT 1;`); } catch(e){}

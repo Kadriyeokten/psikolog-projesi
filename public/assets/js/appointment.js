@@ -126,7 +126,9 @@ document.getElementById("appointmentForm")?.addEventListener("submit", async fun
     String(d.getHours()).padStart(2, '0') + ":" + 
     String(d.getMinutes()).padStart(2, '0') + ":00";
 
+  const userId = localStorage.getItem("userId");
   const data = {
+    userId,
     patientName,
     patientPhone,
     patientEmail,

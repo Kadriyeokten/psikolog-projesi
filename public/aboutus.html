@@ -151,17 +151,20 @@
 
       const loginItem = document.getElementById("loginItem");
       const logoutItem = document.getElementById("logoutItem");
+      const profileItem = document.getElementById("profileItem");
       const adminItem = document.getElementById("adminItem");
 
       if (token) {
         if (loginItem) loginItem.style.display = "none";
         if (logoutItem) logoutItem.style.display = "inline-block";
+        if (profileItem) profileItem.style.display = "inline-block";
         if (role === "admin" && adminItem) {
           adminItem.style.display = "inline-block";
         }
       } else {
         if (loginItem) loginItem.style.display = "inline-block";
         if (logoutItem) logoutItem.style.display = "none";
+        if (profileItem) profileItem.style.display = "none";
         if (adminItem) adminItem.style.display = "none";
       }
 
@@ -172,6 +175,7 @@
           localStorage.removeItem("role");
           localStorage.removeItem("user");
           localStorage.removeItem("name");
+          localStorage.removeItem("userId");
 
           window.location.href = "login.html";
         });
@@ -242,6 +246,12 @@
             <li class="navbar-item auth-item" id="loginItem">
               <a href="login.html" class="navbar-link title-md btn has-before" data-i18n="nav_login"
                 >Giriş Yap</a
+              >
+            </li>
+
+            <li class="navbar-item auth-item" id="profileItem" style="display: none">
+              <a href="profile.html" class="navbar-link title-md btn has-before" data-i18n="nav_profile"
+                >Profilim</a
               >
             </li>
 

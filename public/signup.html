@@ -57,13 +57,35 @@
             <h2 data-i18n="signup_title">Hesap Oluştur</h2>
             <form id="signupForm">
               <div class="input-field-group">
-                <label for="name" data-i18n="signup_name_label">Ad Soyad</label>
+                <label for="name" data-i18n="signup_name_label">Ad</label>
                 <input
                   type="text"
                   id="name"
                   name="name"
-                  placeholder="Adınızı ve soyadınızı girin"
+                  placeholder="Adınızı girin"
                   data-i18n="signup_name_placeholder"
+                  required
+                />
+              </div>
+              <div class="input-field-group">
+                <label for="surname" data-i18n="signup_surname_label">Soyad</label>
+                <input
+                  type="text"
+                  id="surname"
+                  name="surname"
+                  placeholder="Soyadınızı girin"
+                  data-i18n="signup_surname_placeholder"
+                  required
+                />
+              </div>
+              <div class="input-field-group">
+                <label for="phone" data-i18n="signup_phone_label">Telefon</label>
+                <input
+                  type="tel"
+                  id="phone"
+                  name="phone"
+                  placeholder="Telefon numaranızı girin"
+                  data-i18n="signup_phone_placeholder"
                   required
                 />
               </div>
@@ -314,6 +336,8 @@
         e.preventDefault();
 
         const name = document.getElementById("name").value;
+        const surname = document.getElementById("surname").value;
+        const phone = document.getElementById("phone").value;
         const email = document.getElementById("email").value;
         const password = document.getElementById("password").value;
         const confirm = document.getElementById("confirm-password").value;
@@ -331,6 +355,8 @@
             },
             body: JSON.stringify({
               name,
+              surname,
+              phone,
               email,
               password,
             }),

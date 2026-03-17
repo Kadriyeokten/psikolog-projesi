@@ -160,6 +160,8 @@ async function ensureColumnsExist() {
       CREATE TABLE IF NOT EXISTS users (
         id SERIAL PRIMARY KEY,
         name VARCHAR(100),
+        surname VARCHAR(100),
+        phone VARCHAR(20),
         email VARCHAR(100) UNIQUE NOT NULL,
         password VARCHAR(255) NOT NULL,
         role VARCHAR(20) DEFAULT 'user',
@@ -171,9 +173,14 @@ async function ensureColumnsExist() {
     `);
     
     // Users tablosu için eksik sütunlar (Render/Existing Table fix)
+    await db.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS surname VARCHAR(100)`);
+    await db.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS phone VARCHAR(20)`);
     await db.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS reset_token VARCHAR(255)`);
     await db.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS reset_token_expiry TIMESTAMP`);
     await db.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS token_version INTEGER DEFAULT 1`);
+
+    // Appointments tablosu için eksik sütunlar
+    await db.query(`ALTER TABLE appointments ADD COLUMN IF NOT EXISTS user_id INTEGER`);
 
     // Site Content - whatsapp_number
     await db.query(`ALTER TABLE site_content ADD COLUMN IF NOT EXISTS whatsapp_number VARCHAR(20)`);
@@ -264,6 +271,38 @@ async function authenticateAdmin(req, res, next) {
   });
 }
 
+// JWT User Authentication Middleware (Regular Users)
+async function authenticateUser(req, res, next) {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
+  
+  if (!token) return res.status(401).json({ error: "Erişim reddedildi. Lütfen giriş yapın." });
+
+  jwt.verify(token, JWT_SECRET, async (err, decoded) => {
+    if (err) return res.status(403).json({ error: "Geçersiz veya süresi dolmuş oturum." });
+    
+    try {
+      const userResult = await db.query("SELECT id, name, surname, email, phone, role, token_version FROM users WHERE id = $1", [decoded.id]);
+      
+      if (userResult.rows.length === 0) {
+        return res.status(403).json({ error: "Kullanıcı bulunamadı." });
+      }
+
+      const user = userResult.rows[0];
+
+      if (user.token_version !== decoded.token_version) {
+        return res.status(403).json({ error: "Şifreniz değiştirildiği için oturumunuz sonlandırıldı. Lütfen tekrar giriş yapın." });
+      }
+      
+      req.user = user;
+      next();
+    } catch (dbErr) {
+      console.error("Middleware DB Hatası:", dbErr);
+      return res.status(500).json({ error: "Kimlik doğrulaması sırasında bir hata oluştu." });
+    }
+  });
+}
+
 // Ana sayfa
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "../public/index.html"));
@@ -276,7 +315,7 @@ app.get("/", (req, res) => {
 
 // Randevu Al (POST)
 app.post("/api/appointments", async (req, res) => {
-  const { patientName, patientPhone, patientEmail, service, therapist, selectedDateTime } = req.body;
+  const { patientName, patientPhone, patientEmail, service, therapist, selectedDateTime, userId } = req.body;
 
   console.log("Gelen Randevu Verileri:", req.body); // Debug: Gelen veriyi logla
 
@@ -286,11 +325,11 @@ app.post("/api/appointments", async (req, res) => {
   }
 
   try {
-    console.log("Veritabanına eklenecek veriler:", [patientName, patientPhone, patientEmail, service, therapist, selectedDateTime]); // Debug: Eklenecek veriyi logla
+    console.log("Veritabanına eklenecek veriler:", [patientName, patientPhone, patientEmail, service, therapist, selectedDateTime, userId]); // Debug: Eklenecek veriyi logla
     const result = await db.query(
-      `INSERT INTO appointments (patient_name, patient_phone, patient_email, service_id, doctor_id, appointment_date)
-       VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
-      [patientName, patientPhone, patientEmail, service, therapist, selectedDateTime]
+      `INSERT INTO appointments (patient_name, patient_phone, patient_email, service_id, doctor_id, appointment_date, user_id)
+       VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *`,
+      [patientName, patientPhone, patientEmail, service, therapist, selectedDateTime, userId || null]
     );
     console.log("Randevu başarıyla oluşturuldu:", result.rows[0]); // Debug: Başarılı oluşturmayı logla
     res.json({ message: "Randevunuz başarıyla oluşturuldu.", appointment: result.rows[0] });
@@ -420,9 +459,67 @@ app.get("/api/site-content", async (req, res) => {
   }
 });
 
+// ==========================================
+// USER PROFILE API
+// ==========================================
+
+// Get Current User Profile
+app.get("/api/user/me", authenticateUser, async (req, res) => {
+  res.json(req.user);
+});
+
+// Update User Profile
+app.put("/api/user/me", authenticateUser, async (req, res) => {
+  const { name, surname, phone, email } = req.body;
+  
+  try {
+    // Email uniqueness check if email is being changed
+    if (email && email !== req.user.email) {
+      const emailCheck = await db.query("SELECT id FROM users WHERE email = $1 AND id != $2", [email, req.user.id]);
+      if (emailCheck.rows.length > 0) {
+        return res.status(400).json({ error: "Bu e-posta adresi başka bir kullanıcı tarafından kullanılıyor." });
+      }
+    }
+
+    const result = await db.query(
+      `UPDATE users 
+       SET name = $1, surname = $2, phone = $3, email = $4 
+       WHERE id = $5 RETURNING id, name, surname, email, phone, role`,
+      [name || req.user.name, surname || req.user.surname, phone || req.user.phone, email || req.user.email, req.user.id]
+    );
+
+    res.json({ message: "Profiliniz başarıyla güncellendi.", user: result.rows[0] });
+  } catch (err) {
+    console.error("Profile Update Error:", err);
+    res.status(500).json({ error: "Profil güncellenirken bir hata oluştu." });
+  }
+});
+
+// Get User Appointments (History)
+app.get("/api/user/appointments", authenticateUser, async (req, res) => {
+  try {
+    const result = await db.query(`
+      SELECT 
+        a.id, a.patient_name, a.appointment_date, a.status, a.created_at,
+        s.title as service_name,
+        d.full_name as doctor_name
+      FROM appointments a
+      LEFT JOIN services s ON a.service_id = s.id
+      LEFT JOIN doctors d ON a.doctor_id = d.id
+      WHERE a.user_id = $1
+      ORDER BY a.appointment_date DESC
+    `, [req.user.id]);
+    
+    res.json(result.rows);
+  } catch (err) {
+    console.error("User appointments error:", err);
+    res.status(500).json({ error: "Randevularınız getirilemedi." });
+  }
+});
+
 app.post("/api/signup", async (req, res) => {
   try {
-    const { name, email, password } = req.body;
+    const { name, surname, email, password, phone } = req.body;
 
     if (!name || !email || !password) {
       return res.status(400).json({ error: "Eksik bilgi" });
@@ -440,10 +537,12 @@ app.post("/api/signup", async (req, res) => {
     // Şifre hash
     const hashed = await bcrypt.hash(password, 10);
 
-    await db.query("INSERT INTO users(name,email,password) VALUES($1,$2,$3)", [
+    await db.query("INSERT INTO users(name, surname, email, password, phone) VALUES($1,$2,$3,$4,$5)", [
       name,
+      surname || null,
       email,
       hashed,
+      phone || null
     ]);
 
     res.json({ success: true });
@@ -484,6 +583,7 @@ app.post("/api/login", loginLimiter, async (req, res) => {
     token,
     role: user.role,
     name: user.name,
+    userId: user.id,
   });
 });
 

@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Profilim - Fast Terapi</title>
+    <link rel="shortcut icon" href="./assets/images/fast-terapi-logo.png" type="image/x-icon" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;700&family=Rubik:wght@400;500;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="./assets/css/style.css" />
+    <script src="./assets/js/i18n.js"></script>
+    <style>
+      .profile-container { margin-top: 120px; padding-bottom: 60px; }
+      .profile-card { background: white; border-radius: 15px; box-shadow: 0 5px 20px rgba(0,0,0,0.1); padding: 30px; margin-bottom: 30px; }
+      .profile-title { margin-bottom: 25px; color: var(--verdigris); border-bottom: 2px solid #eee; padding-bottom: 10px; }
+      .form-group { margin-bottom: 20px; }
+      .form-group label { display: block; margin-bottom: 8px; font-weight: 600; font-size: 1.4rem; }
+      .form-control { width: 100%; padding: 12px 15px; border: 1px solid #ddd; border-radius: 8px; font-size: 1.4rem; }
+      .appointment-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+      .appointment-table th, .appointment-table td { padding: 12px; border-bottom: 1px solid #eee; text-align: left; font-size: 1.4rem; }
+      .appointment-table th { background-color: #f9f9f9; font-weight: 700; }
+      .status-badge { padding: 4px 10px; border-radius: 20px; font-size: 1.2rem; font-weight: 600; }
+      .status-pending { background: #fff3cd; color: #856404; }
+      .status-completed { background: #d4edda; color: #155724; }
+      .status-cancelled { background: #f8d7da; color: #721c24; }
+      @media (max-width: 768px) {
+        .appointment-table { display: block; overflow-x: auto; }
+      }
+    </style>
+  </head>
+  <body id="top">
+    <header class="header" data-header>
+      <div class="container">
+        <a href="index.html" class="logo">
+          <img src="./assets/images/fast-terapi-logo.png" alt="Fast Terapi Logo" style="height: 90px" />
+        </a>
+        <nav class="navbar" data-navbar>
+          <div class="navbar-top">
+            <button class="nav-close-btn" aria-label="clsoe menu" data-nav-toggler>
+              <ion-icon name="close-outline" aria-hidden="true"></ion-icon>
+            </button>
+          </div>
+          <ul class="navbar-list">
+            <li><a href="index.html" class="navbar-link title-md" data-i18n="nav_home">Ana Sayfa</a></li>
+            <li><a href="aboutus.html" class="navbar-link title-md" data-i18n="nav_about">Hakkımızda</a></li>
+            <li><a href="service.html" class="navbar-link title-md" data-i18n="nav_services">Hizmetler</a></li>
+            <li><a href="doctors.html" class="navbar-link title-md" data-i18n="nav_doctors">Doktorlar</a></li>
+            <li><a href="conntact.html" class="navbar-link title-md" data-i18n="nav_contact">İletişim</a></li>
+            <li><a href="appointment.html" class="navbar-link title-md btn has-before" data-i18n="nav_appointment">Randevu Al</a></li>
+            <li id="logoutItem"><a href="#" class="navbar-link title-md btn has-before" data-i18n="nav_logout">Çıkış Yap</a></li>
+          </ul>
+        </nav>
+        <button class="nav-open-btn" aria-label="open menu" data-nav-toggler>
+          <ion-icon name="menu-outline"></ion-icon>
+        </button>
+        <div class="overlay" data-nav-toggler data-overlay></div>
+      </div>
+    </header>
+
+    <main>
+      <section class="profile-container">
+        <div class="container">
+          <div class="profile-card">
+            <h2 class="headline-md profile-title">Profil Bilgilerim</h2>
+            <form id="profileForm">
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                <div class="form-group">
+                  <label for="name">Ad</label>
+                  <input type="text" id="name" class="form-control" required />
+                </div>
+                <div class="form-group">
+                  <label for="surname">Soyad</label>
+                  <input type="text" id="surname" class="form-control" />
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="email">E-posta</label>
+                <input type="email" id="email" class="form-control" required />
+              </div>
+              <div class="form-group">
+                <label for="phone">Telefon</label>
+                <input type="text" id="phone" class="form-control" />
+              </div>
+              <button type="submit" class="btn has-before">Bilgileri Güncelle</button>
+            </form>
+          </div>
+
+          <div class="profile-card">
+            <h2 class="headline-md profile-title">Randevu Geçmişim</h2>
+            <div id="appointmentsList">
+              <p>Yükleniyor...</p>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer" style="background-image: url('./assets/images/footer-bg.png')">
+      <div class="container">
+        <div class="footer-bottom">
+          <p class="text copyright">&copy; Terapist Merkezi 2026 | Tüm Hakları SESA Yazılım Tarafından Saklıdır.</p>
+        </div>
+      </div>
+    </footer>
+
+    <script src="./assets/js/script.js"></script>
+    <script src="./assets/js/profile.js"></script>
+    <script type="module" src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.esm.js"></script>
+    <script nomodule src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.js"></script>
+  </body>
+</html>
