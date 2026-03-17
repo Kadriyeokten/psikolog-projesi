@@ -2591,7 +2591,7 @@ Product */
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  margin: 120px 20px 20px 20px;
+  margin-bottom: 20px;
   padding: 10px 15px;
   background-color: var(--verdigris);
   color: var(--white);
