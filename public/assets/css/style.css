@@ -2775,3 +2775,87 @@ Product */
   width: 20px;
   height: 20px;
 }
+
+/*-----------------------------------*\
+  #MOBILE RESPONSIVE IMPROVEMENTS
+\*-----------------------------------*/
+
+@media (max-width: 768px) {
+  :root {
+    --headline-lg: 3.5rem;
+    --headline-md: 2.5rem;
+    --headline-sm: 1.8rem;
+    --section-padding: 60px;
+  }
+
+  .container { padding-inline: 20px; }
+
+  /* Hero Section */
+  .hero { 
+    padding-top: 140px; 
+    text-align: center;
+  }
+  .hero-title { margin-inline: auto; }
+  .hero-banner { display: none; }
+
+  /* Service List */
+  .service-list {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  /* About Section */
+  .about .container {
+    display: flex;
+    flex-direction: column;
+    gap: 40px;
+  }
+  .about-banner { order: 2; }
+  .about-content { order: 1; }
+
+  /* Footer */
+  .footer-top {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 40px;
+  }
+  .footer-brand, .footer-list { text-align: center; }
+  .contact-list { justify-content: center; }
+  .footer-form { max-width: 100%; }
+
+  /* Tables (Profile & Admin) */
+  .modern-table, .appointment-table {
+    display: block;
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Signup/Login */
+  .signup-form-wrapper, .login-form-wrapper {
+    padding: 25px 20px;
+    margin: 10px;
+  }
+
+  /* Dropdown in Mobile Navbar */
+  .user-trigger #userName {
+    font-size: 1.6rem;
+  }
+  
+  .lang-switcher {
+    justify-content: center;
+    margin: 15px 0;
+  }
+}
+
+@media (max-width: 575px) {
+  .header .logo img { height: 60px !important; }
+  .header { height: 80px; }
+  .hero { padding-top: 120px; }
+  
+  .btn {
+    padding: 10px 20px;
+    font-size: 1.4rem;
+  }
+}
