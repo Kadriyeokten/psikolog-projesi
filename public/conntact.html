@@ -688,6 +688,11 @@
     - custom js link
   -->
     <script src="./assets/js/script.js"></script>
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        if (window.initAuthUI) window.initAuthUI();
+      });
+    </script>
 
     <!-- 
     - ionicon link
