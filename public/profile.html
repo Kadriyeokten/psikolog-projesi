@@ -38,17 +38,55 @@
         </a>
         <nav class="navbar" data-navbar>
           <div class="navbar-top">
-            <button class="nav-close-btn" aria-label="clsoe menu" data-nav-toggler>
+            <a
+              href="index.html"
+              class="logo"
+              style="
+                font-size: 2rem;
+                font-weight: bold;
+                color: var(--verdigris);
+              "
+            >
+              <img src="./assets/images/fast-terapi-logo.png" alt="Fast Terapi Logo" style="height: 90px;">
+            </a>
+
+            <button
+              class="nav-close-btn"
+              aria-label="clsoe menu"
+              data-nav-toggler
+            >
               <ion-icon name="close-outline" aria-hidden="true"></ion-icon>
             </button>
           </div>
+
           <ul class="navbar-list">
-            <li><a href="index.html" class="navbar-link title-md" data-i18n="nav_home">Ana Sayfa</a></li>
-            <li><a href="aboutus.html" class="navbar-link title-md" data-i18n="nav_about">Hakkımızda</a></li>
-            <li><a href="service.html" class="navbar-link title-md" data-i18n="nav_services">Hizmetler</a></li>
-            <li><a href="doctors.html" class="navbar-link title-md" data-i18n="nav_doctors">Doktorlar</a></li>
-            <li><a href="conntact.html" class="navbar-link title-md" data-i18n="nav_contact">İletişim</a></li>
-            <li><a href="appointment.html" class="navbar-link title-md" data-i18n="nav_appointment">Randevu Al</a></li>
+            <li class="navbar-item">
+              <a href="index.html" class="navbar-link title-md" data-i18n="nav_home">Ana Sayfa</a>
+            </li>
+
+            <li class="navbar-item">
+              <a href="aboutus.html" class="navbar-link title-md" data-i18n="nav_about">Hakkımızda</a>
+            </li>
+
+            <li class="navbar-item">
+              <a href="service.html" class="navbar-link title-md" data-i18n="nav_services">Hizmetler</a>
+            </li>
+
+            <li class="navbar-item">
+              <a href="doctors.html" class="navbar-link title-md" data-i18n="nav_doctors">Doktorlar</a>
+            </li>
+
+            <li class="navbar-item">
+              <a href="conntact.html" class="navbar-link title-md" data-i18n="nav_contact">İletişim</a>
+            </li>
+            <li class="navbar-item">
+              <a
+                href="appointment.html"
+                class="navbar-link title-md"
+                data-i18n="nav_appointment"
+                >Randevu Al</a
+              >
+            </li>
             <li class="navbar-item auth-item" id="loginItem">
               <a href="login.html" class="navbar-link title-md" data-i18n="nav_login">Giriş Yap</a>
             </li>
@@ -64,6 +102,45 @@
                 <li id="adminLink" style="display: none"><a href="admin.html" class="dropdown-link"><ion-icon name="settings-outline"></ion-icon> <span data-i18n="nav_admin">Admin Paneli</span></a></li>
                 <li><a href="#" class="dropdown-link" id="logoutBtn"><ion-icon name="log-out-outline"></ion-icon> <span data-i18n="nav_logout">Çıkış Yap</span></a></li>
               </ul>
+            </li>
+
+            <li class="navbar-item lang-switcher">
+              <button id="langToggle" class="lang-toggle-btn">
+                <ion-icon name="globe-outline"></ion-icon>
+                <span id="langLabel">TR</span>
+              </button>
+            </li>
+          </ul>
+
+          <ul class="social-list">
+            <li>
+              <a href="#" class="social-link">
+                <ion-icon name="logo-twitter"></ion-icon>
+              </a>
+            </li>
+
+            <li>
+              <a href="#" class="social-link">
+                <ion-icon name="logo-facebook"></ion-icon>
+              </a>
+            </li>
+
+            <li>
+              <a href="#" class="social-link">
+                <ion-icon name="logo-pinterest"></ion-icon>
+              </a>
+            </li>
+
+            <li>
+              <a href="#" class="social-link">
+                <ion-icon name="logo-instagram"></ion-icon>
+              </a>
+            </li>
+
+            <li>
+              <a href="#" class="social-link">
+                <ion-icon name="logo-youtube"></ion-icon>
+              </a>
             </li>
           </ul>
         </nav>
