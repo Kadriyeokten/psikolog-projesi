@@ -137,6 +137,27 @@
         #calendar { min-height: 400px; }
         .form-container { max-height: none; }
       }
+
+      /* Footer Stilleri (Geri Yükleme) */
+      .footer { background-color: var(--rich-black-fogra-29); color: var(--white); }
+      .footer-top { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 30px; padding-block: 60px; }
+      .footer-brand .logo img { height: 70px !important; margin-bottom: 20px; }
+      .contact-list { margin-top: 20px; }
+      .contact-item { display: flex; gap: 15px; margin-bottom: 15px; align-items: flex-start; }
+      .contact-item .item-icon { font-size: 2.2rem; color: var(--verdigris); }
+      .footer-list-title { color: var(--white); margin-bottom: 20px; font-weight: 600; }
+      .footer-link, .address { color: var(--gray-web); transition: var(--transition-1); font-size: 1.4rem; }
+      .footer-link:hover { color: var(--verdigris); }
+      .footer-form { position: relative; margin-top: 20px; }
+      .footer-bottom { border-block-start: 1px solid var(--white_a10); padding-block: 20px; text-align: center; }
+      .copyright { font-size: 1.4rem; color: var(--gray-web); }
+
+      @media (max-width: 992px) {
+        .footer-top { grid-template-columns: 1fr 1fr; }
+      }
+      @media (max-width: 575px) {
+        .footer-top { grid-template-columns: 1fr; }
+      }
     </style>
   </head>
   <body id="top">
