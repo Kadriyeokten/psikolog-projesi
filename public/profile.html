@@ -12,7 +12,7 @@
     <link rel="stylesheet" href="./assets/css/style.css" />
     <script src="./assets/js/i18n.js"></script>
     <style>
-      .profile-container { padding-bottom: 60px; }
+      .profile-container { margin-top: 120px; padding-bottom: 60px; }
       .profile-card { background: white; border-radius: 15px; box-shadow: 0 5px 20px rgba(0,0,0,0.1); padding: 30px; margin-bottom: 30px; }
       .profile-title { margin-bottom: 25px; color: var(--verdigris); border-bottom: 2px solid #eee; padding-bottom: 10px; }
       .form-group { margin-bottom: 20px; }
@@ -75,12 +75,12 @@
     </header>
 
     <main>
-      <section class="profile-container" style="padding-top: 120px;">
+      <a href="index.html" class="back-button" title="Ana sayfaya geri dön">
+        <ion-icon name="arrow-back-outline"></ion-icon>
+        <span data-i18n="back">Geri</span>
+      </a>
+      <section class="profile-container">
         <div class="container">
-          <a href="index.html" class="back-button" title="Ana sayfaya geri dön">
-            <ion-icon name="arrow-back-outline"></ion-icon>
-            <span data-i18n="back">Geri</span>
-          </a>
           <div class="profile-card">
             <h2 class="headline-md profile-title">Profil Bilgilerim</h2>
             <form id="profileForm">
