@@ -419,7 +419,17 @@ body.nav-active {
   }
 }
 
+.user-dropdown.active .dropdown-list {
+  display: block;
+}
+
+/* Remove hover trigger */
 .user-dropdown:hover .dropdown-list {
+  display: none;
+}
+
+/* Explicitly allow active state to show dropdown */
+.user-dropdown.active .dropdown-list {
   display: block;
 }
 

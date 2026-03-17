@@ -139,12 +139,21 @@ window.initAuthUI = function () {
     });
   }
 
-  // Mobile Dropdown Toggle
+  // Dropdown Toggle (Desktop & Mobile)
+  const userDropdown = document.querySelector(".user-dropdown");
   const userTrigger = document.querySelector(".user-trigger");
-  if (userTrigger && window.innerWidth < 1200) {
-    userTrigger.addEventListener("click", function() {
-      const parent = this.closest(".user-dropdown");
-      parent.classList.toggle("active");
+  
+  if (userTrigger && userDropdown) {
+    userTrigger.addEventListener("click", function(e) {
+      e.stopPropagation();
+      userDropdown.classList.toggle("active");
+    });
+
+    // Close dropdown when clicking outside
+    document.addEventListener("click", function(e) {
+      if (!userDropdown.contains(e.target)) {
+        userDropdown.classList.remove("active");
+      }
     });
   }
 }
