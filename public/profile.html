@@ -12,7 +12,79 @@
     <link rel="stylesheet" href="./assets/css/style.css" />
     <script src="./assets/js/i18n.js"></script>
     <style>
-      .profile-container { margin-top: 120px; padding-bottom: 60px; }
+      /* Navbar Optimizasyonu */
+      @media (min-width: 1200px) {
+        .container {
+          max-width: 1450px !important; /* Yazılar büyüdüğü için alan iyice genişletildi */
+        }
+        .header .logo img {
+          height: 90px !important; /* Logo orijinal boyutuna yakın bir seviyeye büyütüldü */
+        }
+        .navbar-list {
+          gap: 20px !important;
+        }
+        .navbar-link {
+          font-size: 1.8rem !important; /* Yazılar belirgin şekilde büyütüldü */
+          padding-inline: 18px !important;
+          white-space: nowrap !important;
+          font-weight: 600 !important;
+        }
+        .navbar-item .btn {
+          padding: 10px 20px !important;
+          font-size: 1.5rem !important;
+        }
+      }
+
+      .lang-switcher {
+        margin-left: 10px;
+        display: flex;
+        align-items: center;
+      }
+      .lang-toggle-btn {
+        background: var(--verdigris);
+        color: white;
+        border: none;
+        padding: 4px 10px;
+        border-radius: 20px;
+        cursor: pointer;
+        font-weight: 500;
+        font-size: 1.1rem; /* Buton küçük kalmaya devam ediyor */
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        transition: all 0.2s ease;
+      }
+      .lang-toggle-btn:hover {
+        background: var(--midnight-green);
+      }
+      .lang-toggle-btn ion-icon {
+        font-size: 1.4rem;
+      }
+
+      .navbar-item .btn {
+        padding: 6px 15px !important;
+        font-size: 1.3rem !important;
+        min-height: auto !important;
+      }
+
+      @media (min-width: 1200px) {
+        .navbar-list {
+          align-items: center;
+        }
+        .auth-item {
+          margin-left: 10px;
+        }
+        .auth-item:first-of-type {
+          margin-left: auto;
+        }
+        .navbar-link.btn {
+          padding: 6px 16px;
+          font-size: 1.4rem;
+          white-space: nowrap;
+        }
+      }
+
+      .profile-container { padding-bottom: 60px; }
       .profile-card { background: white; border-radius: 15px; box-shadow: 0 5px 20px rgba(0,0,0,0.1); padding: 30px; margin-bottom: 30px; }
       .profile-title { margin-bottom: 25px; color: var(--verdigris); border-bottom: 2px solid #eee; padding-bottom: 10px; }
       .form-group { margin-bottom: 20px; }
