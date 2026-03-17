@@ -514,6 +514,7 @@ body.nav-active {
   padding-block: 16px;
   z-index: 4;
   height: 100px;
+  background-color: var(--rich-black-fogra-29); /* Default dark background */
 }
 
 /* Mobil menüde butonları göster */
