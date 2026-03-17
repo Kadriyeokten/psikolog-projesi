@@ -75,7 +75,7 @@
     </header>
 
     <main>
-      <a href="javascript:void(0)" onclick="history.back()" class="back-button" title="Geri dön">
+      <a href="javascript:void(0)" onclick="if(history.length > 1) { history.back(); } else { window.location.href='index.html'; }" class="back-button" title="Geri dön">
         <ion-icon name="arrow-back-outline"></ion-icon>
         <span data-i18n="back">Geri</span>
       </a>

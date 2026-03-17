@@ -2599,6 +2599,8 @@ Product */
   text-decoration: none;
   font-weight: var(--fw-700);
   transition: var(--transition-1);
+  position: relative;
+  z-index: 10;
 }
 
 .back-button:hover {
