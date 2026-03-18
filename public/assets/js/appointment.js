@@ -3,7 +3,46 @@
 document.addEventListener("DOMContentLoaded", () => {
   loadDynamicData();
   initCalendar();
+  autoFillUserData();
 });
+
+async function autoFillUserData() {
+  const token = localStorage.getItem("token");
+  if (!token) return;
+
+  try {
+    const response = await fetch("/api/user/me", {
+      headers: { "Authorization": `Bearer ${token}` }
+    });
+    
+    if (response.ok) {
+      const user = await response.json();
+      
+      const nameInput = document.getElementById("patientName");
+      const phoneInput = document.getElementById("patientPhone");
+      const emailInput = document.getElementById("patientEmail");
+      
+      if (nameInput && user.name) {
+        // İsim ve soyisimi birleştirerek yazdır
+        nameInput.value = `${user.name} ${user.surname || ''}`.trim();
+        nameInput.readOnly = true; // İsteğe bağlı: Kullanıcı kendi bilgilerini değiştiremesin
+        nameInput.style.backgroundColor = "#eef2f5";
+      }
+      
+      if (phoneInput && user.phone) {
+        phoneInput.value = user.phone;
+      }
+      
+      if (emailInput && user.email) {
+        emailInput.value = user.email;
+        emailInput.readOnly = true;
+        emailInput.style.backgroundColor = "#eef2f5";
+      }
+    }
+  } catch (err) {
+    console.error("Kullanıcı bilgileri alınamadı:", err);
+  }
+}
 
 async function initCalendar() {
   const calendarEl = document.getElementById("calendar");
