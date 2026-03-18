@@ -67,10 +67,12 @@
         border-radius: var(--radius-12);
         box-shadow: var(--shadow-2);
         height: 100%;
+        max-width: 100%;
+        overflow-x: hidden;
       }
 
       .form-container { overflow-y: auto; max-height: calc(100vh - 160px); scrollbar-width: thin; }
-      .calendar-wrapper { display: flex; flex-direction: column; }
+      .calendar-wrapper { display: flex; flex-direction: column; overflow-x: hidden; }
 
       .appointment-card h3 { 
         font-size: 2.8rem; 
@@ -118,6 +120,8 @@
         flex-grow: 1;
         min-height: 450px;
         max-height: 65vh;
+        max-width: 100%;
+        overflow-x: auto;
       }
       .fc .fc-toolbar-title { font-size: 1.6rem !important; font-weight: 700; color: var(--midnight-green); }
       .fc .fc-button-primary { background-color: var(--verdigris) !important; border: none !important; font-size: 1.3rem !important; }
