@@ -538,8 +538,7 @@ body.nav-active {
 /* Mobil görünüm için buton düzenlemeleri */
 @media (max-width: 1199px) {
   .navbar-item {
-    display: flex;
-    justify-content: center;
+    display: block; /* Flex'i kaldırdık ki linkler tam genişlik kaplasın */
     width: 100%;
     border-block-start: 1px solid var(--white_a10);
   }
@@ -548,7 +547,9 @@ body.nav-active {
     margin: 12px auto !important;
     width: 180px !important;
     height: 42px !important;
+    display: flex !important;
     justify-content: center;
+    align-items: center;
     font-size: 1.4rem !important;
     padding: 0 !important;
   }
@@ -630,7 +631,20 @@ body.nav-active {
 .navbar-link {
   color: var(--white);
   text-transform: uppercase;
-  padding: 10px 24px;
+  padding: 15px 24px;
+  font-size: 1.6rem;
+  font-weight: 500;
+  letter-spacing: 1px;
+  transition: all 0.3s ease;
+  display: block;
+  width: 100%;
+}
+
+.navbar-link:hover,
+.navbar-link:focus {
+  background-color: var(--white_a10);
+  padding-left: 30px;
+  color: var(--verdigris);
 }
 
 .logout-btn {
