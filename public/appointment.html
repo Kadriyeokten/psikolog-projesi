@@ -147,41 +147,51 @@
       .review .box .text { font-size: 1.5rem; color: var(--independece); line-height: 1.6; }
 
       @media (max-width: 768px) {
-        .appointment-section { padding-top: 90px !important; padding-bottom: 30px !important; }
-        .appointment-grid { gap: 15px; }
-        .appointment-card { padding: 15px; border-radius: 10px; }
+        .appointment-section { padding-top: 80px !important; padding-bottom: 20px !important; }
+        .appointment-grid { gap: 10px; }
+        .appointment-card { padding: 15px; border-radius: 12px; }
         .form-container { max-height: none; }
-        .headline-md.text-center { font-size: 2.2rem !important; margin-bottom: 15px !important; }
+        .headline-md.text-center { font-size: 2rem !important; margin-bottom: 10px !important; }
         
-        /* Form elemanlarını sıkılaştır */
-        .input-box { margin-bottom: 12px; }
-        .input-box label { font-size: 1.3rem; margin-bottom: 4px; }
-        .input-box .box { padding: 10px 12px; font-size: 1.4rem; }
+        /* Ultra-compact Form Layout */
+        #appointmentForm {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          column-gap: 10px;
+          row-gap: 10px;
+        }
+        #appointmentForm h3, 
+        #appointmentForm .input-box:nth-of-type(3), 
+        #appointmentForm button {
+          grid-column: 1 / -1;
+          margin-bottom: 0 !important;
+        }
+        
+        .input-box { margin-bottom: 0; }
+        .input-box label { font-size: 1.2rem; margin-bottom: 4px; }
+        .input-box .box { padding: 10px; font-size: 1.3rem; }
         .btn.appointment-btn-submit { padding: 12px !important; font-size: 1.5rem !important; margin-top: 5px !important; }
 
-        /* Takvimi mobilde daha kompakt yap (Sekmesiz görünüm için) */
-        #calendar { min-height: 400px; height: 450px !important; font-size: 0.85rem; padding: 5px; }
+        /* Takvimi mobilde ultra kompakt yap */
+        #calendar { min-height: 350px; height: 380px !important; font-size: 0.85rem; padding: 5px; }
         .fc .fc-toolbar { 
-          flex-direction: row; 
-          flex-wrap: wrap; 
-          justify-content: center; 
-          gap: 8px; 
-          margin-bottom: 10px !important; 
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 8px !important; 
         }
-        .fc .fc-toolbar-title { 
-          font-size: 1.2rem !important; 
-          width: 100%; 
-          text-align: center; 
-          order: -1; /* Başlığı en üste al */
-          margin-bottom: 5px;
-        }
-        .fc .fc-button { padding: 0.4em 0.6em !important; font-size: 1rem !important; }
+        .fc .fc-toolbar-title { font-size: 1.1rem !important; margin: 0; }
+        .fc .fc-button { padding: 0.3em 0.5em !important; font-size: 0.95rem !important; }
+        .fc .fc-toolbar-chunk { display: flex; gap: 4px; }
       }
 
       @media (max-width: 480px) {
-        .appointment-section { padding-inline: 10px; }
-        .container { padding-inline: 10px; }
-        #calendar { height: 400px !important; min-height: 350px; }
+        .appointment-section { padding-inline: 5px; }
+        .container { padding-inline: 5px; }
+        .appointment-card { padding: 12px; }
+        #appointmentForm { grid-template-columns: 1fr; /* 480px altında tekrar alt alta */ }
+        #appointmentForm .input-box { grid-column: 1 / -1; }
+        #calendar { height: 350px !important; min-height: 320px; }
       }
     </style>
   </head>
