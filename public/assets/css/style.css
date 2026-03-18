@@ -553,6 +553,12 @@ body.nav-active {
     font-size: 1.4rem !important;
     padding: 0 !important;
   }
+  
+  .lang-switcher {
+    justify-content: center;
+    padding: 15px 0;
+    margin: 0 !important;
+  }
 }
 
 .header.active {
@@ -638,12 +644,12 @@ body.nav-active {
   transition: all 0.3s ease;
   display: block;
   width: 100%;
+  text-align: center;
 }
 
 .navbar-link:hover,
 .navbar-link:focus {
   background-color: var(--white_a10);
-  padding-left: 30px;
   color: var(--verdigris);
 }
 
