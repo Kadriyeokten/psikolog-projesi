@@ -136,11 +136,12 @@ ion-icon {
 address {
   font-style: normal;
 }
-
 html {
   font-size: 10px;
   font-family: var(--ff-rubik);
   scroll-behavior: smooth;
+  overflow-x: hidden;
+  max-width: 100vw;
 }
 
 body {
@@ -148,6 +149,9 @@ body {
   font-size: 1.6rem;
   color: var(--independece);
   line-height: 1.8;
+  overflow-x: hidden;
+  max-width: 100vw;
+}
   overflow: hidden;
 }
 
