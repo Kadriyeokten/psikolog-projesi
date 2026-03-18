@@ -147,10 +147,22 @@
       .review .box .text { font-size: 1.5rem; color: var(--independece); line-height: 1.6; }
 
       @media (max-width: 768px) {
-        .appointment-section { padding-block: 100px 40px; }
-        .appointment-card { padding: 20px; }
-        #calendar { min-height: 400px; }
+        .appointment-section { padding-block: 80px 30px; }
+        .appointment-card { padding: 15px; }
+        #calendar { min-height: 350px; font-size: 1rem; }
         .form-container { max-height: none; }
+        .headline-md { font-size: 2.2rem !important; margin-bottom: 20px !important; }
+        
+        /* Takvimi mobilde daha kompakt yap */
+        .fc .fc-toolbar { flex-direction: column; gap: 8px; margin-bottom: 10px !important; }
+        .fc .fc-toolbar-title { font-size: 1.3rem !important; }
+        .fc .fc-button { padding: 0.4em 0.65em !important; font-size: 1.1rem !important; }
+      }
+
+      @media (max-width: 480px) {
+        .appointment-section { padding-inline: 10px; }
+        .container { padding-inline: 10px; }
+        #calendar { height: 400px; }
       }
     </style>
   </head>
