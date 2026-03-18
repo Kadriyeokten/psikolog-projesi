@@ -496,7 +496,8 @@ body.nav-active {
   .dropdown-link {
     color: var(--white);
     padding: 12px 24px;
-    justify-content: center;
+    justify-content: flex-start; /* İkonların aynı hizada başlamasını sağla */
+    padding-left: 35%; /* Ortalanmış hissi vermek için soldan it */
     border-radius: 0;
     border-block-start: 1px solid var(--white_a10);
   }
@@ -508,7 +509,9 @@ body.nav-active {
   
   /* Daha küçük ekranlar için hizalama ayarı */
   @media (max-width: 575px) {
-    /* No longer needed */
+    .dropdown-link {
+      padding-left: 30%;
+    }
   }
   
   .dropdown-link:hover {

@@ -118,7 +118,7 @@ window.initAuthUI = function () {
     
     // Show/Hide admin link based on role
     if (role === "admin") {
-      if (adminLink) adminLink.style.display = "flex";
+      if (adminLink) adminLink.style.display = "block";
     } else {
       if (adminLink) adminLink.style.display = "none";
     }
