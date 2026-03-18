@@ -137,27 +137,6 @@
         #calendar { min-height: 400px; }
         .form-container { max-height: none; }
       }
-
-      /* Footer Stilleri (Geri Yükleme) */
-      .footer { background-color: var(--midnight-green); color: var(--white); }
-      .footer-top { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 30px; padding-block: 60px; }
-      .footer-brand .logo img { height: 70px !important; margin-bottom: 20px; }
-      .contact-list { margin-top: 20px; }
-      .contact-item { display: flex; gap: 15px; margin-bottom: 15px; align-items: flex-start; }
-      .contact-item .item-icon { font-size: 2.2rem; color: var(--verdigris); }
-      .footer-list-title { color: var(--white); margin-bottom: 20px; font-weight: 600; }
-      .footer-link, .address { color: var(--gray-web); transition: var(--transition-1); font-size: 1.4rem; }
-      .footer-link:hover { color: var(--verdigris); }
-      .footer-form { position: relative; margin-top: 20px; }
-      .footer-bottom { border-block-start: 1px solid var(--white_a10); padding-block: 20px; text-align: center; }
-      .copyright { font-size: 1.4rem; color: var(--gray-web); }
-
-      @media (max-width: 992px) {
-        .footer-top { grid-template-columns: 1fr 1fr; }
-      }
-      @media (max-width: 575px) {
-        .footer-top { grid-template-columns: 1fr; }
-      }
     </style>
   </head>
   <body id="top">
@@ -288,53 +267,167 @@
       </article>
     </main>
 
-    <footer class="footer" style="background-image: url('./assets/images/footer-bg.png')">
+    <footer
+      class="footer"
+      style="background-image: url(&quot;./assets/images/footer-bg.png&quot;)"
+    >
       <div class="container">
         <div class="section footer-top">
           <div class="footer-brand" data-reveal="bottom">
-            <a href="index.html" class="logo">
-              <img src="./assets/images/fast-terapi-logo.png" alt="Fast Terapi Logo">
-            </a>
+            <a
+              href="index.html"
+              class="logo"
+              style="
+                font-size: 2.4rem;
+                font-weight: bold;
+                color: var(--verdigris);
+              "
+            >
+          <img src="./assets/images/fast-terapi-logo.png" alt="Fast Terapi Logo" style="height: 90px;">
+        </a>
             <ul class="contact-list has-after">
               <li class="contact-item">
-                <div class="item-icon"><ion-icon name="mail-open-outline"></ion-icon></div>
+                <div class="item-icon">
+                  <ion-icon name="mail-open-outline"></ion-icon>
+                </div>
                 <div>
-                  <p><span data-i18n="email_main">Ana E-posta</span> : <a href="mailto:contact@therapy.com" class="contact-link">contact@therapy.com</a></p>
-                  <p><span data-i18n="email_inquiry">Sorularınız İçin</span> : <a href="mailto:Info@therapy.com" class="contact-link">Info@therapy.com</a></p>
+                  <p>
+                    <span data-i18n="email_main">Ana E-posta</span> :
+                    <a href="mailto:contact@therapy.com" class="contact-link"
+                      >contact@&shy;therapy.com</a
+                    >
+                  </p>
+                  <p>
+                    <span data-i18n="email_inquiry">Sorularınız İçin</span> :
+                    <a href="mailto:Info@fastterapi.com" class="contact-link"
+                      >Info@fastterapi.com</a
+                    >
+                  </p>
                 </div>
               </li>
               <li class="contact-item">
-                <div class="item-icon"><ion-icon name="call-outline"></ion-icon></div>
+                <div class="item-icon">
+                  <ion-icon name="call-outline"></ion-icon>
+                </div>
                 <div>
-                  <p><span data-i18n="phone_office">Ofis Telefonu</span> : <a href="tel:0029129102320" class="contact-link">0029129102320</a></p>
-                  <p><span data-i18n="phone_mobile">Cep Telefonu</span> : <a href="tel:000232439493" class="contact-link">000 2324 39493</a></p>
+                  <p>
+                    <span data-i18n="phone_office">Ofis Telefonu</span> :
+                    <a href="tel:0029129102320" class="contact-link"
+                      >0029129102320</a
+                    >
+                  </p>
+                  <p>
+                    <span data-i18n="phone_mobile">Cep Telefonu</span> :
+                    <a href="tel:000232439493" class="contact-link"
+                      >000 2324 39493</a
+                    >
+                  </p>
                 </div>
               </li>
             </ul>
           </div>
           <div class="footer-list" data-reveal="bottom">
             <p class="headline-sm footer-list-title" data-i18n="footer_about_title">Hakkımızda</p>
-            <p class="text" data-i18n="footer_about_text">Sağlık tek başına fiziksel iyi olma hali değil ruhsal iyi olma halidir ve bütün olarak ele alınmalıdır.</p>
+            <p class="text" data-i18n="footer_about_text">
+              Sağlık tek başına fiziksel iyi olma hali değil ruhsal iyi olma
+              halidir ve bütün olarak ele alınmalıdır. İlk seans terapi
+              gündeminin belirlenmesi, danışanın detaylı öyküsünün alınması ile
+              gerçekleşir.
+            </p>
             <address class="address">
               <ion-icon name="map-outline"></ion-icon>
-              <span class="text" data-i18n="address_label">Turgut Özal Caddesi <br /> Adana, Çukurova 12345</span>
+              <span class="text" data-i18n="address_label">
+                Turgut Özal Caddesi <br />
+                Adana, Çukurova 12345
+              </span>
             </address>
           </div>
           <ul class="footer-list" data-reveal="bottom">
-            <li><p class="headline-sm footer-list-title" data-i18n="footer_services_title">Hizmetler</p></li>
-            <li><a href="#" class="text footer-link" data-i18n="footer_consultancy">Danışmanlık</a></li>
-            <li><a href="#" class="text footer-link" data-i18n="footer_sessions">Terapi Seansları</a></li>
+            <li>
+              <p class="headline-sm footer-list-title" data-i18n="footer_services_title">Hizmetler</p>
+            </li>
+            <li>
+              <a href="#" class="text footer-link" data-i18n="footer_consultancy">Danışmanlık</a>
+            </li>
+            <li>
+              <a href="#" class="text footer-link" data-i18n="footer_sessions">Terapi Seansları</a>
+            </li>
+            <li>
+              <a href="#" class="text footer-link" data-i18n="footer_workshops">Atölyeler</a>
+            </li>
+            <li>
+              <a href="#" class="text footer-link" data-i18n="footer_group">Grup Terapisi</a>
+            </li>
+            <li>
+              <a href="#" class="text footer-link" data-i18n="footer_tele">Teleterapi</a>
+            </li>
+            <li>
+              <a href="#" class="text footer-link" data-i18n="footer_mindfulness">Farkındalık Eğitimi</a>
+            </li>
+          </ul>
+          <ul class="footer-list" data-reveal="bottom">
+            <li>
+              <p class="headline-sm footer-list-title" data-i18n="footer_links_title">Faydalı Linkler</p>
+            </li>
+            <li>
+              <a href="#" class="text footer-link" data-i18n="footer_privacy">Gizlilik Politikası</a>
+            </li>
+            <li>
+              <a href="#" class="text footer-link" data-i18n="footer_terms">Hizmet Şartları</a>
+            </li>
+            <li>
+              <a href="#" class="text footer-link" data-i18n="footer_reviews">Danışan Yorumları</a>
+            </li>
+            <li>
+              <a href="#" class="text footer-link" data-i18n="footer_faq">SSS</a>
+            </li>
           </ul>
           <div class="footer-list" data-reveal="bottom">
             <p class="headline-sm footer-list-title" data-i18n="footer_subscribe_title">Abone Ol</p>
             <form action="" class="footer-form">
-              <input type="email" name="email" placeholder="E-posta" class="input-field title-lg" />
-              <button type="submit" class="btn has-before title-md" data-i18n="subscribe_btn">Abone Ol</button>
+              <input
+                type="email"
+                name="email"
+                placeholder="E-posta"
+                class="input-field title-lg"
+              />
+              <button type="submit" class="btn has-before title-md" data-i18n="subscribe_btn">
+                Abone Ol
+              </button>
             </form>
+            <p class="text" data-i18n="footer_subscribe_text">
+              En son güncellemeleri e-posta ile alın. İstediğiniz zaman
+              abonelikten çıkabilirsiniz.
+            </p>
           </div>
         </div>
         <div class="footer-bottom">
-          <p class="text copyright" data-i18n="footer_copyright">&copy; Terapist Merkezi 2026 | Tüm Hakları SESA Yazılım Tarafından Saklıdır.</p>
+          <p class="text copyright" data-i18n="footer_copyright">
+            &copy; Terapist Merkezi 2026 | Tüm Hakları SESA Yazılım Tarafından
+            Saklıdır.
+          </p>
+          <ul class="social-list">
+            <li>
+              <a href="#" class="social-link">
+                <ion-icon name="logo-facebook"></ion-icon>
+              </a>
+            </li>
+            <li>
+              <a href="#" class="social-link">
+                <ion-icon name="logo-twitter"></ion-icon>
+              </a>
+            </li>
+            <li>
+              <a href="#" class="social-link">
+                <ion-icon name="logo-instagram"></ion-icon>
+              </a>
+            </li>
+            <li>
+              <a href="#" class="social-link">
+                <ion-icon name="logo-linkedin"></ion-icon>
+              </a>
+            </li>
+          </ul>
         </div>
       </div>
     </footer>
