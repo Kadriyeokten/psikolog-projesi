@@ -25,8 +25,6 @@ async function autoFillUserData() {
       if (nameInput && user.name) {
         // İsim ve soyisimi birleştirerek yazdır
         nameInput.value = `${user.name} ${user.surname || ''}`.trim();
-        nameInput.readOnly = true; // İsteğe bağlı: Kullanıcı kendi bilgilerini değiştiremesin
-        nameInput.style.backgroundColor = "#eef2f5";
       }
       
       if (phoneInput && user.phone) {
@@ -35,8 +33,6 @@ async function autoFillUserData() {
       
       if (emailInput && user.email) {
         emailInput.value = user.email;
-        emailInput.readOnly = true;
-        emailInput.style.backgroundColor = "#eef2f5";
       }
     }
   } catch (err) {
