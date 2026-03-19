@@ -104,5 +104,13 @@
   "back_to_site": "Siteye Dön",
   "alert_login_welcome": "Hoşgeldin",
   "alert_login_error": "Hata",
-  "alert_server_error": "Sunucuya bağlanılamadı"
+  "alert_server_error": "Sunucuya bağlanılamadı",
+  "appointment_register_prompt_title": "Randevunuz Alındı!",
+  "appointment_register_prompt_text": "Girdiğiniz bilgilerle hızlıca bir hesap oluşturmak ister misiniz? Böylece randevularınızı takip edebilirsiniz.",
+  "appointment_register_confirm_btn": "Evet, Hesap Oluştur",
+  "appointment_register_cancel_btn": "Hayır, Teşekkürler",
+  "appointment_register_password_label": "Hesabınız için bir şifre belirleyin:",
+  "appointment_register_password_placeholder": "Şifreniz",
+  "appointment_register_success": "Hesabınız başarıyla oluşturuldu ve giriş yapıldı!",
+  "appointment_register_error": "Hesap oluşturulurken bir hata oluştu."
 }

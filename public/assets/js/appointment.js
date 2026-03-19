@@ -82,7 +82,13 @@ async function initCalendar() {
       document.getElementById("selectedDateTime").value = selectedDate;
       const formattedDate = info.start.toLocaleString(currentLang === 'tr' ? "tr-TR" : "en-US");
       const msg = await window.i18n.t("appointment_datetime_label");
-      alert(msg + ": " + formattedDate);
+      
+      Swal.fire({
+        icon: 'info',
+        title: msg,
+        text: formattedDate,
+        confirmButtonColor: 'var(--verdigris)'
+      });
     },
   });
 
@@ -149,7 +155,11 @@ document.getElementById("appointmentForm")?.addEventListener("submit", async fun
 
   if (!selectedDateTime) {
     const errMsg = await window.i18n.t("appointment_error_date");
-    alert(errMsg);
+    Swal.fire({
+      icon: 'warning',
+      text: errMsg,
+      confirmButtonColor: 'var(--verdigris)'
+    });
     return;
   }
   
@@ -182,16 +192,153 @@ document.getElementById("appointmentForm")?.addEventListener("submit", async fun
     const result = await res.json();
     
     if (res.ok) {
-      const successMsg = await window.i18n.t("appointment_success");
-      alert(successMsg);
+      const isLoggedIn = !!localStorage.getItem("token");
+      
+      if (!isLoggedIn && patientEmail) {
+        // Misafir kullanıcı için kayıt teklifi (sadece email varsa)
+        await showRegistrationPrompt(patientName, patientEmail, patientPhone);
+      } else {
+        const successMsg = await window.i18n.t("appointment_success");
+        await Swal.fire({
+          icon: 'success',
+          title: successMsg,
+          confirmButtonColor: 'var(--verdigris)'
+        });
+      }
+      
       document.getElementById("appointmentForm").reset();
       document.getElementById("selectedDateTime").value = "";
+      if (window.currentCalendar) {
+        window.currentCalendar.refetchEvents();
+      }
     } else {
-      alert("Hata: " + result.error);
+      Swal.fire({
+        icon: 'error',
+        title: 'Hata',
+        text: result.error,
+        confirmButtonColor: 'var(--verdigris)'
+      });
     }
   } catch (err) {
     console.error(err);
     const serverErrMsg = await window.i18n.t("alert_server_error");
-    alert(serverErrMsg);
+    Swal.fire({
+      icon: 'error',
+      title: 'Hata',
+      text: serverErrMsg,
+      confirmButtonColor: 'var(--verdigris)'
+    });
   }
 });
+
+async function showRegistrationPrompt(name, email, phone) {
+  const title = await window.i18n.t("appointment_register_prompt_title");
+  const text = await window.i18n.t("appointment_register_prompt_text");
+  const confirmBtn = await window.i18n.t("appointment_register_confirm_btn");
+  const cancelBtn = await window.i18n.t("appointment_register_cancel_btn");
+  const passwordLabel = await window.i18n.t("appointment_register_password_label");
+  const passwordPlaceholder = await window.i18n.t("appointment_register_password_placeholder");
+
+  const result = await Swal.fire({
+    title: title,
+    text: text,
+    icon: 'question',
+    showCancelButton: true,
+    confirmButtonText: confirmBtn,
+    cancelButtonText: cancelBtn,
+    confirmButtonColor: 'var(--verdigris)',
+    cancelButtonColor: '#aaa',
+  });
+
+  if (result.isConfirmed) {
+    const { value: password } = await Swal.fire({
+      title: passwordLabel,
+      input: 'password',
+      inputPlaceholder: passwordPlaceholder,
+      inputAttributes: {
+        autocapitalize: 'off',
+        autocorrect: 'off'
+      },
+      showCancelButton: true,
+      confirmButtonColor: 'var(--verdigris)',
+      cancelButtonText: cancelBtn,
+      inputValidator: (value) => {
+        if (!value) {
+          return 'Şifre gereklidir!';
+        }
+        if (value.length < 6) {
+          return 'Şifre en az 6 karakter olmalıdır!';
+        }
+      }
+    });
+
+    if (password) {
+      try {
+        // İsim ve soyisimi ayırmaya çalış (backend surname bekliyor olabilir)
+        const nameParts = name.trim().split(" ");
+        const firstName = nameParts[0];
+        const surname = nameParts.length > 1 ? nameParts.slice(1).join(" ") : "";
+
+        // Kayıt Ol
+        const signupRes = await fetch("/api/signup", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name: firstName,
+            surname: surname,
+            email: email,
+            phone: phone,
+            password: password
+          })
+        });
+
+        if (signupRes.ok) {
+          // Otomatik Giriş Yap
+          const loginRes = await fetch("/api/login", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email, password })
+          });
+
+          if (loginRes.ok) {
+            const loginData = await loginRes.json();
+            localStorage.setItem("token", loginData.token);
+            localStorage.setItem("role", loginData.role);
+            localStorage.setItem("name", loginData.name);
+            localStorage.setItem("userId", loginData.userId);
+
+            const successMsg = await window.i18n.t("appointment_register_success");
+            await Swal.fire({
+              icon: 'success',
+              title: successMsg,
+              confirmButtonColor: 'var(--verdigris)'
+            });
+            
+            // Profil sayfasına yönlendir veya sayfayı yenile
+            window.location.reload();
+          }
+        } else {
+          const errorData = await signupRes.json();
+          throw new Error(errorData.error || "Kayıt hatası");
+        }
+      } catch (err) {
+        console.error(err);
+        const errorMsg = await window.i18n.t("appointment_register_error");
+        Swal.fire({
+          icon: 'error',
+          title: 'Hata',
+          text: err.message || errorMsg,
+          confirmButtonColor: 'var(--verdigris)'
+        });
+      }
+    }
+  } else {
+    // Kayıt olmak istemedi, sadece randevu başarı mesajını göster
+    const successMsg = await window.i18n.t("appointment_success");
+    Swal.fire({
+      icon: 'success',
+      title: successMsg,
+      confirmButtonColor: 'var(--verdigris)'
+    });
+  }
+}

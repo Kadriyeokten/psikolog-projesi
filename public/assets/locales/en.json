@@ -130,5 +130,13 @@
   "Sertifikalı ve Lisanslı": "Certified and Licensed",
   "Yılların Klinik Deneyimi": "Years of Clinical Experience",
   "Özelleştirilmiş Tekniklerde Uzmanlık": "Expertise in Specialized Techniques",
-  "Şefkatli ve Empatik Bakım": "Compassionate and Empathic Care"
+  "Şefkatli ve Empatik Bakım": "Compassionate and Empathic Care",
+  "appointment_register_prompt_title": "Appointment Booked!",
+  "appointment_register_prompt_text": "Would you like to quickly create an account with the information you provided? This way you can track your appointments.",
+  "appointment_register_confirm_btn": "Yes, Create Account",
+  "appointment_register_cancel_btn": "No, Thanks",
+  "appointment_register_password_label": "Set a password for your account:",
+  "appointment_register_password_placeholder": "Your password",
+  "appointment_register_success": "Your account has been successfully created and you are logged in!",
+  "appointment_register_error": "An error occurred while creating the account."
 }

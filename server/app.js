@@ -1,3 +1,4 @@
+require("dotenv").config();
 process.env.TZ = "Europe/Istanbul";
 const db = require("./db");
 const bcrypt = require("bcrypt");
@@ -15,12 +16,15 @@ if (dns.setDefaultResultOrder) {
   dns.setDefaultResultOrder('ipv4first');
 }
 
-require("dotenv").config();
-
 const JWT_SECRET = process.env.JWT_SECRET || "my_super_secret_key_123";
 
 // Resend yapılandırması (SMTP Port engellemelerini aşmak için HTTP API)
-const resend = new Resend(process.env.RESEND_API_KEY);
+let resend;
+if (process.env.RESEND_API_KEY) {
+  resend = new Resend(process.env.RESEND_API_KEY);
+} else {
+  console.warn("UYARI: RESEND_API_KEY bulunamadı. E-posta gönderimi çalışmayacaktır.");
+}
 
 const express = require("express");
 const path = require("path");
