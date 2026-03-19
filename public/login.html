@@ -36,6 +36,7 @@
   -->
     <link rel="stylesheet" href="./assets/css/style.css" />
     <script src="./assets/js/i18n.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   </head>
 
   <body id="top">
@@ -307,7 +308,12 @@
           const data = await res.json();
 
           if (data.error) {
-            alert(data.error + " ❌");
+            Swal.fire({
+              icon: 'error',
+              title: 'Hata',
+              text: data.error,
+              confirmButtonColor: 'var(--verdigris)'
+            });
             return;
           }
 
@@ -316,7 +322,13 @@
           localStorage.setItem("name", data.name);
           localStorage.setItem("userId", data.userId);
 
-          alert("Hoşgeldin " + data.name + " 👋");
+          await Swal.fire({
+            icon: 'success',
+            title: 'Hoşgeldin 👋',
+            text: data.name,
+            showConfirmButton: false,
+            timer: 2000
+          });
 
           if (data.role === "admin") {
             window.location.href = "admin.html";
@@ -325,7 +337,12 @@
           }
         } catch (err) {
           console.error(err);
-          alert("Sunucuya bağlanılamadı 🚨");
+          Swal.fire({
+            icon: 'error',
+            title: 'Hata',
+            text: 'Sunucuya bağlanılamadı 🚨',
+            confirmButtonColor: 'var(--verdigris)'
+          });
         }
       });
     </script>

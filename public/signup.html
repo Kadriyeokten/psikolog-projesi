@@ -35,6 +35,7 @@
   -->
     <link rel="stylesheet" href="./assets/css/style.css" />
     <script src="./assets/js/i18n.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   </head>
 
   <body id="top">
@@ -343,7 +344,12 @@
         const confirm = document.getElementById("confirm-password").value;
 
         if (password !== confirm) {
-          alert("Şifreler uyuşmuyor ❌");
+          Swal.fire({
+            icon: 'warning',
+            title: 'Hata',
+            text: 'Şifreler uyuşmuyor! ❌',
+            confirmButtonColor: 'var(--verdigris)'
+          });
           return;
         }
 
@@ -365,14 +371,29 @@
           const data = await res.json();
 
           if (data.success) {
-            alert("Kayıt başarılı ✅");
+            await Swal.fire({
+              icon: 'success',
+              title: 'Başarılı',
+              text: 'Kayıt başarılı! Giriş sayfasına yönlendiriliyorsunuz.',
+              confirmButtonColor: 'var(--verdigris)'
+            });
             window.location.href = "login.html";
           } else {
-            alert(data.error || "Kayıt başarısız ❌");
+            Swal.fire({
+              icon: 'error',
+              title: 'Hata',
+              text: data.error || 'Kayıt başarısız ❌',
+              confirmButtonColor: 'var(--verdigris)'
+            });
           }
         } catch (err) {
           console.error(err);
-          alert("Sunucuya bağlanılamadı");
+          Swal.fire({
+            icon: 'error',
+            title: 'Hata',
+            text: 'Sunucuya bağlanılamadı 🚨',
+            confirmButtonColor: 'var(--verdigris)'
+          });
         }
       });
     </script>
