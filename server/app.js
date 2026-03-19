@@ -541,15 +541,24 @@ app.post("/api/signup", async (req, res) => {
     // Şifre hash
     const hashed = await bcrypt.hash(password, 10);
 
-    await db.query("INSERT INTO users(name, surname, email, password, phone) VALUES($1,$2,$3,$4,$5)", [
-      name,
-      surname || null,
-      email,
-      hashed,
-      phone || null
-    ]);
+    const newUser = await db.query(
+      "INSERT INTO users(name, surname, email, password, phone) VALUES($1,$2,$3,$4,$5) RETURNING id", 
+      [name, surname || null, email, hashed, phone || null]
+    );
 
-    res.json({ success: true });
+    const newUserId = newUser.rows[0].id;
+
+    // Eğer bir randevu ID'si gönderilmişse, onu bu kullanıcıya bağla
+    const { appointmentId } = req.body;
+    if (appointmentId) {
+      // Güvenlik: Sadece email adresi eşleşen randevuyu bağla
+      await db.query(
+        "UPDATE appointments SET user_id = $1 WHERE id = $2 AND patient_email = $3",
+        [newUserId, appointmentId, email]
+      );
+    }
+
+    res.json({ success: true, userId: newUserId });
   } catch (err) {
     console.error("Signup Hata:", err);
     res.status(500).json({ error: "Sunucu hatasi" });

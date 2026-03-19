@@ -196,7 +196,8 @@ document.getElementById("appointmentForm")?.addEventListener("submit", async fun
       
       if (!isLoggedIn && patientEmail) {
         // Misafir kullanıcı için kayıt teklifi (sadece email varsa)
-        await showRegistrationPrompt(patientName, patientEmail, patientPhone);
+        // Randevu ID'sini yakalayıp fonksiyona paslıyoruz
+        await showRegistrationPrompt(patientName, patientEmail, patientPhone, result.appointment.id);
       } else {
         const successMsg = await window.i18n.t("appointment_success");
         await Swal.fire({
@@ -231,7 +232,7 @@ document.getElementById("appointmentForm")?.addEventListener("submit", async fun
   }
 });
 
-async function showRegistrationPrompt(name, email, phone) {
+async function showRegistrationPrompt(name, email, phone, appointmentId) {
   const title = await window.i18n.t("appointment_register_prompt_title");
   const text = await window.i18n.t("appointment_register_prompt_text");
   const confirmBtn = await window.i18n.t("appointment_register_confirm_btn");
@@ -279,7 +280,7 @@ async function showRegistrationPrompt(name, email, phone) {
         const firstName = nameParts[0];
         const surname = nameParts.length > 1 ? nameParts.slice(1).join(" ") : "";
 
-        // Kayıt Ol
+        // Kayıt Ol (Randevu ID'sini de gönderiyoruz)
         const signupRes = await fetch("/api/signup", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -288,7 +289,8 @@ async function showRegistrationPrompt(name, email, phone) {
             surname: surname,
             email: email,
             phone: phone,
-            password: password
+            password: password,
+            appointmentId: appointmentId
           })
         });
 
