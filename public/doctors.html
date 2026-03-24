@@ -1054,6 +1054,17 @@
         container.style.opacity = "1";
         container.style.visibility = "visible";
         container.style.display = "flex";
+        
+        // Eğer container'da veya ebeveyninde data-reveal varsa, revealed sınıfını ekle
+        container.classList.add('revealed');
+        if(container.parentElement) {
+          container.parentElement.classList.add('revealed');
+        }
+
+        // Projenin scroll reveal fonksiyonunu manuel olarak bir kez tetikle
+        if (typeof window.revealElementOnScroll === 'function') {
+          setTimeout(window.revealElementOnScroll, 100);
+        }
 
       } catch (err) {
         console.error("Terapistleri yüklerken hata oluştu:", err);
