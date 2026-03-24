@@ -984,14 +984,23 @@
       if (!container) return;
 
       try {
+        console.log("Doktorlar yükleniyor...");
         const response = await fetch("/api/doctors");
         if (!response.ok) throw new Error("API hatası: " + response.status);
 
         const data = await response.json();
+        console.log("Gelen doktor verisi:", data);
+
+        if (!data || data.length === 0) {
+          container.innerHTML = "<p style='text-align:center; width:100%; font-size:1.5rem;'>Henüz kayıtlı terapist bulunmamaktadır.</p>";
+          return;
+        }
+
         container.innerHTML = ""; 
 
         for (const therapist of data) {
-          if (!therapist.is_active && therapist.is_active !== undefined) continue;
+          // is_active değeri sadece açıkça false ise gösterme, null/undefined/true ise göster
+          if (therapist.is_active === false) continue;
 
           const box = document.createElement("div");
           box.className = "box";
@@ -1039,6 +1048,7 @@
         }
       } catch (err) {
         console.error("Terapistleri yüklerken hata oluştu:", err);
+        container.innerHTML = "<p style='color:red; text-align:center; width:100%;'>Veriler yüklenirken bir hata oluştu.</p>";
       }
     }
 
