@@ -806,14 +806,11 @@ app.post("/api/site-content/settings", authenticateAdmin, async (req, res) => {
 app.get("/api/doctors", async (req, res) => {
   try {
     const result = await db.query("SELECT * FROM doctors ORDER BY id DESC");
-
+    console.log(`[DB] Doktorlar çekildi. Sayı: ${result.rows.length}`);
     res.json(result.rows);
   } catch (err) {
     console.error("DOCTOR GET ERROR:", err);
-
-    res.status(500).json({
-      error: "Doktor verileri alınamadı",
-    });
+    res.status(500).json({ error: "Doktor verileri alınamadı" });
   }
 });
 
@@ -833,8 +830,10 @@ app.post("/api/doctors", authenticateAdmin, upload.single("image"), async (req, 
       bio,
     } = req.body;
 
-    let imagePath = null;
+    // FormData'dan gelen string'i boolean'a çevir
+    const isActiveBool = is_active === 'true' || is_active === true;
 
+    let imagePath = null;
     if (req.file) {
       imagePath = "/uploads/" + req.file.filename;
     }
@@ -866,8 +865,8 @@ app.post("/api/doctors", authenticateAdmin, upload.single("image"), async (req, 
         twitter,
         facebook,
         linkedin,
-        is_active === "true" || is_active === true,
-        bio,
+        isActiveBool,
+        bio
       ],
     );
 
