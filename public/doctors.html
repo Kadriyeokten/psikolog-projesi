@@ -1004,6 +1004,9 @@
 
           const box = document.createElement("div");
           box.className = "box";
+          box.style.opacity = "1";
+          box.style.visibility = "visible";
+          box.style.transform = "translateY(0)";
 
           // AI Auto Translate for dynamic DB content
           let title = therapist.title || "";
@@ -1047,23 +1050,14 @@
           container.appendChild(box);
         }
 
-        // --- KRİTİK DÜZELTME: Animasyonları Tetikle ---
-        // Eğer projenizde bir reveal scripti varsa onu tekrar çalıştırırız
-        if (typeof window.reveal === 'function') {
-          window.reveal();
-        } else {
-          // Reveal yoksa veya çalışmıyorsa kartların görünürlüğünü CSS ile zorla
-          const boxes = container.querySelectorAll('.box');
-          boxes.forEach(b => {
-            b.style.opacity = "1";
-            b.style.transform = "translateY(0)";
-            b.style.visibility = "visible";
-          });
-        }
+        // Görünürlüğü zorla
+        container.style.opacity = "1";
+        container.style.visibility = "visible";
+        container.style.display = "flex";
 
       } catch (err) {
         console.error("Terapistleri yüklerken hata oluştu:", err);
-        container.innerHTML = "<p style='color:red; text-align:center; width:100%;'>Veriler yüklenirken bir hata oluştu.</p>";
+        container.innerHTML = `<p style='text-align:center; width:100%; color:red;'>Veriler yüklenirken hata oluştu: ${err.message}</p>`;
       }
     }
 
