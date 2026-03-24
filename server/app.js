@@ -214,6 +214,7 @@ const storage = multer.diskStorage({
 
 // Güvenlik: Yalnızca Resim Dosyalarına İzin Veren Filtre
 const imageFilter = (req, file, cb) => {
+  console.log("Gelen Dosya Tipi:", file.mimetype, "Uzantı:", path.extname(file.originalname));
   const allowedTypes = /jpeg|jpg|png|webp|gif|avif/;
   const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
   const mimetype = allowedTypes.test(file.mimetype.toLowerCase());
@@ -221,7 +222,7 @@ const imageFilter = (req, file, cb) => {
   if (mimetype && extname) {
     return cb(null, true);
   }
-  cb(new Error("Güvenlik İhlali: Sadece resim formatları (.png, .jpg, .jpeg, .webp, .avif) yüklenebilir!"));
+  cb(new Error(`Güvenlik İhlali: Gelen dosya tipi (${file.mimetype}) desteklenmiyor. Sadece .png, .jpg, .jpeg, .webp, .avif yüklenebilir!`));
 };
 
 const upload = multer({ 
