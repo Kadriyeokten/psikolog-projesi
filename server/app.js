@@ -186,8 +186,9 @@ async function ensureColumnsExist() {
     // Appointments tablosu için eksik sütunlar
     await db.query(`ALTER TABLE appointments ADD COLUMN IF NOT EXISTS user_id INTEGER`);
 
-    // Site Content - whatsapp_number
+    // Site Content - whatsapp_number ve about_image
     await db.query(`ALTER TABLE site_content ADD COLUMN IF NOT EXISTS whatsapp_number VARCHAR(20)`);
+    await db.query(`ALTER TABLE site_content ADD COLUMN IF NOT EXISTS about_image TEXT`);
     // Doctors - bio
     await db.query(`ALTER TABLE doctors ADD COLUMN IF NOT EXISTS bio TEXT`);
     // Ensure ID=1 exists in site_content
@@ -213,14 +214,14 @@ const storage = multer.diskStorage({
 
 // Güvenlik: Yalnızca Resim Dosyalarına İzin Veren Filtre
 const imageFilter = (req, file, cb) => {
-  const allowedTypes = /jpeg|jpg|png|webp|gif/;
+  const allowedTypes = /jpeg|jpg|png|webp|gif|avif/;
   const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
-  const mimetype = allowedTypes.test(file.mimetype);
+  const mimetype = allowedTypes.test(file.mimetype.toLowerCase());
 
   if (mimetype && extname) {
     return cb(null, true);
   }
-  cb(new Error("Güvenlik İhlali: Sadece resim formatları (.png, .jpg, .jpeg, .webp) yüklenebilir!"));
+  cb(new Error("Güvenlik İhlali: Sadece resim formatları (.png, .jpg, .jpeg, .webp, .avif) yüklenebilir!"));
 };
 
 const upload = multer({ 
@@ -765,11 +766,17 @@ app.post(
 
       res.json({ success: true });
     } catch (err) {
-      console.error("ABOUT UPDATE ERROR:", err);
+      console.error("ABOUT UPDATE ERROR:", {
+        message: err.message,
+        code: err.code,
+        detail: err.detail,
+        stack: err.stack
+      });
 
       res.status(500).json({
-        error: "DB About Update Error",
+        error: "Veritabanı Güncelleme Hatası",
         detail: err.message,
+        code: err.code
       });
     }
   },
