@@ -93,6 +93,50 @@ app.use((req, res, next) => {
 // Tüm API isteklerine genel sınır koy
 app.use("/api/", generalLimiter);
 
+// --- SAAS (MULTI-TENANT) MIDDLEWARE ---
+// Yalnızca API isteklerinde çalışarak performansı korur. Statik dosyalarda çalışmaz.
+app.use("/api/", async (req, res, next) => {
+  const host = req.hostname; // örn: mavi.localhost veya mavi.fastterapi.com
+  let subdomain = 'merkez'; // Varsayılan
+
+  // Subdomain yakalama mantığı
+  if (host.includes('.localhost')) {
+    subdomain = host.split('.localhost')[0];
+  } else if (host.includes('onrender.com')) {
+    // Render'ın varsayılan adresi. Canlıya çıkana kadar merkez kabul edilir.
+    subdomain = 'merkez';
+  } else {
+    // Özel Domain (örn: mavi.fastterapi.com)
+    const parts = host.split('.');
+    if (parts.length >= 3 && parts[0] !== 'www') {
+      subdomain = parts[0];
+    }
+  }
+
+  try {
+    const clinicRes = await db.query("SELECT id, name, is_active FROM clinics WHERE subdomain = $1", [subdomain]);
+    
+    if (clinicRes.rowCount > 0) {
+      const clinic = clinicRes.rows[0];
+      if (!clinic.is_active) {
+        return res.status(403).json({ error: "Bu klinik hesabı aktif değildir." });
+      }
+      // Kliniği bulduk, sonraki işlemlerde kullanılmak üzere request objesine ekliyoruz.
+      req.clinic_id = clinic.id;
+      req.clinic_name = clinic.name;
+    } else {
+      // Subdomain veritabanında yoksa varsayılan (Merkez) kliniği kullan
+      req.clinic_id = 1;
+      req.clinic_name = 'Bilinmeyen Klinik';
+    }
+  } catch (err) {
+    console.error("SaaS Middleware DB Hatası:", err);
+    req.clinic_id = 1; // Hata durumunda sistemin çökmemesi için merkez
+  }
+  
+  next();
+});
+
 const QRCode = require('qrcode'); // Kütüphaneyi ekliyoruz
 
 // WhatsApp QR Sayfası
@@ -158,21 +202,38 @@ db.query("SELECT current_database()", (err, res) => {
 async function ensureColumnsExist() {
   try {
     console.log("Veritabanı sütun kontrolü yapılıyor...");
-    
+
+    // 0. Clinics Tablosu
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS clinics (
+        id SERIAL PRIMARY KEY,
+        name VARCHAR(255) NOT NULL,
+        subdomain VARCHAR(100) UNIQUE NOT NULL,
+        is_active BOOLEAN DEFAULT true,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+    const clinicRes = await db.query("SELECT id FROM clinics WHERE id = 1");
+    if (clinicRes.rowCount === 0) {
+      await db.query(`INSERT INTO clinics (id, name, subdomain) VALUES (1, 'Merkez Klinik', 'merkez')`);
+    }
+
     // Users tablosu kontrolü
     await db.query(`
       CREATE TABLE IF NOT EXISTS users (
         id SERIAL PRIMARY KEY,
+        clinic_id INTEGER DEFAULT 1 REFERENCES clinics(id),
         name VARCHAR(100),
         surname VARCHAR(100),
         phone VARCHAR(20),
-        email VARCHAR(100) UNIQUE NOT NULL,
+        email VARCHAR(100) NOT NULL,
         password VARCHAR(255) NOT NULL,
         role VARCHAR(20) DEFAULT 'user',
         token_version INTEGER DEFAULT 1,
         reset_token VARCHAR(255),
         reset_token_expiry TIMESTAMP,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE(clinic_id, email)
       )
     `);
     
@@ -182,6 +243,18 @@ async function ensureColumnsExist() {
     await db.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS reset_token VARCHAR(255)`);
     await db.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS reset_token_expiry TIMESTAMP`);
     await db.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS token_version INTEGER DEFAULT 1`);
+    await db.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS clinic_id INTEGER DEFAULT 1 REFERENCES clinics(id)`);
+    
+    try {
+      await db.query(`ALTER TABLE users DROP CONSTRAINT IF EXISTS users_email_key;`);
+      await db.query(`ALTER TABLE users ADD CONSTRAINT users_clinic_email_key UNIQUE(clinic_id, email);`);
+    } catch(e){}
+
+    // Diğer tablolar için clinic_id sütunları
+    await db.query(`ALTER TABLE appointments ADD COLUMN IF NOT EXISTS clinic_id INTEGER DEFAULT 1 REFERENCES clinics(id)`);
+    await db.query(`ALTER TABLE services ADD COLUMN IF NOT EXISTS clinic_id INTEGER DEFAULT 1 REFERENCES clinics(id)`);
+    await db.query(`ALTER TABLE doctors ADD COLUMN IF NOT EXISTS clinic_id INTEGER DEFAULT 1 REFERENCES clinics(id)`);
+    await db.query(`ALTER TABLE site_content ADD COLUMN IF NOT EXISTS clinic_id INTEGER DEFAULT 1 REFERENCES clinics(id)`);
 
     // Appointments tablosu için eksik sütunlar
     await db.query(`ALTER TABLE appointments ADD COLUMN IF NOT EXISTS user_id INTEGER`);
@@ -192,9 +265,9 @@ async function ensureColumnsExist() {
     // Doctors - bio
     await db.query(`ALTER TABLE doctors ADD COLUMN IF NOT EXISTS bio TEXT`);
     // Ensure ID=1 exists in site_content
-    const res = await db.query("SELECT id FROM site_content WHERE id = 1");
+    const res = await db.query("SELECT id FROM site_content WHERE id = 1 AND clinic_id = 1");
     if (res.rowCount === 0) {
-      await db.query("INSERT INTO site_content (id, about_title) VALUES (1, 'Hakkımızda')");
+      await db.query("INSERT INTO site_content (id, clinic_id, about_title) VALUES (1, 1, 'Hakkımızda') ON CONFLICT DO NOTHING");
     }
     console.log("Veritabanı sütunları doğrulandı.");
   } catch (err) {
@@ -251,13 +324,18 @@ async function authenticateAdmin(req, res, next) {
     
     try {
       // Veritabanından kullanıcıyı ve token_version bilgisini kontrol et
-      const userResult = await db.query("SELECT id, role, token_version FROM users WHERE id = $1", [decoded.id]);
+      const userResult = await db.query("SELECT id, role, clinic_id, token_version FROM users WHERE id = $1", [decoded.id]);
       
       if (userResult.rows.length === 0) {
         return res.status(403).json({ error: "Kullanıcı bulunamadı." });
       }
 
       const user = userResult.rows[0];
+
+      // KRİTİK GÜVENLİK: Kullanıcı bu kliniğe mi ait?
+      if (user.clinic_id !== req.clinic_id) {
+        return res.status(403).json({ error: "Bu kliniğin admin paneline erişim yetkiniz yok." });
+      }
 
       // Eğer JWT içindeki token_version veritabanındakinden farklıysa (şifre değişmişse) girişi reddet
       if (user.token_version !== decoded.token_version) {
@@ -288,13 +366,18 @@ async function authenticateUser(req, res, next) {
     if (err) return res.status(403).json({ error: "Geçersiz veya süresi dolmuş oturum." });
     
     try {
-      const userResult = await db.query("SELECT id, name, surname, email, phone, role, token_version FROM users WHERE id = $1", [decoded.id]);
+      const userResult = await db.query("SELECT id, name, surname, email, phone, role, clinic_id, token_version FROM users WHERE id = $1", [decoded.id]);
       
       if (userResult.rows.length === 0) {
         return res.status(403).json({ error: "Kullanıcı bulunamadı." });
       }
 
       const user = userResult.rows[0];
+
+      // Kullanıcı bu kliniğe mi ait?
+      if (user.clinic_id !== req.clinic_id) {
+        return res.status(403).json({ error: "Bu kliniğe erişim yetkiniz yok." });
+      }
 
       if (user.token_version !== decoded.token_version) {
         return res.status(403).json({ error: "Şifreniz değiştirildiği için oturumunuz sonlandırıldı. Lütfen tekrar giriş yapın." });
@@ -331,11 +414,11 @@ app.post("/api/appointments", async (req, res) => {
   }
 
   try {
-    console.log("Veritabanına eklenecek veriler:", [patientName, patientPhone, patientEmail, service, therapist, selectedDateTime, userId]); // Debug: Eklenecek veriyi logla
+    console.log("Veritabanına eklenecek veriler:", [req.clinic_id, patientName, patientPhone, patientEmail, service, therapist, selectedDateTime, userId]); // Debug: Eklenecek veriyi logla
     const result = await db.query(
-      `INSERT INTO appointments (patient_name, patient_phone, patient_email, service_id, doctor_id, appointment_date, user_id)
-       VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *`,
-      [patientName, patientPhone, patientEmail, service, therapist, selectedDateTime, userId || null]
+      `INSERT INTO appointments (clinic_id, patient_name, patient_phone, patient_email, service_id, doctor_id, appointment_date, user_id)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *`,
+      [req.clinic_id, patientName, patientPhone, patientEmail, service, therapist, selectedDateTime, userId || null]
     );
     console.log("Randevu başarıyla oluşturuldu:", result.rows[0]); // Debug: Başarılı oluşturmayı logla
     res.json({ message: "Randevunuz başarıyla oluşturuldu.", appointment: result.rows[0] });
@@ -348,7 +431,7 @@ app.post("/api/appointments", async (req, res) => {
 // Takvim İçin Dolu Saatleri Getir (GET - Müşteriler İçin)
 app.get("/api/appointments/booked", async (req, res) => {
   try {
-    const result = await db.query(`SELECT appointment_date FROM appointments`);
+    const result = await db.query(`SELECT appointment_date FROM appointments WHERE clinic_id = $1`, [req.clinic_id]);
     const bookedEvents = result.rows.map(row => {
       // Randevuyu 1 saatlik dolu bir blok olarak takvime gönderiyoruz
       const start = new Date(row.appointment_date);
@@ -380,8 +463,9 @@ app.get("/api/appointments", authenticateAdmin, async (req, res) => {
       FROM appointments a
       LEFT JOIN services s ON a.service_id = s.id
       LEFT JOIN doctors d ON a.doctor_id = d.id
+      WHERE a.clinic_id = $1
       ORDER BY a.appointment_date DESC
-    `);
+    `, [req.clinic_id]);
     res.json(result.rows);
   } catch (err) {
     console.error("Randevuları getirme hatası:", err);
@@ -395,9 +479,10 @@ app.put("/api/appointments/:id/status", authenticateAdmin, async (req, res) => {
   const { status } = req.body;
   try {
     const result = await db.query(
-      "UPDATE appointments SET status = $1 WHERE id = $2 RETURNING *",
-      [status, id]
+      "UPDATE appointments SET status = $1 WHERE id = $2 AND clinic_id = $3 RETURNING *",
+      [status, id, req.clinic_id]
     );
+    if (result.rowCount === 0) return res.status(404).json({ error: "Randevu bulunamadı veya yetkiniz yok" });
     res.json(result.rows[0]);
   } catch (err) {
     console.error(err);
@@ -409,7 +494,8 @@ app.put("/api/appointments/:id/status", authenticateAdmin, async (req, res) => {
 app.delete("/api/appointments/:id", authenticateAdmin, async (req, res) => {
   const { id } = req.params;
   try {
-    await db.query("DELETE FROM appointments WHERE id = $1", [id]);
+    const result = await db.query("DELETE FROM appointments WHERE id = $1 AND clinic_id = $2 RETURNING *", [id, req.clinic_id]);
+    if (result.rowCount === 0) return res.status(404).json({ error: "Randevu bulunamadı veya yetkiniz yok" });
     res.json({ message: "Randevu silindi." });
   } catch (err) {
     console.error(err);
@@ -456,8 +542,11 @@ app.listen(PORT, () => {
 
 app.get("/api/site-content", async (req, res) => {
   try {
-    const result = await db.query("SELECT * FROM site_content WHERE id = 1");
+    const result = await db.query("SELECT * FROM site_content WHERE clinic_id = $1 LIMIT 1", [req.clinic_id]);
 
+    if (result.rowCount === 0) {
+      return res.json({ about_title: "Hakkımızda", about_text: "" });
+    }
     res.json(result.rows[0]);
   } catch (err) {
     console.error(err);
@@ -512,9 +601,9 @@ app.get("/api/user/appointments", authenticateUser, async (req, res) => {
       FROM appointments a
       LEFT JOIN services s ON a.service_id = s.id
       LEFT JOIN doctors d ON a.doctor_id = d.id
-      WHERE a.user_id = $1
+      WHERE a.user_id = $1 AND a.clinic_id = $2
       ORDER BY a.appointment_date DESC
-    `, [req.user.id]);
+    `, [req.user.id, req.clinic_id]);
     
     res.json(result.rows);
   } catch (err) {
@@ -531,21 +620,22 @@ app.post("/api/signup", async (req, res) => {
       return res.status(400).json({ error: "Eksik bilgi" });
     }
 
-    // Mail var mi
-    const userCheck = await db.query("SELECT * FROM users WHERE email=$1", [
+    // Mail var mi (Sadece o klinik için kontrol et)
+    const userCheck = await db.query("SELECT * FROM users WHERE email=$1 AND clinic_id=$2", [
       email,
+      req.clinic_id
     ]);
 
     if (userCheck.rows.length > 0) {
-      return res.status(400).json({ error: "Bu mail kayitli" });
+      return res.status(400).json({ error: "Bu e-posta adresi bu klinik için zaten kayıtlı." });
     }
 
     // Şifre hash
     const hashed = await bcrypt.hash(password, 10);
 
     const newUser = await db.query(
-      "INSERT INTO users(name, surname, email, password, phone) VALUES($1,$2,$3,$4,$5) RETURNING id", 
-      [name, surname || null, email, hashed, phone || null]
+      "INSERT INTO users(clinic_id, name, surname, email, password, phone) VALUES($1,$2,$3,$4,$5,$6) RETURNING id", 
+      [req.clinic_id, name, surname || null, email, hashed, phone || null]
     );
 
     const newUserId = newUser.rows[0].id;
@@ -553,10 +643,10 @@ app.post("/api/signup", async (req, res) => {
     // Eğer bir randevu ID'si gönderilmişse, onu bu kullanıcıya bağla
     const { appointmentId } = req.body;
     if (appointmentId) {
-      // Güvenlik: Sadece email adresi eşleşen randevuyu bağla
+      // Güvenlik: Sadece email adresi ve kliniği eşleşen randevuyu bağla
       await db.query(
-        "UPDATE appointments SET user_id = $1 WHERE id = $2 AND patient_email = $3",
-        [newUserId, appointmentId, email]
+        "UPDATE appointments SET user_id = $1 WHERE id = $2 AND patient_email = $3 AND clinic_id = $4",
+        [newUserId, appointmentId, email, req.clinic_id]
       );
     }
 
@@ -569,7 +659,8 @@ app.post("/api/signup", async (req, res) => {
 app.post("/api/login", loginLimiter, async (req, res) => {
   const { email, password } = req.body;
 
-  const result = await db.query("SELECT * FROM users WHERE email=$1", [email]);
+  // Sadece o kliniğin kullanıcıları arasında ara
+  const result = await db.query("SELECT * FROM users WHERE email=$1 AND clinic_id=$2", [email, req.clinic_id]);
 
   if (result.rows.length === 0) {
     return res.status(400).json({ error: "Kullanıcı bulunamadı" });
@@ -583,12 +674,13 @@ app.post("/api/login", loginLimiter, async (req, res) => {
     return res.status(400).json({ error: "Şifre hatalı" });
   }
 
-  // TOKEN içine rol ve token_version koyuyoruz
+  // TOKEN içine rol, clinic_id ve token_version koyuyoruz
   const token = jwt.sign(
     {
       id: user.id,
+      clinic_id: user.clinic_id,
       role: user.role,
-      token_version: user.token_version, // Güvenlik önlemi için eklendi
+      token_version: user.token_version,
     },
     JWT_SECRET,
     { expiresIn: "1d" },
@@ -607,7 +699,7 @@ app.post("/api/forgot-password", async (req, res) => {
   const { email } = req.body;
 
   try {
-    const userResult = await db.query("SELECT * FROM users WHERE email = $1", [email]);
+    const userResult = await db.query("SELECT * FROM users WHERE email = $1 AND clinic_id = $2", [email, req.clinic_id]);
     if (userResult.rows.length === 0) {
       return res.status(404).json({ error: "Bu e-posta adresi ile kayıtlı bir kullanıcı bulunamadı." });
     }
@@ -616,8 +708,8 @@ app.post("/api/forgot-password", async (req, res) => {
     const expiry = new Date(Date.now() + 3600000); // 1 saat geçerli
 
     await db.query(
-      "UPDATE users SET reset_token = $1, reset_token_expiry = $2 WHERE email = $3",
-      [token, expiry, email]
+      "UPDATE users SET reset_token = $1, reset_token_expiry = $2 WHERE email = $3 AND clinic_id = $4",
+      [token, expiry, email, req.clinic_id]
     );
 
     const resetLink = `${req.protocol}://${req.get("host")}/reset-password.html?token=${token}`;
@@ -727,7 +819,7 @@ app.post(
         whatsapp_number,
       } = req.body;
 
-      await db.query(
+      const result = await db.query(
         `
         UPDATE site_content
         SET
@@ -744,8 +836,10 @@ app.post(
           feature3=$11,
           feature4=$12,
           about_image=COALESCE($13, about_image),
-          whatsapp_number=$14
-        WHERE id=1
+          whatsapp_number=$14,
+          updated_at=NOW()
+        WHERE clinic_id=$15
+        RETURNING *
       `,
         [
           about_title,
@@ -762,8 +856,14 @@ app.post(
           feature4,
           imagePath,
           whatsapp_number,
+          req.clinic_id
         ],
       );
+
+      if (result.rowCount === 0) {
+        // Eğer o kliniğin satırı yoksa oluştur
+        await db.query(`INSERT INTO site_content (clinic_id, about_title, whatsapp_number) VALUES ($1, $2, $3)`, [req.clinic_id, about_title, whatsapp_number]);
+      }
 
       res.json({ success: true });
     } catch (err) {
@@ -788,16 +888,15 @@ app.post("/api/site-content/settings", authenticateAdmin, async (req, res) => {
   const { whatsapp_number } = req.body;
   try {
     const result = await db.query(
-      "UPDATE site_content SET whatsapp_number = $1 WHERE id = 1 RETURNING *",
-      [whatsapp_number]
+      "UPDATE site_content SET whatsapp_number = $1 WHERE clinic_id = $2 RETURNING *",
+      [whatsapp_number, req.clinic_id]
     );
     if (result.rowCount === 0) {
-      await db.query("INSERT INTO site_content (id, whatsapp_number) VALUES (1, $1)", [whatsapp_number]);
+      await db.query("INSERT INTO site_content (clinic_id, whatsapp_number) VALUES ($1, $2)", [req.clinic_id, whatsapp_number]);
     }
     res.json({ success: true });
   } catch (err) {
     console.error("SETTINGS UPDATE ERROR:", err);
-    // Hata mesajını detayıyla dönelim ki Render'da ne olduğunu görebilelim
     res.status(500).json({ error: "Sunucu hatası", detail: err.message, code: err.code });
   }
 });
@@ -805,8 +904,8 @@ app.post("/api/site-content/settings", authenticateAdmin, async (req, res) => {
 //Doktorları getir
 app.get("/api/doctors", async (req, res) => {
   try {
-    const result = await db.query("SELECT * FROM doctors ORDER BY id DESC");
-    console.log(`[DB] Doktorlar çekildi. Sayı: ${result.rows.length}`);
+    const result = await db.query("SELECT * FROM doctors WHERE clinic_id = $1 ORDER BY id DESC", [req.clinic_id]);
+    console.log(`[DB] Doktorlar çekildi (Clinic: ${req.clinic_id}). Sayı: ${result.rows.length}`);
     res.json(result.rows);
   } catch (err) {
     console.error("DOCTOR GET ERROR:", err);
@@ -830,7 +929,6 @@ app.post("/api/doctors", authenticateAdmin, upload.single("image"), async (req, 
       bio,
     } = req.body;
 
-    // FormData'dan gelen string'i boolean'a çevir
     const isActiveBool = is_active === 'true' || is_active === true;
 
     let imagePath = null;
@@ -841,6 +939,7 @@ app.post("/api/doctors", authenticateAdmin, upload.single("image"), async (req, 
     await db.query(
       `
         INSERT INTO doctors (
+          clinic_id,
           full_name,
           title,
           image_path,
@@ -853,9 +952,10 @@ app.post("/api/doctors", authenticateAdmin, upload.single("image"), async (req, 
           is_active,
           bio
         )
-        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)
+        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)
       `,
       [
+        req.clinic_id,
         full_name,
         title,
         imagePath,
@@ -873,11 +973,7 @@ app.post("/api/doctors", authenticateAdmin, upload.single("image"), async (req, 
     res.json({ success: true });
   } catch (err) {
     console.error("DOCTOR INSERT ERROR:", err);
-
-    res.status(500).json({
-      error: "Doktor ekleme hatası",
-      detail: err.message,
-    });
+    res.status(500).json({ error: "Doktor ekleme hatası", detail: err.message });
   }
 });
 
@@ -887,12 +983,12 @@ app.delete("/api/doctors/:id", authenticateAdmin, async (req, res) => {
 
   try {
     const result = await db.query(
-      "DELETE FROM doctors WHERE id = $1 RETURNING id",
-      [id],
+      "DELETE FROM doctors WHERE id = $1 AND clinic_id = $2 RETURNING id",
+      [id, req.clinic_id],
     );
 
     if (result.rowCount === 0) {
-      return res.status(404).json({ error: "Doktor bulunamadı" });
+      return res.status(404).json({ error: "Doktor bulunamadı veya yetkiniz yok" });
     }
 
     res.json({ message: "Doktor silindi" });
@@ -986,7 +1082,7 @@ app.get("/api/doctors/:id", async (req, res) => {
 // Tüm hizmetleri al
 app.get("/api/services", async (req, res) => {
   try {
-    const result = await db.query("SELECT * FROM services ORDER BY id ASC");
+    const result = await db.query("SELECT * FROM services WHERE clinic_id = $1 ORDER BY id ASC", [req.clinic_id]);
     res.json(result.rows);
   } catch (err) {
     console.error(err);
@@ -999,7 +1095,7 @@ app.get("/api/services", async (req, res) => {
 app.get("/api/services/:id", async (req, res) => {
   const { id } = req.params;
   try {
-    const result = await db.query("SELECT * FROM services WHERE id = $1", [id]);
+    const result = await db.query("SELECT * FROM services WHERE id = $1 AND clinic_id = $2", [id, req.clinic_id]);
     if (result.rows.length === 0)
       return res.status(404).json({ error: "Hizmet bulunamadı" });
     res.json(result.rows[0]);
@@ -1021,10 +1117,10 @@ app.post("/api/services", authenticateAdmin, upload.single("image"), async (req,
     }
 
     const result = await db.query(
-      `INSERT INTO services (title, dsc, image_path) 
-       VALUES ($1, $2, $3) 
+      `INSERT INTO services (clinic_id, title, dsc, image_path) 
+       VALUES ($1, $2, $3, $4) 
        RETURNING *`,
-      [title, dsc, imagePath],
+      [req.clinic_id, title, dsc, imagePath],
     );
     res.status(201).json(result.rows[0]);
   } catch (err) {
@@ -1052,13 +1148,13 @@ app.put("/api/services/:id", authenticateAdmin, upload.single("image"), async (r
            dsc = COALESCE($2, dsc),
            image_path = COALESCE($3, image_path),
            updated_at = NOW()
-       WHERE id = $4
+       WHERE id = $4 AND clinic_id = $5
        RETURNING *`,
-      [title, dsc, imagePath, id],
+      [title, dsc, imagePath, id, req.clinic_id],
     );
 
     if (result.rows.length === 0)
-      return res.status(404).json({ error: "Hizmet bulunamadı" });
+      return res.status(404).json({ error: "Hizmet bulunamadı veya yetkiniz yok" });
     res.json(result.rows[0]);
   } catch (err) {
     console.error(err);
@@ -1071,11 +1167,11 @@ app.delete("/api/services/:id", authenticateAdmin, async (req, res) => {
   const { id } = req.params;
   try {
     const result = await db.query(
-      "DELETE FROM services WHERE id = $1 RETURNING *",
-      [id],
+      "DELETE FROM services WHERE id = $1 AND clinic_id = $2 RETURNING *",
+      [id, req.clinic_id],
     );
     if (result.rows.length === 0)
-      return res.status(404).json({ error: "Hizmet bulunamadı" });
+      return res.status(404).json({ error: "Hizmet bulunamadı veya yetkiniz yok" });
     res.json({ message: "Hizmet silindi", service: result.rows[0] });
   } catch (err) {
     console.error(err);

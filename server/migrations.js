@@ -15,10 +15,28 @@ async function runMigrations() {
   try {
     console.log("Migrationlar başlatılıyor (Render/Local)...");
 
+    // 0. clinics (SaaS - Çoklu Müşteri Tablosu)
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS clinics (
+        id SERIAL PRIMARY KEY,
+        name VARCHAR(255) NOT NULL,
+        subdomain VARCHAR(100) UNIQUE NOT NULL,
+        is_active BOOLEAN DEFAULT true,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+    
+    // Varsayılan Klinik (Mevcut veriler bozulmasın diye id=1 olarak atanacak)
+    const clinicRes = await pool.query("SELECT id FROM clinics WHERE id = 1");
+    if (clinicRes.rowCount === 0) {
+      await pool.query(`INSERT INTO clinics (id, name, subdomain) VALUES (1, 'Merkez Klinik', 'merkez')`);
+    }
+
     // 1. appointments
     await pool.query(`
       CREATE TABLE IF NOT EXISTS appointments (
         id SERIAL PRIMARY KEY,
+        clinic_id INTEGER DEFAULT 1 REFERENCES clinics(id),
         patient_name VARCHAR(100) NOT NULL,
         patient_phone VARCHAR(20) NOT NULL,
         patient_email VARCHAR(100),
@@ -31,11 +49,13 @@ async function runMigrations() {
       );
     `);
     try { await pool.query(`ALTER TABLE appointments ADD COLUMN IF NOT EXISTS user_id INTEGER;`); } catch(e){}
+    try { await pool.query(`ALTER TABLE appointments ADD COLUMN IF NOT EXISTS clinic_id INTEGER DEFAULT 1 REFERENCES clinics(id);`); } catch(e){}
 
     // 2. services
     await pool.query(`
       CREATE TABLE IF NOT EXISTS services (
         id SERIAL PRIMARY KEY,
+        clinic_id INTEGER DEFAULT 1 REFERENCES clinics(id),
         title VARCHAR(255),
         dsc TEXT,
         image_path TEXT,
@@ -44,11 +64,13 @@ async function runMigrations() {
       );
     `);
     try { await pool.query(`ALTER TABLE services ALTER COLUMN dsc TYPE TEXT;`); } catch(e){}
+    try { await pool.query(`ALTER TABLE services ADD COLUMN IF NOT EXISTS clinic_id INTEGER DEFAULT 1 REFERENCES clinics(id);`); } catch(e){}
 
     // 3. doctors
     await pool.query(`
       CREATE TABLE IF NOT EXISTS doctors (
         id SERIAL PRIMARY KEY,
+        clinic_id INTEGER DEFAULT 1 REFERENCES clinics(id),
         full_name VARCHAR(255),
         title VARCHAR(255),
         phone VARCHAR(20),
@@ -64,11 +86,13 @@ async function runMigrations() {
       );
     `);
     try { await pool.query(`ALTER TABLE doctors ADD COLUMN IF NOT EXISTS bio TEXT;`); } catch(e){}
+    try { await pool.query(`ALTER TABLE doctors ADD COLUMN IF NOT EXISTS clinic_id INTEGER DEFAULT 1 REFERENCES clinics(id);`); } catch(e){}
 
     // 4. site_content
     await pool.query(`
       CREATE TABLE IF NOT EXISTS site_content (
         id SERIAL PRIMARY KEY,
+        clinic_id INTEGER DEFAULT 1 REFERENCES clinics(id),
         about_title TEXT,
         about_text TEXT,
         feature_title1 TEXT,
@@ -88,27 +112,30 @@ async function runMigrations() {
       );
     `);
     try { await pool.query(`ALTER TABLE site_content ADD COLUMN IF NOT EXISTS whatsapp_number VARCHAR(20);`); } catch(e){}
+    try { await pool.query(`ALTER TABLE site_content ADD COLUMN IF NOT EXISTS clinic_id INTEGER DEFAULT 1 REFERENCES clinics(id);`); } catch(e){}
     
-    // Varsayılan id=1 satırı
-    const res = await pool.query("SELECT id FROM site_content WHERE id = 1");
+    // Varsayılan id=1 satırı (Merkez Klinik İçin)
+    const res = await pool.query("SELECT id FROM site_content WHERE id = 1 AND clinic_id = 1");
     if (res.rowCount === 0) {
-      await pool.query(`INSERT INTO site_content (id, about_title, whatsapp_number) VALUES (1, 'Hakkımızda', '905000000000')`);
+      await pool.query(`INSERT INTO site_content (id, clinic_id, about_title, whatsapp_number) VALUES (1, 1, 'Hakkımızda', '905000000000') ON CONFLICT DO NOTHING`);
     }
     
     // 5. users
     await pool.query(`
       CREATE TABLE IF NOT EXISTS users (
         id SERIAL PRIMARY KEY,
+        clinic_id INTEGER DEFAULT 1 REFERENCES clinics(id),
         name VARCHAR(100),
         surname VARCHAR(100),
         phone VARCHAR(20),
-        email VARCHAR(100) UNIQUE NOT NULL,
+        email VARCHAR(100) NOT NULL,
         password VARCHAR(255) NOT NULL,
         role VARCHAR(20) DEFAULT 'user',
         token_version INTEGER DEFAULT 1,
         reset_token VARCHAR(255),
         reset_token_expiry TIMESTAMP,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE(clinic_id, email)
       );
     `);
     try { await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS surname VARCHAR(100);`); } catch(e){}
@@ -116,6 +143,12 @@ async function runMigrations() {
     try { await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS reset_token VARCHAR(255);`); } catch(e){}
     try { await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS reset_token_expiry TIMESTAMP;`); } catch(e){}
     try { await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS token_version INTEGER DEFAULT 1;`); } catch(e){}
+    try { await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS clinic_id INTEGER DEFAULT 1 REFERENCES clinics(id);`); } catch(e){}
+    // Not: Mevcut bir UNIQUE(email) kısıtlaması olabilir, onu silip UNIQUE(clinic_id, email) eklemek daha doğru olur (SaaS için).
+    try {
+      await pool.query(`ALTER TABLE users DROP CONSTRAINT IF EXISTS users_email_key;`);
+      await pool.query(`ALTER TABLE users ADD CONSTRAINT users_clinic_email_key UNIQUE(clinic_id, email);`);
+    } catch(e){}
 
     console.log("Tüm migrationlar başarıyla tamamlandı.");
   } catch (err) {
