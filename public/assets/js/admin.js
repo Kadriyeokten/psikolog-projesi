@@ -1,10 +1,25 @@
 // public/assets/js/admin.js
 
+// URL'den token ve role kontrolü (Ana siteden yönlendirme için)
+const urlParams = new URLSearchParams(window.location.search);
+const urlToken = urlParams.get("token");
+const urlRole = urlParams.get("role");
+
+if (urlToken) {
+  localStorage.setItem("token", urlToken);
+  // Eğer role de geldiyse kaydet, gelmediyse token içinden çözülebilir ama basitlik için set edelim
+  if (urlRole) localStorage.setItem("role", urlRole);
+  else localStorage.setItem("role", "admin"); // Admin paneline gelindiyse varsayılan admindir
+  
+  // URL'yi temizle (estetik ve güvenlik için)
+  window.history.replaceState({}, document.title, window.location.pathname);
+}
+
 // Yetki Kontrolü (Giriş yapılmış mı ve rol admin mi?)
 const token = localStorage.getItem("token");
 const role = localStorage.getItem("role");
 
-if (!token || role !== "admin") {
+if (!token || (role !== "admin" && role !== "superadmin")) {
   alert("Yetkisiz erişim. Lütfen admin olarak giriş yapın.");
   window.location.href = "login.html";
 }
@@ -60,7 +75,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // 2. İlk Yükleme
   loadSiteContent();
-  loadDoctorSelect();
   loadServiceSelect();
   loadAppointments();
 
@@ -76,29 +90,26 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("addService")?.addEventListener("click", addService);
   document.getElementById("updateService")?.addEventListener("click", updateService);
   document.getElementById("deleteService")?.addEventListener("click", deleteService);
-  
-  // Doktor İşlemleri
-  document.getElementById("addDoctor")?.addEventListener("click", saveDoctor);
-  document.getElementById("updateDoctor")?.addEventListener("click", updateDoctor);
-  document.getElementById("deleteDoctor")?.addEventListener("click", deleteDoctor);
 
   // Görsel Önizlemeleri
   setupImagePreview("aboutUsImage", "about_image");
   setupImagePreview("serviceImage", "service_image");
-  setupImagePreview("doctorImage", "doctor_image");
+  setupImagePreview("siteLogo", "site_logo_preview", "currentLogoContainer");
 });
 
 // --- YARDIMCI FONKSİYONLAR ---
 
-function setupImagePreview(inputId, imgId) {
+function setupImagePreview(inputId, imgId, containerId = null) {
   const input = document.getElementById(inputId);
   const img = document.getElementById(imgId);
+  const container = containerId ? document.getElementById(containerId) : null;
   if (input && img) {
     input.addEventListener("change", function () {
       const file = this.files[0];
       if (file) {
         img.src = URL.createObjectURL(file);
         img.style.display = "block";
+        if (container) container.style.display = "block";
       }
     });
   }
@@ -124,6 +135,16 @@ async function loadSiteContent() {
       
       // WhatsApp Numarasını Yükle
       if(document.getElementById("whatsappNumber")) document.getElementById("whatsappNumber").value = data.whatsapp_number || "";
+
+      // Site Başlığı ve Logosunu Yükle
+      if(document.getElementById("siteTitle")) document.getElementById("siteTitle").value = data.site_title || "";
+      const logoPreview = document.getElementById("site_logo_preview");
+      const logoContainer = document.getElementById("currentLogoContainer");
+      if (logoPreview && data.site_logo_url) {
+        logoPreview.src = data.site_logo_url;
+        logoPreview.style.display = "block";
+        if (logoContainer) logoContainer.style.display = "block";
+      }
       
       const img = document.getElementById("about_image");
       if (img && data.about_image) {
@@ -166,15 +187,33 @@ async function saveAbout() {
 
 async function saveSettings() {
   const whatsapp_number = document.getElementById("whatsappNumber").value;
+  const site_title = document.getElementById("siteTitle").value;
+  const logoFile = document.getElementById("siteLogo").files[0];
+
+  const formData = new FormData();
+  formData.append("whatsapp_number", whatsapp_number);
+  formData.append("site_title", site_title);
+  if (logoFile) {
+    formData.append("logo", logoFile);
+  }
+
   try {
     const res = await authFetch("/api/site-content/settings", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ whatsapp_number })
+      body: formData
     });
     const data = await res.json();
     if (data.success) {
       alert("Ayarlar kaydedildi!");
+      if (data.logo_url) {
+        const logoPreview = document.getElementById("site_logo_preview");
+        const logoContainer = document.getElementById("currentLogoContainer");
+        if (logoPreview) {
+          logoPreview.src = data.logo_url;
+          logoPreview.style.display = "block";
+        }
+        if (logoContainer) logoContainer.style.display = "block";
+      }
     } else {
       alert("Hata: " + (data.detail || "Bilinmeyen bir hata oluştu."));
     }
@@ -210,6 +249,7 @@ document.getElementById("serviceSelect")?.addEventListener("change", async funct
     const s = await res.json();
     document.getElementById("serviceTitle").value = s.title;
     document.getElementById("serviceDesc").value = s.dsc;
+    document.getElementById("servicePrice").value = s.price || "";
     const img = document.getElementById("service_image");
     if (s.image_path) { img.src = s.image_path; img.style.display = "block"; }
     else img.style.display = "none";
@@ -219,21 +259,21 @@ document.getElementById("serviceSelect")?.addEventListener("change", async funct
 async function addService() {
   const title = document.getElementById("serviceTitle").value;
   const dsc = document.getElementById("serviceDesc").value;
+  const price = document.getElementById("servicePrice").value;
   const file = document.getElementById("serviceImage").files[0];
   if (!title || !dsc) return alert("Başlık ve açıklama girin!");
 
   const formData = new FormData();
   formData.append("title", title);
   formData.append("dsc", dsc);
+  formData.append("price", price);
   if (file) formData.append("image", file);
 
   try {
     const res = await authFetch("/api/services", { method: "POST", body: formData });
     if (res.ok) { 
-      // Trigger auto-translation
       await authFetch('/api/translate', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({text: title, target: 'en'}) });
       await authFetch('/api/translate', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({text: dsc, target: 'en'}) });
-      
       alert("Hizmet eklendi!"); 
       clearServiceForm(); 
       loadServiceSelect(); 
@@ -246,20 +286,20 @@ async function updateService() {
   if (!id) return alert("Lütfen bir hizmet seçin!");
   const title = document.getElementById("serviceTitle").value;
   const dsc = document.getElementById("serviceDesc").value;
+  const price = document.getElementById("servicePrice").value;
   const file = document.getElementById("serviceImage").files[0];
 
   const formData = new FormData();
   formData.append("title", title);
   formData.append("dsc", dsc);
+  formData.append("price", price);
   if (file) formData.append("image", file);
 
   try {
     const res = await authFetch(`/api/services/${id}`, { method: "PUT", body: formData });
     if (res.ok) { 
-      // Trigger auto-translation
       await authFetch('/api/translate', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({text: title, target: 'en'}) });
       await authFetch('/api/translate', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({text: dsc, target: 'en'}) });
-
       alert("Hizmet güncellendi!"); 
       loadServiceSelect(); 
     }
@@ -278,144 +318,9 @@ async function deleteService() {
 function clearServiceForm() {
   document.getElementById("serviceTitle").value = "";
   document.getElementById("serviceDesc").value = "";
+  document.getElementById("servicePrice").value = "";
   document.getElementById("service_image").style.display = "none";
   document.getElementById("serviceImage").value = "";
-}
-
-// --- DOKTOR YÖNETİMİ ---
-
-async function loadDoctorSelect() {
-  const select = document.getElementById("doctorSelect");
-  if (!select) return;
-  try {
-    const res = await authFetch("/api/doctors");
-    const doctors = await res.json();
-    select.innerHTML = '<option value="">Doktor Seçiniz</option>';
-    doctors.forEach(d => {
-      const opt = document.createElement("option");
-      opt.value = d.id;
-      opt.textContent = d.full_name;
-      select.appendChild(opt);
-    });
-  } catch (err) { console.error(err); }
-}
-
-document.getElementById("doctorSelect")?.addEventListener("change", async function() {
-  const id = this.value;
-  if (!id) { clearDoctorForm(); return; }
-  try {
-    const res = await authFetch(`/api/doctors/${id}`);
-    const d = await res.json();
-    document.getElementById("doctorName").value = d.full_name;
-    document.getElementById("doctorTitle").value = d.title;
-    document.getElementById("doctorPhone").value = d.phone;
-    document.getElementById("doctorEmail").value = d.email;
-    document.getElementById("doctorInstagram").value = d.instagram || "";
-    document.getElementById("doctorTwitter").value = d.twitter || "";
-    document.getElementById("doctorFacebook").value = d.facebook || "";
-    document.getElementById("doctorLinkedin").value = d.linkedin || "";
-    document.getElementById("doctorBio").value = d.bio || "";
-    document.getElementById("doctorIsActive").checked = d.is_active;
-    
-    const img = document.getElementById("doctor_image");
-    if (d.image_path) { img.src = d.image_path; img.style.display = "block"; }
-    else img.style.display = "none";
-  } catch (err) { console.error(err); }
-});
-
-async function saveDoctor() {
-  const formData = getDoctorFormData();
-  try {
-    const res = await authFetch("/api/doctors", { method: "POST", body: formData });
-    if (res.ok) { 
-      // Trigger auto-translation for bio and title
-      const bio = document.getElementById("doctorBio").value;
-      const title = document.getElementById("doctorTitle").value;
-      if(bio) await authFetch('/api/translate', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({text: bio, target: 'en'}) });
-      if(title) await authFetch('/api/translate', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({text: title, target: 'en'}) });
-      
-      alert("Doktor başarıyla eklendi!"); 
-      loadDoctorSelect(); 
-      clearDoctorForm(); 
-    } else {
-      alert("Doktor eklenemedi.");
-    }
-  } catch (err) { alert("Sunucu hatası!"); }
-}
-
-async function updateDoctor() {
-  const id = document.getElementById("doctorSelect").value;
-  if (!id) return alert("Lütfen güncellenecek doktoru seçin!");
-  const formData = getDoctorFormData();
-  try {
-    const res = await authFetch(`/api/doctors/${id}`, { method: "PUT", body: formData });
-    if (res.ok) { 
-      // Trigger auto-translation updates
-      const bio = document.getElementById("doctorBio").value;
-      const title = document.getElementById("doctorTitle").value;
-      if(bio) await authFetch('/api/translate', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({text: bio, target: 'en'}) });
-      if(title) await authFetch('/api/translate', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({text: title, target: 'en'}) });
-
-      alert("Doktor bilgileri güncellendi!"); 
-      loadDoctorSelect(); 
-    } else {
-      alert("Güncelleme başarısız.");
-    }
-  } catch (err) { alert("Sunucu hatası!"); }
-}
-
-async function deleteDoctor() {
-  const id = document.getElementById("doctorSelect").value;
-  if (!id) return alert("Lütfen silinecek doktoru seçin!");
-  if (!confirm("Bu doktoru silmek istediğinize emin misiniz?")) return;
-  try {
-    const res = await authFetch(`/api/doctors/${id}`, { method: "DELETE" });
-    if (res.ok) { 
-      alert("Doktor silindi!"); 
-      clearDoctorForm();
-      loadDoctorSelect(); 
-    } else {
-      alert("Silme işlemi başarısız.");
-    }
-  } catch (err) { alert("Sunucu hatası!"); }
-}
-
-function getDoctorFormData() {
-  const formData = new FormData();
-  formData.append("full_name", document.getElementById("doctorName").value);
-  formData.append("title", document.getElementById("doctorTitle").value);
-  formData.append("phone", document.getElementById("doctorPhone").value);
-  formData.append("email", document.getElementById("doctorEmail").value);
-  formData.append("instagram", document.getElementById("doctorInstagram").value);
-  formData.append("twitter", document.getElementById("doctorTwitter").value);
-  formData.append("facebook", document.getElementById("doctorFacebook").value);
-  formData.append("linkedin", document.getElementById("doctorLinkedin").value);
-  formData.append("is_active", document.getElementById("doctorIsActive").checked);
-  formData.append("bio", document.getElementById("doctorBio").value);
-  const file = document.getElementById("doctorImage").files[0];
-  if (file) formData.append("image", file);
-  return formData;
-}
-
-function clearDoctorForm() {
-  if(document.getElementById("doctorSelect")) document.getElementById("doctorSelect").value = "";
-  if(document.getElementById("doctorName")) document.getElementById("doctorName").value = "";
-  if(document.getElementById("doctorTitle")) document.getElementById("doctorTitle").value = "";
-  if(document.getElementById("doctorPhone")) document.getElementById("doctorPhone").value = "";
-  if(document.getElementById("doctorEmail")) document.getElementById("doctorEmail").value = "";
-  if(document.getElementById("doctorInstagram")) document.getElementById("doctorInstagram").value = "";
-  if(document.getElementById("doctorTwitter")) document.getElementById("doctorTwitter").value = "";
-  if(document.getElementById("doctorFacebook")) document.getElementById("doctorFacebook").value = "";
-  if(document.getElementById("doctorLinkedin")) document.getElementById("doctorLinkedin").value = "";
-  if(document.getElementById("doctorBio")) document.getElementById("doctorBio").value = "";
-  if(document.getElementById("doctorIsActive")) document.getElementById("doctorIsActive").checked = false;
-  
-  const img = document.getElementById("doctor_image");
-  if (img) {
-    img.src = "#";
-    img.style.display = "none";
-  }
-  if(document.getElementById("doctorImage")) document.getElementById("doctorImage").value = "";
 }
 
 // --- RANDEVU YÖNETİMİ ---
@@ -429,18 +334,167 @@ async function loadAppointments() {
     const res = await authFetch('/api/appointments');
     allAppointments = await res.json();
     renderAppointmentsTable(allAppointments);
-  } catch (err) { 
-    console.error(err); 
+    if(typeof renderDashboardStats === 'function') renderDashboardStats(allAppointments);
+  } catch (err) {
+    console.error(err);
     tbody.innerHTML = '<tr><td colspan="6" style="padding: 20px; text-align: center; color: red;">Veriler yüklenemedi.</td></tr>';
   }
 }
 
-function renderAppointmentsTable(apps) {
-  const tbody = document.getElementById('appointmentsTableBody');
+function renderDashboardStats(apps) {
+  const now = new Date();
+
+  let todayCount = 0;
+  let todayRevenue = 0;
+  let weeklyCount = 0;
+  let weeklyRevenue = 0;
+  let monthlyCount = 0;
+  let monthlyRevenue = 0;
+
+  const upcomingList = [];
+  const patientStats = {};
+
+  apps.forEach(app => {
+    const appDate = new Date(app.appointment_date);
+    const isPast = appDate < now;
+
+    // Danışan istatistiklerini hesapla (telefon numarasına göre tekil say)
+    if (app.status !== 'İptal Edildi' && app.patient_phone) {
+        if (!patientStats[app.patient_phone]) {
+            patientStats[app.patient_phone] = {
+                name: app.patient_name,
+                phone: app.patient_phone,
+                count: 0,
+                last_visit: appDate
+            };
+        }
+        patientStats[app.patient_phone].count++;
+        if (appDate > patientStats[app.patient_phone].last_visit) {
+            patientStats[app.patient_phone].last_visit = appDate;
+        }
+    }
+
+    // Sadece aktif (iptal/katılmadı olmayan) randevuları say
+    if(app.status !== 'İptal Edildi' && app.status !== 'Katılmadı') {
+
+        // Bugün
+        if(appDate.toDateString() === now.toDateString()) {
+            todayCount++;
+            if(app.price) todayRevenue += parseFloat(app.price);
+        }
+
+        // Bu Hafta (Pazartesi - Pazar)
+        const currentWeekStart = new Date(now);
+        currentWeekStart.setDate(now.getDate() - now.getDay() + (now.getDay() === 0 ? -6 : 1));
+        currentWeekStart.setHours(0,0,0,0);
+        const currentWeekEnd = new Date(currentWeekStart);
+        currentWeekEnd.setDate(currentWeekStart.getDate() + 6);
+        currentWeekEnd.setHours(23,59,59,999);
+
+        if (appDate >= currentWeekStart && appDate <= currentWeekEnd) {
+            weeklyCount++;
+            if(app.price) weeklyRevenue += parseFloat(app.price);
+        }
+
+        // Bu Ay
+        if(appDate.getMonth() === now.getMonth() && appDate.getFullYear() === now.getFullYear()) {
+            monthlyCount++;
+            if(app.price) monthlyRevenue += parseFloat(app.price);
+        }
+    }
+
+    // Yaklaşan Randevular (Gelecekte ve bekleyen)
+    if(!isPast && app.status === 'Bekliyor') {
+        upcomingList.push(app);
+    }
+  });
+
+  // Yaklaşan randevuları sırala
+  upcomingList.sort((a,b) => new Date(a.appointment_date) - new Date(b.appointment_date));
+  
+  // Danışanları sırala (en çok randevu alanlar üstte)
+  const topPatients = Object.values(patientStats).sort((a, b) => b.count - a.count);
+
+  const elToday = document.getElementById('stat-today-apps');
+  const elTodayRev = document.getElementById('stat-daily-revenue');
+  const elWeekly = document.getElementById('stat-weekly-apps');
+  const elWeeklyRev = document.getElementById('stat-weekly-revenue');
+  const elMonthly = document.getElementById('stat-monthly-apps');
+  const elRevenue = document.getElementById('stat-monthly-revenue');
+  const elTotalPatients = document.getElementById('stat-total-patients');
+
+  if(elToday) elToday.textContent = todayCount;
+  if(elTodayRev) elTodayRev.textContent = todayRevenue.toLocaleString('tr-TR') + ' ₺';
+  if(elWeekly) elWeekly.textContent = weeklyCount;
+  if(elWeeklyRev) elWeeklyRev.textContent = weeklyRevenue.toLocaleString('tr-TR') + ' ₺';
+  if(elMonthly) elMonthly.textContent = monthlyCount;
+  if(elRevenue) elRevenue.textContent = monthlyRevenue.toLocaleString('tr-TR') + ' ₺';
+  if(elTotalPatients) elTotalPatients.textContent = topPatients.length;
+
+  const ulUpcoming = document.getElementById('upcoming-appointments-list');
+  if(ulUpcoming) {
+      if(upcomingList.length === 0) {
+          ulUpcoming.innerHTML = '<li><p style="padding: 15px 0; font-size:1.4rem; color:#888;">Yakın zamanda planlanmış bir randevunuz bulunmuyor.</p></li>';
+      } else {
+          ulUpcoming.innerHTML = upcomingList.slice(0, 5).map(app => {
+              const d = new Date(app.appointment_date);
+              const dateStr = d.toLocaleDateString('tr-TR', { day: '2-digit', month: 'short' });
+              const timeStr = d.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
+              return `
+                <li class="upcoming-item">
+                    <div class="upcoming-info">
+                        <span class="upcoming-time"><ion-icon name="time-outline" style="vertical-align: middle; margin-right: 3px;"></ion-icon>${dateStr} ${timeStr}</span>
+                        <div>
+                            <strong style="font-size: 1.4rem; color: var(--midnight-green);">${app.patient_name}</strong>
+                            <p style="font-size: 1.2rem; color: #666; margin: 0;">${app.service_name || '-'}</p>
+                        </div>
+                    </div>
+                </li>
+              `;
+          }).join('');
+      }
+  }
+
+  const ulTopPatients = document.getElementById('top-patients-list');
+  if(ulTopPatients) {
+      if(topPatients.length === 0) {
+          ulTopPatients.innerHTML = '<li><p style="padding: 15px 0; font-size:1.4rem; color:#888;">Henüz danışan kaydı bulunmuyor.</p></li>';
+      } else {
+          ulTopPatients.innerHTML = topPatients.slice(0, 5).map((patient, index) => {
+              // Rank colors
+              let rankColor = "#6b7280"; // gray
+              if (index === 0) rankColor = "#fbbf24"; // gold
+              if (index === 1) rankColor = "#9ca3af"; // silver
+              if (index === 2) rankColor = "#b45309"; // bronze
+
+              return `
+                <li class="upcoming-item">
+                    <div class="upcoming-info" style="width: 100%;">
+                        <div style="display: flex; align-items: center; justify-content: center; width: 30px; height: 30px; border-radius: 50%; background-color: #f3f4f6; color: ${rankColor}; font-weight: bold; font-size: 1.4rem;">
+                            ${index + 1}
+                        </div>
+                        <div style="flex-grow: 1;">
+                            <strong style="font-size: 1.4rem; color: var(--midnight-green);">${patient.name}</strong>
+                            <p style="font-size: 1.2rem; color: #666; margin: 0;"><ion-icon name="call-outline" style="vertical-align: middle;"></ion-icon> ${patient.phone}</p>
+                        </div>
+                        <div style="text-align: right;">
+                            <span style="display: inline-block; background-color: #fce7f3; color: #db2777; padding: 4px 10px; border-radius: 20px; font-size: 1.2rem; font-weight: bold;">
+                                ${patient.count} Seans
+                            </span>
+                        </div>
+                    </div>
+                </li>
+              `;
+          }).join('');
+      }
+  }
+}
+
+function renderAppointmentsTable(apps) {  const tbody = document.getElementById('appointmentsTableBody');
   if (!tbody) return;
   
   if (apps.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="6" style="padding: 40px; text-align: center; color: #888; font-size: 1.4rem;">Randevu bulunamadı.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="7" style="padding: 40px; text-align: center; color: #888; font-size: 1.4rem;">Randevu bulunamadı.</td></tr>';
     return;
   }
 
@@ -468,6 +522,9 @@ function renderAppointmentsTable(apps) {
     } else if (statusText === "İptal Edildi") { 
       statusColor = "#721c24"; 
       statusBg = "#f8d7da"; 
+    } else if (statusText === "Katılmadı") {
+      statusColor = "#721c24"; 
+      statusBg = "#f8d7da";
     }
 
     const tr = document.createElement('tr');
@@ -487,6 +544,7 @@ function renderAppointmentsTable(apps) {
             <a href="tel:${app.patient_phone}" style="color: inherit; text-decoration: none;"><ion-icon name="call-outline" style="vertical-align: middle;"></ion-icon> ${app.patient_phone}</a>
         </div>
       </td>
+      <td style="padding: 15px; font-size: 1.4rem; font-weight: 600; color: var(--verdigris);">${app.price ? `${parseFloat(app.price).toFixed(2)} ₺` : '-'}</td>
       <td style="padding: 15px; font-size: 1.4rem; color: #444;">${app.service_name || '-'}</td>
       <td style="padding: 15px; font-size: 1.4rem; color: #444;">${app.doctor_name || '-'}</td>
       <td style="padding: 15px; text-align: center;">
@@ -494,29 +552,80 @@ function renderAppointmentsTable(apps) {
           ${statusText}
         </span>
       </td>
-      <td style="padding: 15px; text-align: right; white-space: nowrap;">
-        ${app.status === 'Bekliyor' ? `
-          <button onclick="updateAppointmentStatus(${app.id}, 'Tamamlandı')" 
-                  style="background: #28a745; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; transition: all 0.2s; font-size: 1.2rem; font-weight: 500; display: inline-flex; align-items: center; gap: 5px; margin-right: 5px;" title="Tamamlandı olarak işaretle">
-            <ion-icon name="checkmark-circle-outline"></ion-icon>
-            <span>Tamamlandı</span>
+      <td style="padding: 15px; text-align: center; white-space: nowrap;">
+        <div class="dropdown-menu-container">
+          <button class="dots-btn" onclick="toggleDropdown(event, 'dropdown-${app.id}')">
+            <ion-icon name="ellipsis-vertical-outline"></ion-icon>
           </button>
-          <button onclick="updateAppointmentStatus(${app.id}, 'İptal Edildi')" 
-                  style="background: #ffc107; color: #212529; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; transition: all 0.2s; font-size: 1.2rem; font-weight: 500; display: inline-flex; align-items: center; gap: 5px; margin-right: 5px;" title="İptal Et">
-            <ion-icon name="close-circle-outline"></ion-icon>
-            <span>İptal</span>
-          </button>
-        ` : ''}
-        <button class="btn-delete" onclick="deleteAppointment(${app.id})" 
-                style="background: #dc3545; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; transition: all 0.2s; font-size: 1.2rem; font-weight: 500; display: inline-flex; align-items: center; gap: 5px;" title="Sil">
-          <ion-icon name="trash-outline"></ion-icon>
-          <span>Sil</span>
-        </button>
+          <div id="dropdown-${app.id}" class="action-dropdown">
+            ${app.status === 'Bekliyor' ? `
+              <button class="dropdown-action-btn dropdown-complete" onclick="updateAppointmentStatus(${app.id}, 'Tamamlandı')">
+                <ion-icon name="checkmark-circle-outline"></ion-icon> Tamamlandı
+              </button>
+              <button class="dropdown-action-btn dropdown-noshow" onclick="updateAppointmentStatus(${app.id}, 'Katılmadı')">
+                <ion-icon name="close-circle-outline"></ion-icon> Katılmadı
+              </button>
+            ` : ''}
+            <button class="dropdown-action-btn dropdown-delete" onclick="deleteAppointment(${app.id})">
+              <ion-icon name="trash-outline"></ion-icon> Sil
+            </button>
+          </div>
+        </div>
       </td>
     `;
     tbody.appendChild(tr);
   });
 }
+
+function toggleDropdown(event, dropdownId) {
+  event.stopPropagation();
+  const dropdown = document.getElementById(dropdownId);
+  const btn = event.currentTarget;
+  
+  // Close all other dropdowns
+  document.querySelectorAll('.action-dropdown.show').forEach(menu => {
+    if (menu.id !== dropdownId) menu.classList.remove('show');
+  });
+  document.querySelectorAll('.dots-btn.active').forEach(b => {
+    if (b !== btn) b.classList.remove('active');
+  });
+
+  dropdown.classList.toggle('show');
+  btn.classList.toggle('active');
+}
+
+// Click outside to close dropdowns
+document.addEventListener('click', (event) => {
+  if (!event.target.closest('.dropdown-menu-container')) {
+    document.querySelectorAll('.action-dropdown.show').forEach(menu => menu.classList.remove('show'));
+    document.querySelectorAll('.dots-btn.active').forEach(btn => btn.classList.remove('active'));
+  }
+});
+
+function toggleDropdown(event, dropdownId) {
+  event.stopPropagation();
+  const dropdown = document.getElementById(dropdownId);
+  const btn = event.currentTarget;
+  
+  // Close all other dropdowns
+  document.querySelectorAll('.action-dropdown.show').forEach(menu => {
+    if (menu.id !== dropdownId) menu.classList.remove('show');
+  });
+  document.querySelectorAll('.dots-btn.active').forEach(b => {
+    if (b !== btn) b.classList.remove('active');
+  });
+
+  dropdown.classList.toggle('show');
+  btn.classList.toggle('active');
+}
+
+// Click outside to close dropdowns
+document.addEventListener('click', (event) => {
+  if (!event.target.closest('.dropdown-menu-container')) {
+    document.querySelectorAll('.action-dropdown.show').forEach(menu => menu.classList.remove('show'));
+    document.querySelectorAll('.dots-btn.active').forEach(btn => btn.classList.remove('active'));
+  }
+});
 
 async function updateAppointmentStatus(id, status) {
   if (!confirm(`Randevu durumunu "${status}" olarak güncellemek istediğinize emin misiniz?`)) return;

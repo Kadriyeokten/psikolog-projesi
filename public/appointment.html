@@ -236,6 +236,7 @@
               <ul class="dropdown-list">
                 <li><a href="profile.html" class="dropdown-link"><ion-icon name="person-outline"></ion-icon> <span data-i18n="nav_profile">Profilim</span></a></li>
                 <li id="adminLink" style="display: none"><a href="admin.html" class="dropdown-link"><ion-icon name="settings-outline"></ion-icon> <span data-i18n="nav_admin">Admin Paneli</span></a></li>
+                <li id="superAdminLink" style="display: none"><a href="super-admin.html" class="dropdown-link"><ion-icon name="shield-checkmark-outline"></ion-icon> <span data-i18n="nav_super_admin">Süper Admin</span></a></li>
                 <li><a href="#" class="dropdown-link" id="logoutBtn"><ion-icon name="log-out-outline"></ion-icon> <span data-i18n="nav_logout">Çıkış Yap</span></a></li>
               </ul>
             </li>
@@ -282,13 +283,24 @@
                       <option value="" data-i18n="loading">Yükleniyor...</option>
                     </select>
                   </div>
-                  <div class="input-box">
+                  <div class="input-box" id="therapist-selection-box">
                     <label for="therapist" data-i18n="appointment_therapist_label">Terapist Seçin:</label>
                     <select id="therapist" name="therapist" class="box" required>
                       <option value="" data-i18n="loading">Yükleniyor...</option>
                     </select>
                   </div>
                   <button type="submit" class="btn has-before" style="width: 100%; margin-top: 10px;" data-i18n="appointment_btn">Şimdi Randevu Al</button>
+
+                  <div id="price-display" style="text-align: center; font-size: 2rem; font-weight: bold; color: var(--verdigris); margin-top: 20px; display: none;">
+                    <span data-i18n="total_price">Toplam Tutar:</span> <span id="service-price">0</span> ₺
+                  </div>
+                  
+                  <div style="margin-top: 15px; text-align: center;">
+                      <a id="appointmentWhatsappBtn" href="#" target="_blank" class="btn" style="width: 100%; background-color: #25d366; border-color: #25d366; display: flex; align-items: center; justify-content: center; gap: 10px; padding: 10px 20px; font-weight: bold; transition: 0.3s; color: white;">
+                          <ion-icon name="logo-whatsapp" style="font-size: 2.2rem;"></ion-icon>
+                          <span>WhatsApp ile Randevu Al</span>
+                      </a>
+                  </div>
                 </form>
               </div>
 
@@ -499,30 +511,18 @@
     <script src="./assets/js/script.js"></script>
     <script>document.addEventListener("DOMContentLoaded", function () { if (window.initAuthUI) window.initAuthUI(); });</script>
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
-    <script src="./assets/js/appointment.js"></script>
+    <script src="./assets/js/appointment.js?v=1.1"></script>
     <script type="module" src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.esm.js"></script>
     <script nomodule src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.js"></script>
 
-    <a id="whatsappLink" href="#" class="whatsapp-fab" target="_blank">
-      <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/6b/WhatsApp.svg/240px-WhatsApp.svg.png" alt="WhatsApp" />
+    <a
+      id="whatsappLink"
+      href="#"
+      class="whatsapp-fab"
+      target="_blank"
+      style="display: none;"
+    >
+      <ion-icon name="logo-whatsapp" style="color: white; font-size: 36px;"></ion-icon>
     </a>
-    <script>
-      async function updateWhatsAppLink() {
-        try {
-          const res = await fetch("/api/site-content");
-          const data = await res.json();
-          if (data && data.whatsapp_number) {
-            const link = document.getElementById("whatsappLink");
-            if (link) {
-              const lang = localStorage.getItem("preferredLanguage") || "tr";
-              const text = lang === "en" ? "hello, I would like to book an appointment." : "merhaba, randevu oluşturmak istiyorum.";
-              link.href = `https://wa.me/${data.whatsapp_number}?text=${encodeURIComponent(text)}`;
-            }
-          }
-        } catch (err) { console.error("WA update error:", err); }
-      }
-      updateWhatsAppLink();
-      window.addEventListener("languageChanged", updateWhatsAppLink);
-    </script>
-  </body>
-</html>
+    </body>
+    </html>

@@ -55,7 +55,7 @@ app.use(helmet({
 // Güvenlik: DDoS ve Brute Force Koruması (Rate Limiting)
 const generalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 dakika
-  max: 150, // Her IP için 15 dakikada maksimum istek
+  max: 1500, // Test aşamasında 429 hatasını önlemek için 150'den 1500'e çıkarıldı
   message: { error: "Çok fazla istek gönderdiniz. Lütfen daha sonra tekrar deneyin." }
 });
 
@@ -94,48 +94,99 @@ app.use((req, res, next) => {
 app.use("/api/", generalLimiter);
 
 // --- SAAS (MULTI-TENANT) MIDDLEWARE ---
-// Yalnızca API isteklerinde çalışarak performansı korur. Statik dosyalarda çalışmaz.
 app.use("/api/", async (req, res, next) => {
-  const host = req.hostname; // örn: mavi.localhost veya mavi.fastterapi.com
-  let subdomain = 'merkez'; // Varsayılan
+  const host = req.hostname;
+  let subdomain = null;
 
   // Subdomain yakalama mantığı
   if (host.includes('.localhost')) {
-    subdomain = host.split('.localhost')[0];
-  } else if (host.includes('onrender.com')) {
-    // Render'ın varsayılan adresi. Canlıya çıkana kadar merkez kabul edilir.
-    subdomain = 'merkez';
+    const parts = host.split('.localhost');
+    if (parts[0] !== 'localhost' && parts[0] !== '') subdomain = parts[0];
   } else {
-    // Özel Domain (örn: mavi.fastterapi.com)
+    // Canlı ortam (örn: mavi.fastterapi.com)
     const parts = host.split('.');
     if (parts.length >= 3 && parts[0] !== 'www') {
       subdomain = parts[0];
     }
   }
 
+  // EĞER ALT DOMAİN YOKSA (Ana sitedeyiz demektir)
+  if (!subdomain) {
+    req.isMainDomain = true;
+    req.clinic_id = 1; // Ana domain (Merkez Klinik) ID'si 1'dir
+    return next();
+  }
+
+  // EĞER ALT DOMAİN VARSA (Klinik sitesindeyiz)
   try {
     const clinicRes = await db.query("SELECT id, name, is_active FROM clinics WHERE subdomain = $1", [subdomain]);
     
     if (clinicRes.rowCount > 0) {
       const clinic = clinicRes.rows[0];
       if (!clinic.is_active) {
-        return res.status(403).json({ error: "Bu klinik hesabı aktif değildir." });
+        return res.status(403).json({ error: "Bu klinik hesabı dondurulmuştur." });
       }
-      // Kliniği bulduk, sonraki işlemlerde kullanılmak üzere request objesine ekliyoruz.
       req.clinic_id = clinic.id;
       req.clinic_name = clinic.name;
+      req.isMainDomain = false;
     } else {
-      // Subdomain veritabanında yoksa varsayılan (Merkez) kliniği kullan
-      req.clinic_id = 1;
-      req.clinic_name = 'Bilinmeyen Klinik';
+      // Geçersiz subdomain yazıldıysa ana siteye yönlendirebiliriz veya hata verebiliriz
+      return res.status(404).json({ error: "Böyle bir klinik bulunamadı." });
     }
   } catch (err) {
-    console.error("SaaS Middleware DB Hatası:", err);
-    req.clinic_id = 1; // Hata durumunda sistemin çökmemesi için merkez
+    console.error("SaaS Middleware Hatası:", err);
+    return res.status(500).json({ error: "Sistem hatası" });
   }
   
   next();
 });
+
+// Süper Admin Yetki Kontrolü Middleware
+async function authenticateSuperAdmin(req, res, next) {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
+  
+  if (!token) {
+    console.error("Super Admin Auth Error: No token provided");
+    return res.status(401).json({ error: "Erişim reddedildi. Token bulunamadı." });
+  }
+
+  jwt.verify(token, JWT_SECRET, async (err, decoded) => {
+    if (err) {
+      console.error("Super Admin Auth Error (JWT Verify):", err.message);
+      return res.status(403).json({ error: "Oturum geçersiz veya süresi dolmuş. Lütfen tekrar giriş yapın." });
+    }
+    
+    try {
+      // Veritabanından GÜNCEL rolü kontrol et
+      const userResult = await db.query("SELECT id, role, token_version FROM users WHERE id = $1", [decoded.id]);
+      
+      if (userResult.rows.length === 0) {
+        console.error(`Super Admin Auth Error: User ID ${decoded.id} not found`);
+        return res.status(403).json({ error: "Kullanıcı bulunamadı." });
+      }
+
+      const user = userResult.rows[0];
+
+      if (user.role !== 'superadmin') {
+        console.error(`Super Admin Auth Error: User ID ${decoded.id} is not a superadmin (Role: ${user.role})`);
+        return res.status(403).json({ error: "Bu işlem için Süper Admin yetkisi gerekiyor." });
+      }
+
+      // Opsiyonel: token_version kontrolü (şifre değiştiyse eski tokenlar geçersiz olur)
+      if (decoded.token_version !== undefined && user.token_version !== decoded.token_version) {
+        console.error(`Super Admin Auth Error: Token version mismatch for user ${decoded.id}`);
+        return res.status(403).json({ error: "Oturumunuz güncel değil. Lütfen tekrar giriş yapın." });
+      }
+      
+      req.user = user;
+      next();
+    } catch (dbErr) {
+      console.error("Super Admin Auth DB Error:", dbErr);
+      return res.status(500).json({ error: "Yetki kontrolü sırasında hata oluştu." });
+    }
+  });
+}
 
 const QRCode = require('qrcode'); // Kütüphaneyi ekliyoruz
 
@@ -259,9 +310,11 @@ async function ensureColumnsExist() {
     // Appointments tablosu için eksik sütunlar
     await db.query(`ALTER TABLE appointments ADD COLUMN IF NOT EXISTS user_id INTEGER`);
 
-    // Site Content - whatsapp_number ve about_image
+    // Site Content - site_title ve site_logo_url
     await db.query(`ALTER TABLE site_content ADD COLUMN IF NOT EXISTS whatsapp_number VARCHAR(20)`);
     await db.query(`ALTER TABLE site_content ADD COLUMN IF NOT EXISTS about_image TEXT`);
+    await db.query(`ALTER TABLE site_content ADD COLUMN IF NOT EXISTS site_title TEXT`);
+    await db.query(`ALTER TABLE site_content ADD COLUMN IF NOT EXISTS site_logo_url TEXT`);
     // Doctors - bio
     await db.query(`ALTER TABLE doctors ADD COLUMN IF NOT EXISTS bio TEXT`);
     // Ensure ID=1 exists in site_content
@@ -269,7 +322,16 @@ async function ensureColumnsExist() {
     if (res.rowCount === 0) {
       await db.query("INSERT INTO site_content (id, clinic_id, about_title) VALUES (1, 1, 'Hakkımızda') ON CONFLICT DO NOTHING");
     }
-    console.log("Veritabanı sütunları doğrulandı.");
+
+    // --- SÜPER ADMİN TANIMLAMA ---
+    // slh.ozgen@gmail.com adresini sistem genelinde Süper Admin yapar.
+    await db.query(`
+      UPDATE users 
+      SET role = 'superadmin' 
+      WHERE email = 'slh.ozgen@gmail.com'
+    `);
+    
+    console.log("Veritabanı sütunları doğrulandı ve Süper Admin kontrolü yapıldı.");
   } catch (err) {
     console.error("Sütun doğrulama hatası:", err.message);
   }
@@ -332,8 +394,8 @@ async function authenticateAdmin(req, res, next) {
 
       const user = userResult.rows[0];
 
-      // KRİTİK GÜVENLİK: Kullanıcı bu kliniğe mi ait?
-      if (user.clinic_id !== req.clinic_id) {
+      // KRİTİK GÜVENLİK: Kullanıcı bu kliniğe mi ait? (SÜPER ADMİN DEĞİLSE)
+      if (user.role !== 'superadmin' && user.clinic_id !== req.clinic_id) {
         return res.status(403).json({ error: "Bu kliniğin admin paneline erişim yetkiniz yok." });
       }
 
@@ -342,7 +404,7 @@ async function authenticateAdmin(req, res, next) {
         return res.status(403).json({ error: "Şifreniz değiştirildiği için oturumunuz sonlandırıldı. Lütfen tekrar giriş yapın." });
       }
 
-      if (user.role !== 'admin') {
+      if (user.role !== 'admin' && user.role !== 'superadmin') {
         return res.status(403).json({ error: "Bu işlem için admin yetkisi gerekiyor." });
       }
       
@@ -402,28 +464,23 @@ app.get("/", (req, res) => {
 // APPOINTMENTS API
 // ==========================================
 
-// Randevu Al (POST)
+// Randevu Al (POST) - Ödeme sonrası gerçek kayıt
 app.post("/api/appointments", async (req, res) => {
-  const { patientName, patientPhone, patientEmail, service, therapist, selectedDateTime, userId } = req.body;
-
-  console.log("Gelen Randevu Verileri:", req.body); // Debug: Gelen veriyi logla
+  const { patientName, patientPhone, patientEmail, service, therapist, selectedDateTime, userId, service_price } = req.body;
 
   if (!patientName || !patientPhone || !service || !therapist || !selectedDateTime) {
-    console.log("Hata: Eksik randevu verisi."); // Debug: Eksik veriyi logla
     return res.status(400).json({ error: "Lütfen gerekli tüm alanları doldurun." });
   }
 
   try {
-    console.log("Veritabanına eklenecek veriler:", [req.clinic_id, patientName, patientPhone, patientEmail, service, therapist, selectedDateTime, userId]); // Debug: Eklenecek veriyi logla
     const result = await db.query(
-      `INSERT INTO appointments (clinic_id, patient_name, patient_phone, patient_email, service_id, doctor_id, appointment_date, user_id)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *`,
-      [req.clinic_id, patientName, patientPhone, patientEmail, service, therapist, selectedDateTime, userId || null]
+      `INSERT INTO appointments (clinic_id, patient_name, patient_phone, patient_email, service_id, doctor_id, appointment_date, user_id, price)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *`,
+      [req.clinic_id, patientName, patientPhone, patientEmail, service, therapist, selectedDateTime, userId || null, service_price || null]
     );
-    console.log("Randevu başarıyla oluşturuldu:", result.rows[0]); // Debug: Başarılı oluşturmayı logla
     res.json({ message: "Randevunuz başarıyla oluşturuldu.", appointment: result.rows[0] });
   } catch (err) {
-    console.error("Randevu oluşturma hatası (DB):", err); // Debug: DB hatasını logla
+    console.error("Randevu oluşturma hatası (DB):", err);
     res.status(500).json({ error: "Randevu oluşturulamadı." });
   }
 });
@@ -457,7 +514,8 @@ app.get("/api/appointments", authenticateAdmin, async (req, res) => {
   try {
     const result = await db.query(`
       SELECT 
-        a.id, a.patient_name, a.patient_phone, a.patient_email, a.appointment_date, a.status, a.created_at,
+        a.id, a.patient_name, a.patient_phone, a.patient_email, a.appointment_date,
+        a.status, a.created_at, a.price,
         s.title as service_name,
         d.full_name as doctor_name
       FROM appointments a
@@ -535,6 +593,265 @@ app.post("/api/translate", async (req, res) => {
   }
 });
 
+// --- SUPER ADMIN API (Klinik ve Admin Yönetimi) ---
+
+// Tüm klinikleri listele
+app.get("/api/super-admin/clinics", authenticateSuperAdmin, async (req, res) => {
+  try {
+    const result = await db.query(`
+      SELECT c.*, d.title, d.instagram, d.twitter, d.facebook, d.linkedin
+      FROM clinics c
+      LEFT JOIN doctors d ON c.id = d.clinic_id
+      ORDER BY c.id DESC
+    `);
+    res.json(result.rows);
+  } catch (err) {
+    res.status(500).json({ error: "Klinikler listelenemedi." });
+  }
+});
+
+// Süper Admin Dashboard İstatistikleri
+app.get("/api/super-admin/dashboard-stats", authenticateSuperAdmin, async (req, res) => {
+  try {
+    // 1. Toplam Klinik Sayısı (Merkez hariç)
+    const clinicsCountResult = await db.query("SELECT COUNT(*) FROM clinics WHERE id != 1");
+    const totalClinics = parseInt(clinicsCountResult.rows[0].count);
+
+    // 2. Klinik bazlı detaylı istatistikler
+    const clinicStatsResult = await db.query(`
+      SELECT 
+        c.id, 
+        c.name, 
+        c.subdomain,
+        COUNT(a.id) as total_appointments,
+        SUM(COALESCE(a.price, 0)) as total_revenue,
+        COUNT(DISTINCT a.patient_phone) as total_patients,
+        -- Günlük
+        SUM(CASE WHEN a.appointment_date >= CURRENT_DATE THEN COALESCE(a.price, 0) ELSE 0 END) as daily_revenue,
+        -- Haftalık
+        SUM(CASE WHEN a.appointment_date >= date_trunc('week', CURRENT_DATE) THEN COALESCE(a.price, 0) ELSE 0 END) as weekly_revenue,
+        -- Aylık
+        SUM(CASE WHEN a.appointment_date >= date_trunc('month', CURRENT_DATE) THEN COALESCE(a.price, 0) ELSE 0 END) as monthly_revenue
+      FROM clinics c
+      LEFT JOIN appointments a ON c.id = a.clinic_id AND a.status != 'İptal Edildi'
+      WHERE c.id != 1
+      GROUP BY c.id
+      ORDER BY total_revenue DESC
+    `);
+
+    // 3. Zaman bazlı genel toplamlar (Günlük, Haftalık, Aylık)
+    const timeStatsResult = await db.query(`
+      SELECT 
+        SUM(CASE WHEN appointment_date >= CURRENT_DATE THEN price ELSE 0 END) as daily_revenue,
+        COUNT(CASE WHEN appointment_date >= CURRENT_DATE THEN 1 END) as daily_apps,
+        SUM(CASE WHEN appointment_date >= date_trunc('week', CURRENT_DATE) THEN price ELSE 0 END) as weekly_revenue,
+        COUNT(CASE WHEN appointment_date >= date_trunc('week', CURRENT_DATE) THEN 1 END) as weekly_apps,
+        SUM(CASE WHEN appointment_date >= date_trunc('month', CURRENT_DATE) THEN price ELSE 0 END) as monthly_revenue,
+        COUNT(CASE WHEN appointment_date >= date_trunc('month', CURRENT_DATE) THEN 1 END) as monthly_apps
+      FROM appointments
+      WHERE status != 'İptal Edildi'
+    `);
+
+    res.json({
+      totalClinics,
+      clinicStats: clinicStatsResult.rows,
+      overallStats: timeStatsResult.rows[0]
+    });
+  } catch (err) {
+    console.error("Super Admin Stats Error:", err);
+    res.status(500).json({ error: "İstatistikler alınamadı." });
+  }
+});
+
+// Belirli bir kliniğin adminlerini listele
+app.get("/api/super-admin/clinics/:id/admins", authenticateSuperAdmin, async (req, res) => {
+  const { id } = req.params;
+  try {
+    const result = await db.query(
+      "SELECT id, name, surname, email, phone FROM users WHERE clinic_id = $1 AND role = 'admin' ORDER BY id DESC",
+      [id]
+    );
+    res.json(result.rows);
+  } catch (err) {
+    res.status(500).json({ error: "Adminler listelenemedi." });
+  }
+});
+
+// Kliniğe yeni admin ekle
+app.post("/api/super-admin/clinics/:id/admins", authenticateSuperAdmin, async (req, res) => {
+  const { id } = req.params;
+  const { name, surname, email, password, phone } = req.body;
+
+  if (!name || !email || !password) {
+    return res.status(400).json({ error: "İsim, e-posta ve şifre zorunludur." });
+  }
+
+  try {
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const result = await db.query(
+      "INSERT INTO users (clinic_id, name, surname, email, password, phone, role) VALUES ($1, $2, $3, $4, $5, $6, 'admin') RETURNING id, name, email",
+      [id, name, surname, email, hashedPassword, phone]
+    );
+    res.status(201).json(result.rows[0]);
+  } catch (err) {
+    if (err.code === '23505') {
+      return res.status(400).json({ error: "Bu e-posta adresi bu klinik için zaten kayıtlı." });
+    }
+    res.status(500).json({ error: "Admin eklenemedi." });
+  }
+});
+
+// Admin sil
+app.delete("/api/super-admin/admins/:id", authenticateSuperAdmin, async (req, res) => {
+  const { id } = req.params;
+  try {
+    // Süper adminin kendisini silmesini engelle (opsiyonel ama güvenli)
+    const adminCheck = await db.query("SELECT role FROM users WHERE id = $1", [id]);
+    if (adminCheck.rows.length > 0 && adminCheck.rows[0].role === 'superadmin') {
+      return res.status(400).json({ error: "Süper admin silinemez." });
+    }
+
+    await db.query("DELETE FROM users WHERE id = $1 AND role = 'admin'", [id]);
+    res.json({ message: "Admin silindi." });
+  } catch (err) {
+    res.status(500).json({ error: "Admin silinemedi." });
+  }
+});
+
+// Yeni Doktor Sitesi (Klinik + Admin + Profil) ekle
+app.post("/api/super-admin/clinics", authenticateSuperAdmin, async (req, res) => {
+  const { name, subdomain, email, password, title, instagram, twitter, facebook, linkedin } = req.body;
+  
+  if (!name || !subdomain || !email || !password) {
+    return res.status(400).json({ error: "İsim, subdomain, e-posta ve şifre zorunludur." });
+  }
+
+  try {
+    await db.query("BEGIN"); // İşlemi sağlama alalım
+
+    // 1. Kliniği oluştur
+    const clinicResult = await db.query(
+      "INSERT INTO clinics (name, subdomain) VALUES ($1, $2) RETURNING id",
+      [name, subdomain.toLowerCase().trim()]
+    );
+    const clinicId = clinicResult.rows[0].id;
+
+    // 2. Doktorun Admin hesabını oluştur
+    const hashedPassword = await bcrypt.hash(password, 10);
+    await db.query(
+      "INSERT INTO users (clinic_id, name, email, password, role) VALUES ($1, $2, $3, $4, 'admin')",
+      [clinicId, name, email, hashedPassword]
+    );
+
+    // 3. Doktorun Vitrin Profilini oluştur (Ana sitede görünecek olan)
+    await db.query(
+      `INSERT INTO doctors (clinic_id, full_name, title, is_active, bio, email, instagram, twitter, facebook, linkedin) VALUES ($1, $2, $3, true, $4, $5, $6, $7, $8, $9)`,
+      [clinicId, name, title || 'Uzman Terapist', 'Merhaba, yeni web siteme hoş geldiniz!', email, instagram || null, twitter || null, facebook || null, linkedin || null]
+    );
+
+    // 4. Site İçeriğini başlat
+    await db.query(
+      `INSERT INTO site_content (clinic_id, site_title, about_title) VALUES ($1, $2, 'Hakkımda')`,
+      [clinicId, name]
+    );
+
+    await db.query("COMMIT");
+    res.status(201).json({ message: "Doktor sitesi başarıyla oluşturuldu.", clinicId });
+  } catch (err) {
+    await db.query("ROLLBACK");
+    if (err.code === '23505') return res.status(400).json({ error: "Bu subdomain veya e-posta zaten kullanımda." });
+    console.error("Unified Creation Error:", err);
+    res.status(500).json({ error: "Sistem hatası oluştu." });
+  }
+});
+
+// Doktor Sitesi (Klinik + Profil) Güncelle
+app.put("/api/super-admin/clinics/:id", authenticateSuperAdmin, async (req, res) => {
+  const { id } = req.params;
+  const { name, subdomain, title, instagram, twitter, facebook, linkedin } = req.body;
+
+  if (!name || !subdomain) {
+    return res.status(400).json({ error: "İsim ve subdomain zorunludur." });
+  }
+
+  try {
+    await db.query("BEGIN");
+
+    // 1. Kliniği Güncelle
+    await db.query(
+      "UPDATE clinics SET name = $1, subdomain = $2 WHERE id = $3",
+      [name, subdomain.toLowerCase().trim(), id]
+    );
+
+    // 2. Doktor Profilini Güncelle
+    await db.query(
+      `UPDATE doctors SET full_name = $1, title = $2, instagram = $3, twitter = $4, facebook = $5, linkedin = $6 WHERE clinic_id = $7`,
+      [name, title || null, instagram || null, twitter || null, facebook || null, linkedin || null, id]
+    );
+
+    // 3. Site Content Başlığını Güncelle
+    await db.query(
+      "UPDATE site_content SET site_title = $1 WHERE clinic_id = $2",
+      [name, id]
+    );
+
+    await db.query("COMMIT");
+    res.json({ message: "Klinik başarıyla güncellendi." });
+  } catch (err) {
+    await db.query("ROLLBACK");
+    if (err.code === '23505') return res.status(400).json({ error: "Bu subdomain zaten kullanımda." });
+    console.error("Update Clinic Error:", err);
+    res.status(500).json({ error: "Güncelleme sırasında hata oluştu." });
+  }
+});
+
+// Klinik durumunu değiştir (Aktif/Pasif)
+app.patch("/api/super-admin/clinics/:id/status", authenticateSuperAdmin, async (req, res) => {
+  const { id } = req.params;
+  const { is_active } = req.body;
+  try {
+    const result = await db.query("UPDATE clinics SET is_active = $1 WHERE id = $2 RETURNING *", [is_active, id]);
+    res.json(result.rows[0]);
+  } catch (err) {
+    res.status(500).json({ error: "Durum güncellenemedi." });
+  }
+});
+
+// Klinik Sil (Kritik İşlem)
+app.delete("/api/super-admin/clinics/:id", authenticateSuperAdmin, async (req, res) => {
+  const { id } = req.params;
+  if (id == 1) return res.status(400).json({ error: "Merkez klinik silinemez." });
+  
+  try {
+    // Transaction başlatarak tüm verilerin güvenli silinmesini sağlayalım
+    await db.query("BEGIN");
+
+    // Kliniğe bağlı tüm verileri sırayla temizleyelim
+    await db.query("DELETE FROM appointments WHERE clinic_id = $1", [id]);
+    await db.query("DELETE FROM doctors WHERE clinic_id = $1", [id]);
+    await db.query("DELETE FROM services WHERE clinic_id = $1", [id]);
+    await db.query("DELETE FROM site_content WHERE clinic_id = $1", [id]);
+    await db.query("DELETE FROM users WHERE clinic_id = $1", [id]);
+    
+    // Son olarak kliniği silelim
+    const result = await db.query("DELETE FROM clinics WHERE id = $1 RETURNING *", [id]);
+    
+    if (result.rowCount === 0) {
+      await db.query("ROLLBACK");
+      return res.status(404).json({ error: "Klinik bulunamadı." });
+    }
+
+    await db.query("COMMIT");
+    res.json({ message: "Klinik ve tüm bağlı veriler (randevular, kullanıcılar, içerikler vb.) başarıyla silindi." });
+  } catch (err) {
+    await db.query("ROLLBACK");
+    console.error("Klinik Silme HATASI - SQL Error Code:", err.code);
+    console.error("Klinik Silme HATASI - Message:", err.message);
+    console.error("Klinik Silme HATASI - Detail:", err.detail);
+    res.status(500).json({ error: "Klinik silinemedi. Detaylı hata için sunucu loglarına bakın." });
+  }
+});
+
 app.listen(PORT, () => {
   console.log(`Server çalisiyor: http://localhost:${PORT}`);
   initWhatsAppBot();
@@ -589,6 +906,36 @@ app.put("/api/user/me", authenticateUser, async (req, res) => {
     res.status(500).json({ error: "Profil güncellenirken bir hata oluştu." });
   }
 });
+
+// Delete User Profile
+app.delete("/api/user/me", authenticateUser, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const phone = req.user.phone;
+
+    // Sadece hastalar kendi hesabını silebilir, adminleri koruyalım
+    if (req.user.role === 'admin' || req.user.role === 'superadmin') {
+      return res.status(403).json({ error: "Yönetici hesapları buradan silinemez." });
+    }
+
+    // Geçmiş randevulardaki eşleşmeyi sil (randevular durmalı ama kime ait olduğu kalkmalı)
+    await db.query("UPDATE appointments SET user_id = NULL WHERE user_id = $1", [userId]);
+    
+    // WhatsApp patients kaydını da kaldır ki baştan "Kayıtsız" olarak tanısın
+    if (phone) {
+        await db.query("DELETE FROM patients WHERE phone = $1", [phone]);
+    }
+
+    // Son olarak hesabı (şifre vs.) sil
+    await db.query("DELETE FROM users WHERE id = $1", [userId]);
+
+    res.json({ message: "Hesabınız başarıyla silindi ve veritabanından kaldırıldı." });
+  } catch (err) {
+    console.error("Profile Delete Error:", err);
+    res.status(500).json({ error: "Hesap silinirken sunucuda bir hata oluştu." });
+  }
+});
+
 
 // Get User Appointments (History)
 app.get("/api/user/appointments", authenticateUser, async (req, res) => {
@@ -659,19 +1006,41 @@ app.post("/api/signup", async (req, res) => {
 app.post("/api/login", loginLimiter, async (req, res) => {
   const { email, password } = req.body;
 
-  // Sadece o kliniğin kullanıcıları arasında ara
-  const result = await db.query("SELECT * FROM users WHERE email=$1 AND clinic_id=$2", [email, req.clinic_id]);
+  let query = "SELECT * FROM users WHERE email=$1";
+  let params = [email];
+
+  // Eğer bir kliniğin subdomain'indeysek, sadece o kliniğe ait kullanıcıları ara
+  if (req.clinic_id) {
+    query += " AND clinic_id=$2";
+    params.push(req.clinic_id);
+  }
+
+  const result = await db.query(query, params);
 
   if (result.rows.length === 0) {
-    return res.status(400).json({ error: "Kullanıcı bulunamadı" });
+    return res.status(400).json({ error: "Kullanıcı bulunamadı veya bu klinik için yetkiniz yok." });
   }
 
   const user = result.rows[0];
-
   const match = await bcrypt.compare(password, user.password);
 
   if (!match) {
     return res.status(400).json({ error: "Şifre hatalı" });
+  }
+
+  // Eğer ana domainde giriş yapmaya çalışıyorsa ve bir kliniğe bağlıysa (ve süper admin değilse)
+  // onu kendi subdomainine yönlendirecek bilgiyi de gönderelim.
+  let redirectUrl = null;
+  if (!req.clinic_id && user.role !== 'superadmin' && user.clinic_id) {
+    const clinicRes = await db.query("SELECT subdomain FROM clinics WHERE id = $1", [user.clinic_id]);
+    if (clinicRes.rowCount > 0) {
+      const subdomain = clinicRes.rows[0].subdomain;
+      // Host'u dinamik alalım (localhost mu canlı mı?)
+      const hostParts = req.get('host').split('.');
+      let domain = hostParts.slice(-2).join('.'); // örn: localhost:3000 veya site.com
+      if (domain.includes('localhost')) domain = 'localhost:3000';
+      redirectUrl = `http://${subdomain}.${domain}/admin.html`;
+    }
   }
 
   // TOKEN içine rol, clinic_id ve token_version koyuyoruz
@@ -691,6 +1060,7 @@ app.post("/api/login", loginLimiter, async (req, res) => {
     role: user.role,
     name: user.name,
     userId: user.id,
+    redirectUrl: redirectUrl // Frontend buraya yönlendirebilir
   });
 });
 
@@ -836,33 +1206,33 @@ app.post(
           feature3=$11,
           feature4=$12,
           about_image=COALESCE($13, about_image),
-          whatsapp_number=$14,
+          whatsapp_number=COALESCE($14, whatsapp_number),
           updated_at=NOW()
         WHERE clinic_id=$15
         RETURNING *
       `,
         [
-          about_title,
-          about_text,
-          feature_title1,
-          feature_title2,
-          feature_title3,
-          feature_desc1,
-          feature_desc2,
-          feature_desc3,
-          feature1,
-          feature2,
-          feature3,
-          feature4,
+          about_title || '',
+          about_text || '',
+          feature_title1 || '',
+          feature_title2 || '',
+          feature_title3 || '',
+          feature_desc1 || '',
+          feature_desc2 || '',
+          feature_desc3 || '',
+          feature1 || '',
+          feature2 || '',
+          feature3 || '',
+          feature4 || '',
           imagePath,
-          whatsapp_number,
+          whatsapp_number || null,
           req.clinic_id
         ],
       );
 
       if (result.rowCount === 0) {
         // Eğer o kliniğin satırı yoksa oluştur
-        await db.query(`INSERT INTO site_content (clinic_id, about_title, whatsapp_number) VALUES ($1, $2, $3)`, [req.clinic_id, about_title, whatsapp_number]);
+        await db.query(`INSERT INTO site_content (clinic_id, about_title, whatsapp_number) VALUES ($1, $2, $3)`, [req.clinic_id, about_title || 'Hakkımızda', whatsapp_number || null]);
       }
 
       res.json({ success: true });
@@ -883,18 +1253,50 @@ app.post(
   },
 );
 
-// General Settings Update
-app.post("/api/site-content/settings", authenticateAdmin, async (req, res) => {
-  const { whatsapp_number } = req.body;
+// General Settings Update (Title, Logo, WhatsApp)
+app.post("/api/site-content/settings", authenticateAdmin, upload.single("logo"), async (req, res) => {
+  const { whatsapp_number, site_title } = req.body;
+  let logo_url = null;
+
+  if (req.file) {
+    logo_url = `/uploads/${req.file.filename}`;
+  }
+
   try {
-    const result = await db.query(
-      "UPDATE site_content SET whatsapp_number = $1 WHERE clinic_id = $2 RETURNING *",
-      [whatsapp_number, req.clinic_id]
-    );
-    if (result.rowCount === 0) {
-      await db.query("INSERT INTO site_content (clinic_id, whatsapp_number) VALUES ($1, $2)", [req.clinic_id, whatsapp_number]);
+    // Önce mevcut veriyi kontrol et
+    const checkRes = await db.query("SELECT id FROM site_content WHERE clinic_id = $1", [req.clinic_id]);
+
+    if (checkRes.rowCount === 0) {
+      await db.query(
+        `INSERT INTO site_content (
+          clinic_id, whatsapp_number, site_title, site_logo_url, 
+          about_title, about_text, about_image,
+          feature_title1, feature_title2, feature_title3, 
+          feature_desc1, feature_desc2, feature_desc3, 
+          feature1, feature2, feature3, feature4
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)`,
+        [
+          req.clinic_id, whatsapp_number || null, site_title || null, logo_url || null, 
+          'Hakkımızda', '', '',
+          '', '', '', 
+          '', '', '', 
+          '', '', '', ''
+        ]
+      );
+    } else {
+      let query = "UPDATE site_content SET whatsapp_number = $1, site_title = $2";
+      let params = [whatsapp_number || null, site_title || null, req.clinic_id];
+
+      if (logo_url) {
+        query += ", site_logo_url = $4";
+        params.push(logo_url);
+      }
+
+      query += " WHERE clinic_id = $3";
+      await db.query(query, params);
     }
-    res.json({ success: true });
+
+    res.json({ success: true, logo_url: logo_url });
   } catch (err) {
     console.error("SETTINGS UPDATE ERROR:", err);
     res.status(500).json({ error: "Sunucu hatası", detail: err.message, code: err.code });
@@ -904,8 +1306,24 @@ app.post("/api/site-content/settings", authenticateAdmin, async (req, res) => {
 //Doktorları getir
 app.get("/api/doctors", async (req, res) => {
   try {
-    const result = await db.query("SELECT * FROM doctors WHERE clinic_id = $1 ORDER BY id DESC", [req.clinic_id]);
-    console.log(`[DB] Doktorlar çekildi (Clinic: ${req.clinic_id}). Sayı: ${result.rows.length}`);
+    let result;
+    if (req.clinic_id && req.clinic_id !== 1) {
+      // Belirli bir alt domaindeysek sadece o kliniğin doktorlarını getir
+      result = await db.query("SELECT * FROM doctors WHERE clinic_id = $1 ORDER BY id DESC", [req.clinic_id]);
+    } else {
+      // Ana domaindeysek (Merkez) TÜM aktif doktorları ve bağlı oldukları kliniğin subdomain bilgisini getir
+      // Doktor fotoğrafı yerine o kliniğin "Hakkımızda" fotoğrafını çekiyoruz (image_path olarak gönderilecek)
+      // Doktorun biyografisi yerine o kliniğin "Hakkımızda" yazısını çekiyoruz (about_text olarak)
+      result = await db.query(`
+        SELECT d.*, c.subdomain, sc.about_image as image_path, sc.about_text
+        FROM doctors d
+        LEFT JOIN clinics c ON d.clinic_id = c.id
+        LEFT JOIN site_content sc ON sc.clinic_id = d.clinic_id
+        WHERE d.is_active = true AND d.clinic_id != 1
+        ORDER BY d.id DESC
+      `);
+    }
+    res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate");
     res.json(result.rows);
   } catch (err) {
     console.error("DOCTOR GET ERROR:", err);
@@ -1082,7 +1500,13 @@ app.get("/api/doctors/:id", async (req, res) => {
 // Tüm hizmetleri al
 app.get("/api/services", async (req, res) => {
   try {
-    const result = await db.query("SELECT * FROM services WHERE clinic_id = $1 ORDER BY id ASC", [req.clinic_id]);
+    let result;
+    if (req.clinic_id) {
+      result = await db.query("SELECT * FROM services WHERE clinic_id = $1 ORDER BY id ASC", [req.clinic_id]);
+    } else {
+      result = await db.query("SELECT * FROM services ORDER BY id ASC");
+    }
+    res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate");
     res.json(result.rows);
   } catch (err) {
     console.error(err);
@@ -1108,7 +1532,7 @@ app.get("/api/services/:id", async (req, res) => {
 //insert service
 app.post("/api/services", authenticateAdmin, upload.single("image"), async (req, res) => {
   try {
-    const { title, dsc } = req.body;
+    const { title, dsc, price } = req.body;
     if (!title || !dsc) return res.status(400).json({ error: "Başlık ve açıklama gerekli" });
 
     let imagePath = null;
@@ -1117,10 +1541,10 @@ app.post("/api/services", authenticateAdmin, upload.single("image"), async (req,
     }
 
     const result = await db.query(
-      `INSERT INTO services (clinic_id, title, dsc, image_path) 
-       VALUES ($1, $2, $3, $4) 
+      `INSERT INTO services (clinic_id, title, dsc, image_path, price) 
+       VALUES ($1, $2, $3, $4, $5) 
        RETURNING *`,
-      [req.clinic_id, title, dsc, imagePath],
+      [req.clinic_id, title, dsc, imagePath, price || null],
     );
     res.status(201).json(result.rows[0]);
   } catch (err) {
@@ -1131,10 +1555,10 @@ app.post("/api/services", authenticateAdmin, upload.single("image"), async (req,
 
 // POST yeni hizmet (Tekrarlanan rota kaldırıldı ve üsttekiyle birleştirildi)
 
-// PUT güncelleme (sadece title, dsc ve image_path)
+// PUT güncelleme (sadece title, dsc, image_path ve price)
 app.put("/api/services/:id", authenticateAdmin, upload.single("image"), async (req, res) => {
   const { id } = req.params;
-  const { title, dsc } = req.body;
+  const { title, dsc, price } = req.body;
 
   try {
     let imagePath = null;
@@ -1147,10 +1571,11 @@ app.put("/api/services/:id", authenticateAdmin, upload.single("image"), async (r
        SET title = COALESCE($1, title),
            dsc = COALESCE($2, dsc),
            image_path = COALESCE($3, image_path),
+           price = $4,
            updated_at = NOW()
-       WHERE id = $4 AND clinic_id = $5
+       WHERE id = $5 AND clinic_id = $6
        RETURNING *`,
-      [title, dsc, imagePath, id, req.clinic_id],
+      [title, dsc, imagePath, price || null, id, req.clinic_id],
     );
 
     if (result.rows.length === 0)

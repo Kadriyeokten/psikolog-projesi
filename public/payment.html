@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ödeme Yap - Fast Terapi</title>
+    <link rel="stylesheet" href="./assets/css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        body {
+            background-color: var(--alice-blue);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            font-family: 'Rubik', sans-serif;
+        }
+        .payment-card {
+            background: white;
+            padding: 40px;
+            border-radius: var(--radius-12);
+            box-shadow: var(--shadow-1);
+            max-width: 500px;
+            width: 100%;
+            text-align: center;
+        }
+        .payment-header h2 {
+            color: var(--verdigris);
+            margin-bottom: 10px;
+            font-family: 'Oswald', sans-serif;
+        }
+        .appointment-summary {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            text-align: left;
+            font-size: 1.4rem;
+        }
+        .summary-item {
+            margin-bottom: 10px;
+            border-bottom: 1px border #eee;
+            padding-bottom: 5px;
+        }
+        .summary-label {
+            font-weight: bold;
+            color: var(--midnight-green);
+        }
+        .test-payment-info {
+            background: #fff3cd;
+            color: #856404;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            font-size: 1.3rem;
+        }
+        .btn-pay {
+            width: 100%;
+            background-color: var(--verdigris);
+            color: white;
+            padding: 15px;
+            border: none;
+            border-radius: var(--radius-6);
+            font-size: 1.6rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .btn-pay:hover {
+            background-color: var(--midnight-green);
+        }
+        .back-link {
+            display: inline-block;
+            margin-top: 15px;
+            color: #666;
+            text-decoration: none;
+            font-size: 1.3rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="payment-card">
+        <div class="payment-header">
+            <h2>Güvenli Ödeme (Test)</h2>
+            <p>Randevunuzu onaylamak için ödemeyi tamamlayın.</p>
+        </div>
+
+        <div class="appointment-summary" id="summary">
+            <p style="text-align:center;">Özet yükleniyor...</p>
+        </div>
+
+        <div class="test-payment-info">
+            <ion-icon name="information-circle-outline" style="vertical-align: middle;"></ion-icon>
+            Bu bir test ödeme sayfasıdır. Herhangi bir kart bilgisi girmenize gerek yoktur.
+        </div>
+
+        <button id="completePayment" class="btn-pay">Ödemeyi Tamamla (Test)</button>
+        
+        <a href="appointment.html" class="back-link">İptal Et ve Geri Dön</a>
+    </div>
+
+    <script type="module" src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.esm.js"></script>
+    <script nomodule src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            let appointmentData = JSON.parse(sessionStorage.getItem('pending_appointment'));
+            
+            // Eğer sessionStorage boşsa, WhatsApp'tan linkle gelinmiş olabilir, URL'ye bak
+            if (!appointmentData) {
+                const params = new URLSearchParams(window.location.search);
+                if (params.has('patient_name') && params.has('patient_phone') && params.has('appointment_date')) {
+                    appointmentData = {
+                        patient_name: params.get('patient_name'),
+                        patient_phone: params.get('patient_phone'),
+                        patient_email: params.get('patient_email') || '',
+                        service_id: params.get('service_id') ? parseInt(params.get('service_id')) : null,
+                        doctor_id: params.get('doctor_id') ? parseInt(params.get('doctor_id')) : null,
+                        service_name: params.get('service_name') || '',
+                        doctor_name: params.get('doctor_name') || '',
+                        appointment_date: params.get('appointment_date')
+                    };
+                }
+            }
+
+            if (!appointmentData) {
+                Swal.fire("Hata", "Randevu bilgisi bulunamadı.", "error").then(() => {
+                    window.location.href = "appointment.html";
+                });
+                return;
+            }
+
+            // Özeti Göster
+            const summaryDiv = document.getElementById('summary');
+            if (!appointmentData.service_price) {
+                summaryDiv.innerHTML = `<p>Fiyat bilgisi bulunamadı.</p>`;
+                document.getElementById('completePayment').disabled = true;
+                return;
+            }
+            summaryDiv.innerHTML = `
+                <div class="summary-item"><span class="summary-label">Ad Soyad:</span> ${appointmentData.patientName}</div>
+                <div class="summary-item"><span class="summary-label">Hizmet:</span> ${appointmentData.service_name || '-'}</div>
+                <div class="summary-item"><span class="summary-label">Terapist:</span> ${appointmentData.doctor_name || '-'}</div>
+                <div class="summary-item"><span class="summary-label">Tarih:</span> ${new Date(appointmentData.selectedDateTime).toLocaleString('tr-TR')}</div>
+                <div class="summary-item" style="border:none; margin-top:15px; font-size:1.8rem;">
+                    <span class="summary-label">Ödenecek Tutar:</span> <span style="color:var(--verdigris); font-weight:bold;">${parseFloat(appointmentData.service_price).toFixed(2)} TL</span>
+                </div>
+            `;
+
+            document.getElementById('completePayment').addEventListener('click', async () => {
+                Swal.fire({
+                    title: 'Ödeme İşleniyor...',
+                    allowOutsideClick: false,
+                    didOpen: () => { Swal.showLoading(); }
+                });
+
+                try {
+                    // Make sure payload properties map correctly to what API expects
+                    const payload = {
+                        userId: appointmentData.userId || null,
+                        patientName: appointmentData.patientName || appointmentData.patient_name,
+                        patientPhone: appointmentData.patientPhone || appointmentData.patient_phone,
+                        patientEmail: appointmentData.patientEmail || appointmentData.patient_email || '',
+                        service: appointmentData.service || appointmentData.service_id,
+                        service_price: appointmentData.service_price || null,
+                        therapist: appointmentData.therapist || appointmentData.doctor_id,
+                        selectedDateTime: appointmentData.selectedDateTime || appointmentData.appointment_date
+                    };
+
+                    const res = await fetch('/api/appointments', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+
+                    Swal.close(); // Loading animasyonunu kapat
+
+                    if (res.ok) {
+                        sessionStorage.removeItem('pending_appointment');
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Ödeme Başarılı!',
+                            text: 'Randevunuz başarıyla oluşturulmuştur.',
+                            confirmButtonText: 'Tamam'
+                        }).then(() => {
+                            window.location.href = "index.html";
+                        });
+                    } else {
+                        const err = await res.json();
+                        Swal.fire("Hata", err.error || "Randevu oluşturulamadı.", "error");
+                    }
+                } catch (err) {
+                    Swal.close(); // Loading animasyonunu kapat
+                    console.error("Fetch error:", err);
+                    Swal.fire("Hata", "Sunucuya bağlanılamadı. İnternet bağlantınızı kontrol edin.", "error");
+                }
+            });
+        });
+    </script>
+</body>
+</html>

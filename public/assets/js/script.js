@@ -24,11 +24,77 @@ const addEventOnElements = function (elements, eventType, callback) {
 
 const preloader = document.querySelector("[data-preloader]");
 
+/**
+ * LOAD SITE SETTINGS (Title & Logo)
+ */
+
+window.loadSiteSettings = async function () {
+  try {
+    // Check if we are on a subdomain
+    const host = window.location.hostname;
+    let isSubdomain = false;
+    if (host.includes('.localhost')) {
+      const parts = host.split('.localhost');
+      if (parts[0] !== 'localhost' && parts[0] !== '') isSubdomain = true;
+    } else {
+      const parts = host.split('.');
+      if (parts.length >= 3 && parts[0] !== 'www') isSubdomain = true;
+    }
+
+    if (isSubdomain) {
+      // Hide Doctors link in navigation on subdomains
+      const doctorsLinks = document.querySelectorAll('a[href="doctors.html"]');
+      doctorsLinks.forEach(link => {
+        const parentLi = link.closest('li');
+        if (parentLi) parentLi.style.display = 'none';
+      });
+    }
+
+    const res = await fetch("/api/site-content");
+    const data = await res.json();
+    if (data) {
+      // Update Title
+      if (data.site_title) {
+        document.title = data.site_title;
+        window.dynamicClinicName = data.site_title;
+        if (typeof window.applyTranslations === 'function') {
+          window.applyTranslations();
+        }
+      }
+      
+      // Update Logos
+      if (data.site_logo_url) {
+        const logos = document.querySelectorAll(".logo img, .footer-brand .logo img");
+        logos.forEach(img => {
+          img.src = data.site_logo_url;
+          if (data.site_title) img.alt = data.site_title;
+        });
+        const favicon = document.querySelector("link[rel*='icon']");
+        if (favicon) favicon.href = data.site_logo_url;
+      }
+
+      // Update WhatsApp FAB
+      const waFab = document.getElementById("whatsappLink");
+      if (waFab && data.whatsapp_number) {
+        const lang = localStorage.getItem("preferredLanguage") || "tr";
+        const text = lang === "en" ? "Hello, I would like to book an appointment." : "Merhaba, randevu oluşturmak istiyorum.";
+        waFab.href = `https://wa.me/${data.whatsapp_number}?text=${encodeURIComponent(text)}`;
+        waFab.style.display = "flex";
+      } else if (waFab) {
+        waFab.style.display = "none";
+      }
+    }
+  } catch (err) {
+    console.error("Site settings load error:", err);
+  }
+}
+
 window.addEventListener("load", function () {
   if (preloader) {
     preloader.classList.add("loaded");
   }
   document.body.classList.add("loaded");
+  window.loadSiteSettings(); // Load title and logo on page load
 });
 
 
@@ -116,11 +182,23 @@ window.initAuthUI = function () {
     if (userMenu) userMenu.style.display = "block";
     if (userNameEl) userNameEl.textContent = userName;
     
-    // Show/Hide admin link based on role
-    if (role === "admin") {
-      if (adminLink) adminLink.style.display = "block";
-    } else {
-      if (adminLink) adminLink.style.display = "none";
+    // Admin Link Gösterimi
+    if (adminLink) {
+      if (role === "admin") { // Sadece normal adminler görsün
+        adminLink.style.display = "block";
+      } else {
+        adminLink.style.display = "none";
+      }
+    }
+
+    // Süper Admin Link Gösterimi (Sadece Superadmin ise)
+    const superAdminLink = document.getElementById("superAdminLink");
+    if (superAdminLink) {
+      if (role === "superadmin") {
+        superAdminLink.style.display = "block";
+      } else {
+        superAdminLink.style.display = "none";
+      }
     }
   } else {
     if (loginItem) loginItem.style.display = "block";

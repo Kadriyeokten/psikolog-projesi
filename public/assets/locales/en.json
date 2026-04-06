@@ -14,12 +14,12 @@
   "nav_profile": "My Profile",
   "nav_admin": "Admin Panel",
   "sidebar_settings": "Settings",
-  "hero_title": "Welcome to <br /> Online Fast Terapi.",
+  "hero_title": "Welcome to <br /> Online {{clinic_name}}.",
   "hero_subtitle": "Book Online Appointment",
   "hero_services_title": "Explore Our Wide Range of Services.",
   "hero_contact_title": "Contact Us",
   "hero_contact_subtitle": "We are here to help you.",
-  "hero_about_title": "Welcome to Fast Terapi",
+  "hero_about_title": "Welcome to {{clinic_name}}",
   "about_title": "Highly Qualified Professionals",
   "about_text": "Our team of therapists consists of highly qualified professionals dedicated to providing exceptional care and holistic healing to our clients. Each therapist brings a wealth of knowledge and expertise to our practice, ensuring that each individual receives personalized treatment according to their specific needs.",
   "feature_title1": "Qualifications",
@@ -138,5 +138,16 @@
   "appointment_register_password_label": "Set a password for your account:",
   "appointment_register_password_placeholder": "Your password",
   "appointment_register_success": "Your account has been successfully created and you are logged in!",
-  "appointment_register_error": "An error occurred while creating the account."
-}
+  "appointment_register_error": "An error occurred while creating the account.",
+  "Merhaba ben Salih Özgen bla bla bla": "Hello, I am Salih Özgen, bla bla bla",
+  "Merhaba Ben Salih ..... ... ... ... ...": "Hello, I am Salih ..... ... ... ... ...",
+  "admin_appointment_title": "Appointments Management",
+  "admin_appointment_subtitle": "Track appointments and update their statuses.",
+  "admin_col_datetime": "Date & Time",
+  "admin_col_patient": "Patient Info",
+  "admin_col_price": "Price",
+  "admin_col_service": "Service",
+  "admin_col_therapist": "Therapist",
+  "admin_col_status": "Status",
+  "admin_col_action": "Action"
+  }

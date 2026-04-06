@@ -115,6 +115,31 @@ document.addEventListener("DOMContentLoaded", async function () {
     }
   });
 
+  const deleteBtn = document.getElementById("deleteAccountBtn");
+  if (deleteBtn) {
+    deleteBtn.addEventListener("click", async function() {
+      if (confirm("Hesabınızı ve WhatsApp otomatik tanıma kaydınızı tamamen silmek istediğinize emin misiniz? (Geçmiş randevu kayıtlarınız isimsiz olarak kliniğin arşivinde kalmaya devam edecektir.)")) {
+        try {
+          const response = await fetch("/api/user/me", {
+            method: "DELETE",
+            headers: { "Authorization": `Bearer ${token}` }
+          });
+          const result = await response.json();
+          if (response.ok) {
+            alert(result.message || "Hesabınız başarıyla silindi.");
+            localStorage.clear();
+            window.location.href = "index.html";
+          } else {
+            alert(result.error || "Silme işlemi sırasında bir hata oluştu.");
+          }
+        } catch (err) {
+          console.error("Profile Delete Error:", err);
+          alert("Bir hata oluştu.");
+        }
+      }
+    });
+  }
+
   fetchProfile();
   fetchAppointments();
 });

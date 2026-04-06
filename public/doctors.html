@@ -146,7 +146,7 @@
       }
 
       .box {
-        width: 280px;
+        width: 320px;
         perspective: 1000px; /* 3D efekt için */
         background: transparent;
         border: none;
@@ -158,7 +158,7 @@
       .card-inner {
         position: relative;
         width: 100%;
-        height: 450px; /* Kart yüksekliği */
+        height: 480px; /* Kart yüksekliği arttırıldı */
         text-align: center;
         transition: transform 0.8s;
         transform-style: preserve-3d;
@@ -173,7 +173,7 @@
         width: 100%;
         height: 100%;
         -webkit-backface-visibility: hidden;
-        backfaceface-visibility: hidden;
+        backface-visibility: hidden;
         border-radius: 10px;
         border: 1px solid #ddd;
         box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
@@ -204,7 +204,7 @@
 
       .box img {
         width: 100%;
-        height: 300px;
+        height: 220px;
         object-fit: cover;
         border-radius: 10px;
         margin-bottom: 10px;
@@ -336,6 +336,23 @@
     });
   </script>
 
+  <script>
+    // Redirect if on a subdomain (Doctors page is only for main domain)
+    (function() {
+      const host = window.location.hostname;
+      let isSubdomain = false;
+      if (host.includes('.localhost')) {
+        const parts = host.split('.localhost');
+        if (parts[0] !== 'localhost' && parts[0] !== '') isSubdomain = true;
+      } else {
+        const parts = host.split('.');
+        if (parts.length >= 3 && parts[0] !== 'www') isSubdomain = true;
+      }
+      if (isSubdomain) {
+        window.location.href = 'index.html';
+      }
+    })();
+  </script>
   <body id="top">
     <!-- 
     - #PRELOADER
@@ -423,6 +440,7 @@
               <ul class="dropdown-list">
                 <li><a href="profile.html" class="dropdown-link"><ion-icon name="person-outline"></ion-icon> <span data-i18n="nav_profile">Profilim</span></a></li>
                 <li id="adminLink" style="display: none"><a href="admin.html" class="dropdown-link"><ion-icon name="settings-outline"></ion-icon> <span data-i18n="nav_admin">Admin Paneli</span></a></li>
+                <li id="superAdminLink" style="display: none"><a href="super-admin.html" class="dropdown-link"><ion-icon name="shield-checkmark-outline"></ion-icon> <span data-i18n="nav_super_admin">Süper Admin</span></a></li>
                 <li><a href="#" class="dropdown-link" id="logoutBtn"><ion-icon name="log-out-outline"></ion-icon> <span data-i18n="nav_logout">Çıkış Yap</span></a></li>
               </ul>
             </li>
@@ -965,19 +983,10 @@
       src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.js"
     ></script>
 
-    <a
-      href="https://wa.me/TELEFON_NUMARASI?text=merhaba%2C%20randevu%20olu%C5%9Fturmak%20istiyorum."
-      class="whatsapp-fab"
-      target="_blank"
-      rel="noopener noreferrer"
-      title="WhatsApp"
-    >
-      <img
-        src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/6b/WhatsApp.svg/240px-WhatsApp.svg.png"
-        alt="WhatsApp"
-      />
+    <a id="whatsappLink" href="#" class="whatsapp-fab" target="_blank" style="display: none;">
+      <ion-icon name="logo-whatsapp" style="color: white; font-size: 36px;"></ion-icon>
     </a>
-  </body>
+
   <script>
     async function loadTherapists() {
       const container = document.getElementById("therapist-container");
@@ -985,7 +994,7 @@
 
       try {
         console.log("Doktorlar yükleniyor...");
-        const response = await fetch("/api/doctors");
+        const response = await fetch("/api/doctors?t=" + Date.now());
         if (!response.ok) throw new Error("API hatası: " + response.status);
 
         const data = await response.json();
@@ -1010,41 +1019,65 @@
 
           // AI Auto Translate for dynamic DB content
           let title = therapist.title || "";
-          let bio = therapist.bio || "";
+          let bio = therapist.about_text || therapist.bio || "";
           let aboutLabel = "Hakkında";
+          let btnLabel = "Daha Fazla Bilgi & Randevu";
 
           try {
             if (window.i18n && typeof window.i18n.t === 'function') {
-              title = await window.i18n.t(therapist.title) || therapist.title;
-              bio = await window.i18n.t(therapist.bio) || therapist.bio;
+              title = await window.i18n.t(title) || title;
+              bio = await window.i18n.t(bio) || bio;
               aboutLabel = await window.i18n.t("footer_about_title") || "Hakkında";
             }
           } catch (e) {
             console.warn("Translation failed for:", therapist.full_name, e);
           }
 
+          // Kısaltılmış bio
+          const shortBio = bio.length > 1000 ? bio.substring(0, 1000) + '...' : bio;
+
+          // Redirect URL'yi hazırla
+          const hostname = window.location.hostname;
+          const fullHost = window.location.host; 
+          let mainDomain = fullHost;
+          if (hostname === 'localhost' || hostname.includes('.localhost')) {
+             const port = window.location.port ? ':' + window.location.port : '';
+             mainDomain = 'localhost' + port;
+          } else {
+             const parts = hostname.split('.');
+             mainDomain = parts.slice(-2).join('.');
+             if (window.location.port) mainDomain += ':' + window.location.port;
+          }
+          const redirectUrl = `${window.location.protocol}//${therapist.subdomain}.${mainDomain}/index.html`;
+
           box.innerHTML = `
           <div class="card-inner">
-            <div class="card-front">
-              <img src="${therapist.image_path || './assets/images/doc-1.jpg'}" alt="${therapist.full_name}" onerror="this.src='./assets/images/doc-1.jpg'">
-              <h3>${therapist.full_name}</h3>
-              <span>${title}</span>
-              <div class="share">
-                ${therapist.facebook ? `<a href="${therapist.facebook}" class="fab fa-facebook-f" target="_blank"></a>` : ""}
-                ${therapist.twitter ? `<a href="${therapist.twitter}" class="fab fa-twitter" target="_blank"></a>` : ""}
-                ${therapist.instagram ? `<a href="${therapist.instagram}" class="fab fa-instagram" target="_blank"></a>` : ""}
-                ${therapist.linkedin ? `<a href="${therapist.linkedin}" class="fab fa-linkedin" target="_blank"></a>` : ""}
+            <div class="card-front" style="display: flex; flex-direction: column; justify-content: flex-start; padding-bottom: 20px;">
+              <div>
+                <img src="${therapist.image_path || './assets/images/doc-1.jpg'}" alt="${therapist.full_name}" onerror="this.src='./assets/images/doc-1.jpg'" style="width: 100%; height: 220px; object-fit: cover; border-radius: 10px; margin-bottom: 10px;">
+                <h3>${therapist.full_name}</h3>
+                <span>${title}</span>
+                <div class="share" onclick="event.stopPropagation();" style="margin: 15px 0;">
+                  ${therapist.facebook ? `<a href="${therapist.facebook}" class="fab fa-facebook-f" target="_blank"></a>` : ""}
+                  ${therapist.twitter ? `<a href="${therapist.twitter}" class="fab fa-twitter" target="_blank"></a>` : ""}
+                  ${therapist.instagram ? `<a href="${therapist.instagram}" class="fab fa-instagram" target="_blank"></a>` : ""}
+                  ${therapist.linkedin ? `<a href="${therapist.linkedin}" class="fab fa-linkedin" target="_blank"></a>` : ""}
+                </div>
               </div>
             </div>
-            <div class="card-back">
-              <h3>${aboutLabel}</h3>
-              <p>${bio || "---"}</p>
+            <div class="card-back" style="display: flex; flex-direction: column; justify-content: space-between; padding: 25px 15px;">
+              <div style="overflow-y: auto; margin-bottom: 10px; flex-grow: 1;">
+                <h3 style="position: sticky; top: 0; background: var(--verdigris); padding-bottom: 5px;">${aboutLabel}</h3>
+                <p style="font-size: 1.3rem; line-height: 1.5; text-align: left;">${shortBio || "---"}</p>
+              </div>
+              ${therapist.subdomain ? `<button onclick="event.stopPropagation(); window.location.href='${redirectUrl}'" class="btn has-before" style="width: 100%; font-size: 1.2rem; padding: 10px;">${btnLabel}</button>` : ""}
             </div>
           </div>
         `;
 
+          // Sadece kartı çevir (yönlendirme artık arkadaki butonda)
           box.addEventListener("click", function() {
-            this.classList.toggle("flipped");
+             this.classList.toggle("flipped");
           });
 
           container.appendChild(box);
@@ -1092,7 +1125,5 @@
     updateWhatsAppLink();
     window.addEventListener("languageChanged", updateWhatsAppLink);
   </script>
-  <a id="whatsappLink" href="https://wa.me/905000000000?text=merhaba%2C%20randevu%20olu%C5%9Fturmak%20istiyorum." class="whatsapp-fab" target="_blank">
-    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/6b/WhatsApp.svg/240px-WhatsApp.svg.png" alt="WhatsApp">
-  </a>
+</body>
 </html>

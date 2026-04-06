@@ -330,7 +330,13 @@
             timer: 2000
           });
 
-          if (data.role === "admin") {
+          // Yönlendirme Mantığı
+          if (data.redirectUrl) {
+            // Eğer farklı bir subdomain'e gitmesi gerekiyorsa (ana siteden login olduysa)
+            window.location.href = data.redirectUrl + "?token=" + data.token;
+          } else if (data.role === "superadmin") {
+            window.location.href = "super-admin.html";
+          } else if (data.role === "admin") {
             window.location.href = "admin.html";
           } else {
             window.location.href = "index.html";

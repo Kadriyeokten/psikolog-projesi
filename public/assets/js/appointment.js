@@ -4,7 +4,23 @@ document.addEventListener("DOMContentLoaded", () => {
   loadDynamicData();
   initCalendar();
   autoFillUserData();
+  updateAppointmentWhatsAppLink();
 });
+
+async function updateAppointmentWhatsAppLink() {
+  try {
+    const res = await fetch("/api/site-content");
+    const data = await res.json();
+    if (data && data.whatsapp_number) {
+      const link = document.getElementById("appointmentWhatsappBtn");
+      if (link) {
+        const lang = localStorage.getItem("preferredLanguage") || "tr";
+        const text = lang === "en" ? "Hello, I would like to book an appointment." : "Merhaba, randevu oluşturmak istiyorum.";
+        link.href = `https://wa.me/${data.whatsapp_number}?text=${encodeURIComponent(text)}`;
+      }
+    }
+  } catch (err) { console.error("Appointment WA update error:", err); }
+}
 
 async function autoFillUserData() {
   const token = localStorage.getItem("token");
@@ -96,42 +112,93 @@ async function initCalendar() {
   window.currentCalendar = calendar;
 }
 
+let clinicDoctorId = null; // Hold the doctor ID for subdomains
+let allServices = []; // Store all services to access price
+
 async function loadDynamicData() {
   const serviceSelect = document.getElementById("service");
   const therapistSelect = document.getElementById("therapist");
+  const therapistBox = document.getElementById("therapist-selection-box");
 
-  if (!serviceSelect || !therapistSelect) return;
+  if (!serviceSelect || !therapistSelect || !therapistBox) return;
+
+  // Check if we are on a subdomain
+  const hostname = window.location.hostname;
+  let isSubdomain = false;
+  if (hostname.includes('.localhost') && hostname !== 'localhost') {
+    isSubdomain = true;
+  } else if (hostname.split('.').length >= 3 && hostname.split('.')[0] !== 'www') {
+    isSubdomain = true;
+  }
 
   try {
-    const servicesRes = await fetch("/api/services");
-    const services = await servicesRes.json();
-
+    const servicesRes = await fetch(`/api/services?t=${Date.now()}`);
+    allServices = await servicesRes.json(); // Store services globally
+    
     serviceSelect.innerHTML = `<option value="">${await window.i18n.t("select_service")}</option>`;
-    for (const service of services) {
+    for (const service of allServices) {
       const option = document.createElement("option");
       option.value = service.id;
       option.textContent = await window.i18n.t(service.title);
       serviceSelect.appendChild(option);
     }
+const doctorsRes = await fetch(`/api/doctors?t=${Date.now()}`);
+const doctors = await doctorsRes.json();
 
-    const doctorsRes = await fetch("/api/doctors");
-    const doctors = await doctorsRes.json();
+if (isSubdomain && doctors.length > 0) {
+  // Alt domaindeyiz: Seçim kutusunu gizle ve zorunluluğu kaldır
+  therapistBox.style.display = 'none';
+  therapistSelect.removeAttribute('required');
+  clinicDoctorId = doctors[0].id;
 
-    therapistSelect.innerHTML = `<option value="">${await window.i18n.t("select_therapist")}</option>`;
-    for (const doc of doctors) {
-      if (doc.is_active !== false) {
-        const option = document.createElement("option");
-        option.value = doc.id;
-        const translatedTitle = await window.i18n.t(doc.title || "Terapist");
-        option.textContent = doc.full_name + " (" + translatedTitle + ")";
-        therapistSelect.appendChild(option);
-      }
+  // Select kutusuna da değerini atayalım (garanti olsun)
+  const opt = document.createElement("option");
+  opt.value = clinicDoctorId;
+  opt.textContent = doctors[0].full_name;
+  opt.selected = true;
+  therapistSelect.appendChild(opt);
+} else {
+  // Ana domaindeyiz: Seçim kutusunu göster ve içini doldur
+  therapistBox.style.display = 'block';
+  therapistSelect.setAttribute('required', 'required');
+  therapistSelect.innerHTML = `<option value="">${await window.i18n.t("select_therapist")}</option>`;
+  for (const doc of doctors) {
+    if (doc.is_active !== false) {
+      const option = document.createElement("option");
+      option.value = doc.id;
+      const translatedTitle = await window.i18n.t(doc.title || "Terapist");
+      option.textContent = doc.full_name + " (" + translatedTitle + ")";
+      therapistSelect.appendChild(option);
     }
+  }
+}
+
 
   } catch (err) {
     console.error("Dinamik veriler yüklenemedi:", err);
   }
 }
+
+// Hizmet seçimi değiştiğinde fiyatı göster
+document.getElementById("service")?.addEventListener("change", function() {
+  const serviceId = this.value;
+  const priceDisplay = document.getElementById("price-display");
+  const priceSpan = document.getElementById("service-price");
+  
+  if (serviceId && allServices.length > 0) {
+    const selectedService = allServices.find(s => s.id == serviceId);
+    if (selectedService && selectedService.price > 0) {
+      priceSpan.textContent = selectedService.price;
+      priceDisplay.style.display = 'block';
+    } else {
+      priceDisplay.style.display = 'none';
+    }
+  } else {
+    priceDisplay.style.display = 'none';
+  }
+});
+
+
 
 // Re-render when language changes
 window.addEventListener('languageChanged', async () => {
@@ -149,87 +216,55 @@ document.getElementById("appointmentForm")?.addEventListener("submit", async fun
   const patientName = document.getElementById("patientName").value.trim();
   const patientPhone = document.getElementById("patientPhone").value.trim();
   const patientEmail = document.getElementById("patientEmail").value.trim();
-  const service = document.getElementById("service").value;
-  const therapist = document.getElementById("therapist").value;
+  const serviceId = document.getElementById("service").value;
   const selectedDateTime = document.getElementById("selectedDateTime").value;
+  const therapistId = clinicDoctorId || document.getElementById("therapist").value;
 
+  if (!serviceId) {
+     Swal.fire({ icon: 'warning', text: await window.i18n.t("select_service") });
+     return;
+  }
+  if (!therapistId) {
+     Swal.fire({ icon: 'warning', text: await window.i18n.t("appointment_error_therapist") });
+     return;
+  }
   if (!selectedDateTime) {
-    const errMsg = await window.i18n.t("appointment_error_date");
-    Swal.fire({
-      icon: 'warning',
-      text: errMsg,
-      confirmButtonColor: 'var(--verdigris)'
-    });
+    Swal.fire({ icon: 'warning', text: await window.i18n.t("appointment_error_date") });
+    return;
+  }
+
+  const selectedService = allServices.find(s => s.id == serviceId);
+  if (!selectedService) {
+    Swal.fire({ icon: 'error', text: "Seçilen hizmet bulunamadı!" });
     return;
   }
   
-  // Format the date locally without converting to UTC (which causes 3 hour offset)
   const d = new Date(selectedDateTime);
-  const localDateTime = d.getFullYear() + "-" + 
-    String(d.getMonth() + 1).padStart(2, '0') + "-" + 
-    String(d.getDate()).padStart(2, '0') + " " + 
-    String(d.getHours()).padStart(2, '0') + ":" + 
-    String(d.getMinutes()).padStart(2, '0') + ":00";
+  const localDateTime = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}:00`;
 
   const userId = localStorage.getItem("userId");
+  const serviceText = selectedService.title;
+  const therapistSelect = document.getElementById("therapist");
+  let therapistText = "Klinik Terapisti";
+  if (therapistSelect.selectedIndex > 0) {
+      therapistText = therapistSelect.options[therapistSelect.selectedIndex].text;
+  }
+  
   const data = {
     userId,
     patientName,
     patientPhone,
     patientEmail,
-    service,
-    therapist,
+    service: serviceId,
+    service_name: serviceText,
+    service_price: selectedService.price,
+    therapist: therapistId,
+    doctor_name: therapistText,
     selectedDateTime: localDateTime
   };
 
-  try {
-    const res = await fetch("/api/appointments", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data)
-    });
-
-    const result = await res.json();
-    
-    if (res.ok) {
-      const isLoggedIn = !!localStorage.getItem("token");
-      
-      if (!isLoggedIn && patientEmail) {
-        // Misafir kullanıcı için kayıt teklifi (sadece email varsa)
-        // Randevu ID'sini yakalayıp fonksiyona paslıyoruz
-        await showRegistrationPrompt(patientName, patientEmail, patientPhone, result.appointment.id);
-      } else {
-        const successMsg = await window.i18n.t("appointment_success");
-        await Swal.fire({
-          icon: 'success',
-          title: successMsg,
-          confirmButtonColor: 'var(--verdigris)'
-        });
-      }
-      
-      document.getElementById("appointmentForm").reset();
-      document.getElementById("selectedDateTime").value = "";
-      if (window.currentCalendar) {
-        window.currentCalendar.refetchEvents();
-      }
-    } else {
-      Swal.fire({
-        icon: 'error',
-        title: 'Hata',
-        text: result.error,
-        confirmButtonColor: 'var(--verdigris)'
-      });
-    }
-  } catch (err) {
-    console.error(err);
-    const serverErrMsg = await window.i18n.t("alert_server_error");
-    Swal.fire({
-      icon: 'error',
-      title: 'Hata',
-      text: serverErrMsg,
-      confirmButtonColor: 'var(--verdigris)'
-    });
-  }
+  sessionStorage.setItem('pending_appointment', JSON.stringify(data));
+  window.location.href = "payment.html";
 });
 
 async function showRegistrationPrompt(name, email, phone, appointmentId) {

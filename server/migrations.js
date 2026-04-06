@@ -37,17 +37,19 @@ async function runMigrations() {
       CREATE TABLE IF NOT EXISTS appointments (
         id SERIAL PRIMARY KEY,
         clinic_id INTEGER DEFAULT 1 REFERENCES clinics(id),
-        patient_name VARCHAR(100) NOT NULL,
-        patient_phone VARCHAR(20) NOT NULL,
-        patient_email VARCHAR(100),
+        patient_name VARCHAR(255),
+        patient_phone VARCHAR(50),
+        patient_email VARCHAR(255),
         service_id INTEGER,
         doctor_id INTEGER,
-        appointment_date TIMESTAMP NOT NULL,
+        appointment_date TIMESTAMP,
+        price DECIMAL(10, 2),
         status VARCHAR(20) DEFAULT 'Bekliyor',
         user_id INTEGER,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
     `);
+    try { await pool.query(`ALTER TABLE appointments ADD COLUMN IF NOT EXISTS price DECIMAL(10, 2);`); } catch(e){}
     try { await pool.query(`ALTER TABLE appointments ADD COLUMN IF NOT EXISTS user_id INTEGER;`); } catch(e){}
     try { await pool.query(`ALTER TABLE appointments ADD COLUMN IF NOT EXISTS clinic_id INTEGER DEFAULT 1 REFERENCES clinics(id);`); } catch(e){}
 
@@ -59,10 +61,12 @@ async function runMigrations() {
         title VARCHAR(255),
         dsc TEXT,
         image_path TEXT,
+        price DECIMAL(10, 2),
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
     `);
+    try { await pool.query(`ALTER TABLE services ADD COLUMN IF NOT EXISTS price DECIMAL(10, 2);`); } catch(e){}
     try { await pool.query(`ALTER TABLE services ALTER COLUMN dsc TYPE TEXT;`); } catch(e){}
     try { await pool.query(`ALTER TABLE services ADD COLUMN IF NOT EXISTS clinic_id INTEGER DEFAULT 1 REFERENCES clinics(id);`); } catch(e){}
 
@@ -93,6 +97,8 @@ async function runMigrations() {
       CREATE TABLE IF NOT EXISTS site_content (
         id SERIAL PRIMARY KEY,
         clinic_id INTEGER DEFAULT 1 REFERENCES clinics(id),
+        site_title TEXT,
+        site_logo_url TEXT,
         about_title TEXT,
         about_text TEXT,
         feature_title1 TEXT,
@@ -111,6 +117,8 @@ async function runMigrations() {
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
     `);
+    try { await pool.query(`ALTER TABLE site_content ADD COLUMN IF NOT EXISTS site_title TEXT;`); } catch(e){}
+    try { await pool.query(`ALTER TABLE site_content ADD COLUMN IF NOT EXISTS site_logo_url TEXT;`); } catch(e){}
     try { await pool.query(`ALTER TABLE site_content ADD COLUMN IF NOT EXISTS whatsapp_number VARCHAR(20);`); } catch(e){}
     try { await pool.query(`ALTER TABLE site_content ADD COLUMN IF NOT EXISTS clinic_id INTEGER DEFAULT 1 REFERENCES clinics(id);`); } catch(e){}
     
@@ -149,6 +157,18 @@ async function runMigrations() {
       await pool.query(`ALTER TABLE users DROP CONSTRAINT IF EXISTS users_email_key;`);
       await pool.query(`ALTER TABLE users ADD CONSTRAINT users_clinic_email_key UNIQUE(clinic_id, email);`);
     } catch(e){}
+
+    // 6. patients (WhatsApp Hastaları)
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS patients (
+        id SERIAL PRIMARY KEY,
+        clinic_id INTEGER DEFAULT 1 REFERENCES clinics(id),
+        phone VARCHAR(20) UNIQUE NOT NULL,
+        name VARCHAR(100) NOT NULL,
+        email VARCHAR(100),
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
 
     console.log("Tüm migrationlar başarıyla tamamlandı.");
   } catch (err) {

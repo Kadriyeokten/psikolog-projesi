@@ -19,7 +19,9 @@ async function loadTranslations(lang) {
 
     currentLang = lang;
     document.documentElement.lang = lang;
-    applyTranslations();
+    if (typeof window.applyTranslations === 'function') {
+      window.applyTranslations();
+    }
     localStorage.setItem('preferredLanguage', lang);
     updateToggleLabel(lang);
     
@@ -32,19 +34,26 @@ async function loadTranslations(lang) {
 /**
  * Apply translations to elements with data-i18n attribute (Static)
  */
-function applyTranslations() {
+window.applyTranslations = function() {
   const elements = document.querySelectorAll('[data-i18n]');
+  const clinicName = window.dynamicClinicName || "Fast Terapi"; 
+
   elements.forEach(element => {
     const key = element.getAttribute('data-i18n');
     if (translations[key]) {
+      let translatedText = translations[key];
+      
+      // Dinamik yer tutucuları değiştir ({{clinic_name}})
+      translatedText = translatedText.replace(/{{clinic_name}}/g, clinicName);
+
       if (element.tagName === 'INPUT' || element.tagName === 'TEXTAREA') {
         if (element.type === 'submit' || element.type === 'button') {
-          element.value = translations[key];
+          element.value = translatedText;
         } else {
-          element.placeholder = translations[key];
+          element.placeholder = translatedText;
         }
       } else {
-        element.innerHTML = translations[key];
+        element.innerHTML = translatedText;
       }
     }
   });

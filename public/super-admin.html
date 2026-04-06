@@ -1,0 +1,906 @@
+<!doctype html>
+<html lang="tr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Online Fast Terapi - Süper Yönetim Paneli</title>
+    <link rel="stylesheet" href="./assets/css/style.css" />
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap");
+      
+      :root { 
+        --sidebar-width: 280px; 
+        --primary: #4f46e5;
+        --primary-light: #eef2ff;
+        --secondary: #10b981;
+        --secondary-light: #ecfdf5;
+        --accent: #f59e0b;
+        --accent-light: #fffbeb;
+        --danger: #ef4444;
+        --dark: #1e293b;
+        --light: #f8fafc;
+        --white: #ffffff;
+        --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+        --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+        --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+      }
+      
+      body { 
+        font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
+        background: #f1f5f9; 
+        margin: 0; 
+        display: flex; 
+        min-height: 100vh;
+        color: var(--dark);
+      }
+
+      .sidebar { 
+        width: var(--sidebar-width); 
+        background: var(--dark); 
+        color: white; 
+        position: fixed; 
+        height: 100vh; 
+        padding: 0; 
+        display: flex; 
+        flex-direction: column; 
+        z-index: 1000;
+        box-shadow: 4px 0 10px rgba(0,0,0,0.1);
+      }
+
+      .sidebar-header { 
+        padding: 30px 20px; 
+        background: rgba(255,255,255,0.03);
+        margin-bottom: 10px;
+      }
+
+      .sidebar-menu { list-style: none; padding: 10px; flex-grow: 1; overflow-y: auto; margin: 0; }
+      .sidebar-menu li { 
+        padding: 12px 16px; 
+        cursor: pointer; 
+        transition: all 0.2s; 
+        font-size: 1.4rem; 
+        display: flex; 
+        align-items: center; 
+        gap: 12px;
+        border-radius: 8px;
+        margin-bottom: 4px;
+        color: #cbd5e1;
+      }
+      .sidebar-menu li:hover { background: rgba(255,255,255,0.05); color: white; }
+      .sidebar-menu li.active { background: var(--primary); color: white; box-shadow: var(--shadow-md); }
+      .sidebar-menu li ion-icon { font-size: 1.8rem; }
+
+      .main-content { margin-left: var(--sidebar-width); flex-grow: 1; padding: 40px; width: calc(100% - var(--sidebar-width)); }
+      
+      .section-card { 
+        background: var(--white); 
+        padding: 32px; 
+        border-radius: 16px; 
+        box-shadow: var(--shadow-sm); 
+        margin-bottom: 30px; 
+        display: none; 
+        border: 1px solid #e2e8f0;
+      }
+      .section-card.active { display: block; animation: fadeIn 0.4s ease-out; }
+      @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+      .admin-header h1 { font-size: 3rem; font-weight: 800; color: var(--dark); letter-spacing: -0.025em; font-family: "Inter", sans-serif !important; }
+
+      .dashboard-stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; }
+      
+      .stat-card { 
+        background: var(--white); 
+        padding: 24px; 
+        border-radius: 16px; 
+        box-shadow: var(--shadow-sm); 
+        display: flex; 
+        align-items: center; 
+        gap: 20px; 
+        transition: transform 0.2s, box-shadow 0.2s;
+        border: 1px solid #e2e8f0;
+      }
+      .stat-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-lg); }
+      
+      .stat-icon { 
+        width: 56px; 
+        height: 56px; 
+        border-radius: 12px; 
+        display: flex; 
+        justify-content: center; 
+        align-items: center; 
+        font-size: 2.4rem; 
+      }
+      
+      .stat-info h3 { font-size: 2.4rem; font-weight: 700; margin: 0; color: var(--dark); font-family: "Inter", sans-serif !important; }
+      .stat-info p { color: #64748b; margin: 4px 0 0 0; font-size: 1.3rem; font-weight: 500; }
+
+      .modern-table { width: 100%; border-collapse: separate; border-spacing: 0; }
+      .modern-table th { 
+        background: #f8fafc; 
+        padding: 16px; 
+        text-align: left; 
+        font-size: 1.6rem; 
+        font-weight: 600; 
+        text-transform: uppercase; 
+        letter-spacing: 0.05em; 
+        color: #64748b;
+        border-bottom: 1px solid #e2e8f0;
+      }
+      .modern-table td { padding: 16px; border-bottom: 1px solid #f1f5f9; font-size: 1.4rem; vertical-align: middle; }
+      .modern-table tr:last-child td { border-bottom: none; }
+      .modern-table tr:hover td { background: #fbfcfe; }
+
+      .btn-save { 
+        background: var(--primary); 
+        color: white; 
+        border: none; 
+        padding: 10px 20px; 
+        border-radius: 8px; 
+        cursor: pointer; 
+        font-weight: 600; 
+        font-size: 1.3rem;
+        transition: all 0.2s;
+      }
+      .btn-save:hover { background: #4338ca; transform: translateY(-1px); box-shadow: var(--shadow-md); }
+
+      .clinic-card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 24px; }
+      .modern-card { 
+        background: var(--white); 
+        border: 1px solid #e2e8f0; 
+        padding: 24px; 
+        border-radius: 16px; 
+        box-shadow: var(--shadow-sm);
+        transition: all 0.3s;
+        display: flex; flex-direction: column; justify-content: space-between;
+      }
+      .modern-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-lg); border-color: var(--primary-light); }
+      
+      .card-header { display: flex; align-items: center; gap: 16px; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid #f1f5f9;}
+      .card-title { font-size: 1.8rem; font-weight: 700; margin: 0; color: var(--dark); font-family: "Inter", sans-serif !important; }
+      .card-icon { width: 45px; height: 45px; background: var(--primary-light); color: var(--primary); border-radius: 12px; display: flex; justify-content: center; align-items: center; font-size: 2.2rem; }
+      
+      .domain-link { 
+        display: inline-flex; 
+        align-items: center; 
+        gap: 8px; 
+        color: var(--primary); 
+        text-decoration: none; 
+        background: var(--primary-light); 
+        padding: 6px 12px; 
+        border-radius: 6px; 
+        font-weight: 600; 
+        font-size: 1.3rem;
+      }
+
+      .card-actions { display: flex; gap: 10px; margin-top: 25px; }
+      .btn-action { 
+        flex: 1; 
+        display: inline-flex; 
+        justify-content: center; 
+        align-items: center; 
+        gap: 8px; 
+        padding: 8px 12px; 
+        border-radius: 8px; 
+        font-size: 1.3rem; 
+        font-weight: 600; 
+        cursor: pointer; 
+        transition: all 0.2s; 
+        border: 1px solid #e2e8f0;
+        background: white;
+      }
+      .btn-manage { background: #f8fafc; color: var(--dark); }
+      .btn-manage:hover { background: #f1f5f9; }
+      .btn-delete-modern { color: var(--danger); border-color: #fecaca; }
+      .btn-delete-modern:hover { background: #fef2f2; border-color: #fca5a5; }
+
+      .form-group { margin-bottom: 20px; }
+      .form-group label { font-size: 1.3rem; color: #475569; margin-bottom: 6px; display: block; font-weight: 600; }
+      .form-group input, .form-group textarea, .form-group select { 
+        width: 100%;
+        border: 1px solid #e2e8f0; 
+        border-radius: 8px; 
+        padding: 10px 14px; 
+        font-size: 1.4rem;
+        transition: border-color 0.2s, box-shadow 0.2s;
+        box-sizing: border-box;
+      }
+      .form-group input:focus, .form-group textarea:focus, .form-group select:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1); }
+
+      .info-row { display: flex; flex-direction: column; gap: 5px; margin-bottom: 15px; font-size: 1.3rem; }
+      .info-label { color: #64748b; font-weight: 600; font-size: 1.6rem; text-transform: uppercase; letter-spacing: 0.05em; }
+
+      /* Dropdown Menu Styles */
+      .dropdown-menu-container { position: relative; display: inline-block; }
+      .dots-btn { background: none; border: none; font-size: 2.2rem; color: #64748b; cursor: pointer; padding: 4px; border-radius: 50%; transition: 0.2s; display: flex; align-items: center; justify-content: center; }
+      .dots-btn:hover, .dots-btn.active { background-color: #f1f5f9; color: var(--dark); }
+      .action-dropdown { display: none; position: absolute; right: 0; top: 100%; background: white; min-width: 160px; box-shadow: var(--shadow-lg); border-radius: 8px; z-index: 100; overflow: hidden; border: 1px solid #e2e8f0; }
+      .action-dropdown.show { display: block; animation: fadeIn 0.2s ease-out; }
+      .dropdown-action-btn { display: flex; align-items: center; gap: 10px; width: 100%; padding: 10px 16px; border: none; background: none; text-align: left; font-size: 1.3rem; font-weight: 500; cursor: pointer; transition: 0.2s; color: #334155; }
+      .dropdown-action-btn:hover { background-color: #f8fafc; color: var(--primary); }
+      .dropdown-action-btn ion-icon { font-size: 1.8rem; }
+      .dropdown-complete { color: #10b981; }
+      .dropdown-noshow { color: #f59e0b; }
+      .dropdown-delete { color: #ef4444; border-top: 1px solid #e2e8f0; }
+      .dropdown-delete:hover { background-color: #fef2f2; color: #dc2626; }
+
+      /* Scrollbar */
+      ::-webkit-scrollbar { width: 8px; }
+      ::-webkit-scrollbar-track { background: #f1f5f9; }
+      ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+      ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+    </style>
+  </head>
+  <body>
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <h2 style="font-family: var(--ff-oswald); font-size: 2rem;">Süper Panel</h2>
+        <p style="font-size: 1.1rem; opacity: 0.7;">Online Fast Terapi</p>
+      </div>
+      <ul class="sidebar-menu">
+        <li class="active" onclick="showSection('dashboard-section', this)">
+          <ion-icon name="stats-chart-outline"></ion-icon> Genel Bakış (Dashboard)
+        </li>
+        <li onclick="showSection('clinics-section', this)">
+          <ion-icon name="business-outline"></ion-icon> Alt Domain Yönetimi
+        </li>
+        <li onclick="showSection('site-settings-section', this)">
+          <ion-icon name="settings-outline"></ion-icon> Ana Site Ayarları
+        </li>
+        <li onclick="showSection('site-content-section', this)">
+          <ion-icon name="document-text-outline"></ion-icon> Hakkımızda Sayfası
+        </li>
+        <li onclick="showSection('services-section', this)">
+          <ion-icon name="medical-outline"></ion-icon> Ana Site Hizmetler
+        </li>
+        <li onclick="showSection('appointments-section', this)">
+          <ion-icon name="calendar-outline"></ion-icon> Ana Site Randevular
+        </li>
+        <li onclick="window.location.href='index.html'">
+          <ion-icon name="globe-outline"></ion-icon> Siteye Git
+        </li>
+        <li onclick="logout()">
+          <ion-icon name="log-out-outline"></ion-icon> Çıkış Yap
+        </li>
+      </ul>
+    </aside>
+
+    <main class="main-content">
+      <div class="admin-header" style="margin-bottom: 30px;">
+        <h1 id="section-title" style="font-family: var(--ff-oswald); font-size: 3rem; color: var(--midnight-green);">Genel Bakış</h1>
+      </div>
+
+      <!-- 0. Dashboard (Genel Bakış) -->
+      <section id="dashboard-section" class="section-card active">
+        <div class="dashboard-stats-grid" style="margin-bottom: 30px;">
+          <div class="stat-card" style="border-top: 4px solid #4f46e5;">
+            <div class="stat-icon" style="background: #eef2ff; color: #4f46e5;"><ion-icon name="business-outline"></ion-icon></div>
+            <div class="stat-info"><h3 id="super-total-clinics">0</h3><p>Toplam Doktor Sitesi</p></div>
+          </div>
+          <div class="stat-card" style="border-top: 4px solid #10b981;">
+            <div class="stat-icon" style="background: #ecfdf5; color: #10b981;"><ion-icon name="cash-outline"></ion-icon></div>
+            <div class="stat-info"><h3 id="super-monthly-revenue">0 ₺</h3><p>Aylık Toplam Ciro</p></div>
+          </div>
+          <div class="stat-card" style="border-top: 4px solid #3b82f6;">
+            <div class="stat-icon" style="background: #eff6ff; color: #3b82f6;"><ion-icon name="people-outline"></ion-icon></div>
+            <div class="stat-info"><h3 id="super-monthly-apps">0</h3><p>Aylık Toplam Randevu</p></div>
+          </div>
+        </div>
+
+        <div style="background: white; padding: 25px; border-radius: 12px; box-shadow: var(--shadow-1);">
+          <h3 style="margin-bottom: 20px; font-family: var(--ff-oswald); color: var(--midnight-green);">Doktor Siteleri Performans Takibi</h3>
+          <div style="overflow-x: auto;">
+            <table class="modern-table">
+              <thead>
+                <tr>
+                  <th>Doktor / Site</th>
+                  <th style="text-align:center;">Danışan</th>
+                  <th style="text-align:center;">Randevu</th>
+                  <th>Aylık Ciro</th>
+                  <th>Haftalık Ciro</th>
+                  <th>Günlük Ciro</th>
+                </tr>
+              </thead>
+              <tbody id="super-clinic-performance-table">
+                <tr><td colspan="6" style="text-align: center; padding: 30px;">Yükleniyor...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- 1. Alt Domain (Klinik) Yönetimi -->
+      <section id="clinics-section" class="section-card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+          <h3>Klinikler ve Doktor Siteleri</h3>
+          <button class="btn-save" onclick="showAddClinicModal()">+ Yeni Klinik Ekle</button>
+        </div>
+        <div id="clinics-list" class="clinic-card-grid"></div>
+      </section>
+
+      <!-- 2. Ana Site Ayarları -->
+      <section id="site-settings-section" class="section-card">
+        <h3>Genel Site Ayarları (Merkez)</h3>
+        <div class="form-group">
+          <label>Site Başlığı</label>
+          <input type="text" id="mainSiteTitle">
+        </div>
+        <div class="form-group">
+          <label>WhatsApp Numarası</label>
+          <input type="text" id="mainWhatsapp">
+        </div>
+        <button class="btn-save" onclick="saveMainSettings()">Ayarları Kaydet</button>
+      </section>
+
+      <!-- 3. Hakkımızda -->
+      <section id="site-content-section" class="section-card">
+        <h3>Hakkımızda Yönetimi</h3>
+        <div class="form-group">
+          <label>Başlık</label>
+          <input type="text" id="mainAboutTitle">
+        </div>
+        <div class="form-group">
+          <label>Metin</label>
+          <textarea id="mainAboutText" rows="6"></textarea>
+        </div>
+        <div class="form-group">
+          <label>Görsel</label>
+          <input type="file" id="mainAboutImage" accept="image/*">
+          <img id="main_about_image_preview" style="max-width: 150px; margin-top: 10px; display: none;" src="">
+        </div>
+        <button class="btn-save" onclick="saveMainAbout()">İçeriği Kaydet</button>
+      </section>
+
+      <!-- 4. Hizmetler -->
+      <section id="services-section" class="section-card">
+        <h3>Hizmet Yönetimi</h3>
+        <div class="form-group">
+          <label>Hizmet Seçin:</label>
+          <select id="serviceSelect" onchange="loadServiceDetails(this.value)">
+            <option value="">Yeni Hizmet Ekle</option>
+          </select>
+        </div>
+        <div class="form-group"><label>Başlık</label><input type="text" id="serviceTitle"></div>
+        <div class="form-group"><label>Açıklama</label><textarea id="serviceDesc" rows="3"></textarea></div>
+        <div class="form-group"><label>Fiyat (₺)</label><input type="number" id="servicePrice"></div>
+        <div class="form-group">
+          <label>Görsel</label>
+          <input type="file" id="serviceImage" accept="image/*">
+          <img id="service_image_preview" style="max-width: 150px; margin-top: 10px; display: none;" src="">
+        </div>
+        <button class="btn-save" onclick="saveService()">Kaydet</button>
+        <button class="btn-delete" id="deleteServiceBtn" onclick="deleteService()" style="display: none; background: #dc3545; color: white;">Sil</button>
+      </section>
+
+      <!-- 5. Randevular -->
+      <section id="appointments-section" class="section-card">
+        <h3>Gelen Randevular</h3>
+        <div style="overflow: visible; padding-bottom: 100px;">
+          <table class="modern-table">
+            <thead>
+              <tr>
+                <th>Tarih</th>
+                <th>Hasta</th>
+                <th>Ücret</th>
+                <th>Hizmet</th>
+                <th>Durum</th>
+                <th style="text-align: center;">İşlem</th>
+              </tr>
+            </thead>
+            <tbody id="appointments-list"></tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+
+    <script type="module" src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.esm.js"></script>
+    <script nomodule src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.js"></script>
+
+    <script>
+      const token = localStorage.getItem("token");
+      if (!token || localStorage.getItem("role") !== "superadmin") { window.location.href = "login.html"; }
+
+      function showSection(sectionId, el) {
+        document.querySelectorAll('.section-card').forEach(s => s.classList.remove('active'));
+        document.querySelectorAll('.sidebar-menu li').forEach(l => l.classList.remove('active'));
+        document.getElementById(sectionId).classList.add('active');
+        el.classList.add('active');
+        document.getElementById('section-title').textContent = el.textContent.trim();
+        if(sectionId === 'dashboard-section') loadSuperDashboard();
+        if(sectionId === 'clinics-section') loadClinics();
+        if(sectionId === 'site-settings-section' || sectionId === 'site-content-section') loadMainSiteData();
+        if(sectionId === 'appointments-section') loadAppointments();
+      }
+
+      // --- YENİ DOKTOR SİTESİ EKLEME MODAL ---
+      async function showAddClinicModal() {
+        const { value: formValues } = await Swal.fire({
+          title: 'Yeni Doktor Sitesi Oluştur',
+          html:
+            '<style>.modern-swal-group { margin-bottom: 20px; text-align: left; } .modern-swal-group label { display: block; font-weight: 600; margin-bottom: 6px; color: #444; font-size: 1.4rem; } .modern-swal-input { width: 100%; padding: 12px 15px; border: 1px solid #ddd; border-radius: 8px; font-size: 1.4rem; box-sizing: border-box; background-color: #f9f9f9; } .swal-section-title { font-size: 1.6rem; font-weight: 700; color: var(--ming); margin-bottom: 15px; padding-bottom: 8px; border-bottom: 2px solid #eee; margin-top: 25px; text-align: left; }</style>' +
+            '<div style="max-height: 60vh; overflow-y: auto; padding: 0 10px;">' +
+            '  <div class="swal-section-title" style="margin-top: 0;">Kişisel Bilgiler</div>' +
+            '  <div class="modern-swal-group"><label>Doktor Ad Soyad *</label><input id="swal-name" class="modern-swal-input"></div>' +
+            '  <div class="modern-swal-group"><label>Ünvan</label><input id="swal-title" class="modern-swal-input"></div>' +
+            '  <div class="swal-section-title">Hesap Bilgileri</div>' +
+            '  <div class="modern-swal-group"><label>E-posta *</label><input id="swal-email" type="email" class="modern-swal-input"></div>' +
+            '  <div class="modern-swal-group"><label>Şifre *</label><input id="swal-password" type="password" class="modern-swal-input"></div>' +
+            '  <div class="swal-section-title">Web Sitesi</div>' +
+            '  <div class="modern-swal-group"><label>Subdomain *</label><input id="swal-subdomain" class="modern-swal-input"></div>' +
+            '</div>',
+          focusConfirm: false, width: '600px', showCancelButton: true, confirmButtonText: 'Sistemi Kur',
+          preConfirm: () => {
+            const name = document.getElementById('swal-name').value;
+            const email = document.getElementById('swal-email').value;
+            const password = document.getElementById('swal-password').value;
+            const subdomain = document.getElementById('swal-subdomain').value;
+            if(!name || !email || !password || !subdomain) { Swal.showValidationMessage('Zorunlu alanları doldurun!'); return false; }
+            return { name, title: document.getElementById('swal-title').value, email, password, subdomain };
+          }
+        });
+
+        if (formValues) {
+          Swal.fire({ title: 'Kuruluyor...', didOpen: () => Swal.showLoading() });
+          const res = await fetch("/api/super-admin/clinics", { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` }, body: JSON.stringify(formValues) });
+          if(res.ok) { Swal.fire("Başarılı!", "Sistem kuruldu.", "success"); loadClinics(); }
+          else { Swal.fire("Hata", (await res.json()).error, "error"); }
+        }
+      }
+
+      async function loadSuperDashboard() {
+        try {
+          const res = await fetch("/api/super-admin/dashboard-stats", { headers: { Authorization: `Bearer ${token}` }});
+          const data = await res.json();
+
+          if(data.error) return console.error(data.error);
+
+          document.getElementById("super-total-clinics").textContent = data.totalClinics;
+          document.getElementById("super-monthly-revenue").textContent = parseFloat(data.overallStats.monthly_revenue || 0).toLocaleString('tr-TR') + " ₺";
+          document.getElementById("super-monthly-apps").textContent = data.overallStats.monthly_apps || 0;
+
+          const tableBody = document.getElementById("super-clinic-performance-table");
+          if(data.clinicStats.length === 0) {
+            tableBody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 30px; color: #64748b;">Henüz bir doktor sitesi kurulmamış.</td></tr>';
+          } else {
+            tableBody.innerHTML = data.clinicStats.map(c => `
+              <tr>
+                <td>
+                  <div style="display: flex; align-items: center; gap: 12px;">
+                    <div style="width: 40px; height: 40px; border-radius: 50%; background: var(--primary-light); color: var(--primary); display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1.6rem;">
+                      ${c.name.charAt(0).toUpperCase()}
+                    </div>
+                    <div>
+                      <div style="font-weight: 600; color: var(--dark);">${c.name}</div>
+                      <div style="font-size: 1.6rem; color: #64748b;">${c.subdomain}</div>
+                    </div>
+                  </div>
+                </td>
+                <td style="text-align:center;">
+                  <span style="background: #f1f5f9; padding: 4px 10px; border-radius: 20px; font-weight: 600; font-size: 1.3rem; color: #475569;">${c.total_patients}</span>
+                </td>
+                <td style="text-align:center;">
+                  <span style="background: #eef2ff; padding: 4px 10px; border-radius: 20px; font-weight: 600; font-size: 1.3rem; color: var(--primary);">${c.total_appointments}</span>
+                </td>
+                <td style="color: #4f46e5; font-weight: 700;">${parseFloat(c.monthly_revenue || 0).toLocaleString('tr-TR')} ₺</td>
+                <td style="color: #10b981; font-weight: 600;">${parseFloat(c.weekly_revenue || 0).toLocaleString('tr-TR')} ₺</td>
+                <td style="color: #f59e0b; font-weight: 600;">${parseFloat(c.daily_revenue || 0).toLocaleString('tr-TR')} ₺</td>
+              </tr>
+            `).join("");
+          }
+        } catch (err) {
+          console.error("Dashboard Load Error:", err);
+        }
+      }
+      let allClinics = [];
+
+      async function loadClinics() {
+        try {
+          const res = await fetch("/api/super-admin/clinics", { headers: { Authorization: `Bearer ${token}` }});
+          allClinics = await res.json();
+          
+          if (!Array.isArray(allClinics)) {
+            console.error("Clinics API Hatası:", allClinics);
+            if (allClinics.error) {
+               alert("Yetki Hatası: " + allClinics.error);
+               if (res.status === 401 || res.status === 403) logout();
+            }
+            return;
+          }
+
+          const hostname = window.location.hostname;
+          let mainDomain = window.location.host;
+          if (hostname === 'localhost' || hostname.includes('.localhost')) mainDomain = 'localhost' + (window.location.port ? ':' + window.location.port : '');
+          else mainDomain = hostname.split('.').slice(-2).join('.') + (window.location.port ? ':' + window.location.port : '');
+
+          document.getElementById("clinics-list").innerHTML = allClinics.filter(c => c.id !== 1).map(c => {
+            const safeName = (c.name || '').replace(/'/g, "\\'");
+            return `
+            <div class="modern-card">
+              <div class="card-header"><div class="card-icon"><ion-icon name="globe-outline"></ion-icon></div><h4 class="card-title">${c.name || 'İsimsiz Klinik'}</h4></div>
+              <div class="card-body">
+                <div class="info-row"><span class="info-label">Web Sitesi:</span><a href="${window.location.protocol}//${c.subdomain}.${mainDomain}/index.html" class="domain-link" target="_blank">${c.subdomain}.${mainDomain}</a></div>
+              </div>
+              <div class="card-actions">
+                <button onclick="manageAdmins(${c.id}, '${safeName}')" class="btn-action btn-manage"><ion-icon name="people-outline"></ion-icon> Yöneticiler</button>
+                <button onclick="editClinicModal(${c.id})" class="btn-action"><ion-icon name="create-outline"></ion-icon> Düzenle</button>
+                <button onclick="deleteClinic(${c.id})" class="btn-action btn-delete-modern"><ion-icon name="trash-outline"></ion-icon></button>
+              </div>
+            </div>
+            `;
+          }).join("");
+        } catch (err) {
+          console.error("loadClinics Hatası:", err);
+        }
+      }
+
+      // --- RANDEVULAR ---
+      async function loadAppointments() {
+        const res = await fetch("/api/appointments", { headers: { Authorization: `Bearer ${token}` }});
+        const data = await res.json();
+        document.getElementById("appointments-list").innerHTML = data.map(app => {
+          const dateStr = new Date(app.appointment_date).toLocaleString('tr-TR');
+          let statusColor = "#856404"; let statusBg = "#fff3cd";
+          if (app.status === "Tamamlandı") { statusColor = "#155724"; statusBg = "#d4edda"; }
+          else if (app.status === "Katılmadı" || app.status === "İptal Edildi") { statusColor = "#721c24"; statusBg = "#f8d7da"; }
+
+          return `<tr>
+            <td>${dateStr}</td><td>${app.patient_name}</td>
+            <td style="font-weight:600; color:var(--verdigris);">${app.price ? parseFloat(app.price).toFixed(2) + ' ₺' : '-'}</td>
+            <td>${app.service_name || '-'}</td>
+            <td><span style="padding: 4px 10px; border-radius: 20px; font-size: 1.1rem; background: ${statusBg}; color: ${statusColor};">${app.status || 'Bekliyor'}</span></td>
+            <td style="text-align: center;">
+              <div class="dropdown-menu-container">
+                <button class="dots-btn" onclick="toggleDropdown(event, 'drop-app-${app.id}')"><ion-icon name="ellipsis-vertical-outline"></ion-icon></button>
+                <div id="drop-app-${app.id}" class="action-dropdown">
+                  ${app.status === 'Bekliyor' ? `
+                    <button class="dropdown-action-btn dropdown-complete" onclick="updateAppStatus(${app.id}, 'Tamamlandı')"><ion-icon name="checkmark-circle-outline"></ion-icon> Tamamlandı</button>
+                    <button class="dropdown-action-btn dropdown-noshow" onclick="updateAppStatus(${app.id}, 'Katılmadı')"><ion-icon name="close-circle-outline"></ion-icon> Katılmadı</button>
+                  ` : ''}
+                  <button class="dropdown-action-btn dropdown-delete" onclick="deleteAppointment(${app.id})"><ion-icon name="trash-outline"></ion-icon> Sil</button>
+                </div>
+              </div>
+            </td>
+          </tr>`;
+        }).join("");
+      }
+
+      // --- DOKTOR SİTESİ GÜNCELLEME MODAL ---
+      window.editClinicModal = async function(clinicId) {
+        const clinic = allClinics.find(c => c.id === clinicId);
+        if (!clinic) return;
+
+        const { value: formValues } = await Swal.fire({
+          title: 'Doktor Sitesini Güncelle',
+          html:
+            '<style>.modern-swal-group { margin-bottom: 20px; text-align: left; } .modern-swal-group label { display: block; font-weight: 600; margin-bottom: 6px; color: #444; font-size: 1.4rem; } .modern-swal-input { width: 100%; padding: 12px 15px; border: 1px solid #ddd; border-radius: 8px; font-size: 1.4rem; box-sizing: border-box; background-color: #f9f9f9; } .swal-section-title { font-size: 1.6rem; font-weight: 700; color: var(--ming); margin-bottom: 15px; padding-bottom: 8px; border-bottom: 2px solid #eee; margin-top: 25px; text-align: left; }</style>' +
+            '<div style="max-height: 60vh; overflow-y: auto; padding: 0 10px;">' +
+            '  <div class="swal-section-title" style="margin-top: 0;">Kişisel Bilgiler</div>' +
+            '  <div class="modern-swal-group"><label>Doktor Ad Soyad *</label><input id="edit-name" class="modern-swal-input" value="' + (clinic.name || '') + '"></div>' +
+            '  <div class="modern-swal-group"><label>Ünvan</label><input id="edit-title" class="modern-swal-input" value="' + (clinic.title || '') + '"></div>' +
+            '  <div class="swal-section-title">Web Sitesi Bilgileri</div>' +
+            '  <div class="modern-swal-group"><label>Subdomain (Site Linki) *</label><input id="edit-subdomain" class="modern-swal-input" value="' + (clinic.subdomain || '') + '"></div>' +
+            '  <div class="swal-section-title">Sosyal Medya Linkleri (Opsiyonel)</div>' +
+            '  <div class="modern-swal-group"><label><ion-icon name="logo-instagram"></ion-icon> Instagram</label><input id="edit-instagram" class="modern-swal-input" value="' + (clinic.instagram || '') + '"></div>' +
+            '  <div class="modern-swal-group"><label><ion-icon name="logo-twitter"></ion-icon> Twitter</label><input id="edit-twitter" class="modern-swal-input" value="' + (clinic.twitter || '') + '"></div>' +
+            '  <div class="modern-swal-group"><label><ion-icon name="logo-facebook"></ion-icon> Facebook</label><input id="edit-facebook" class="modern-swal-input" value="' + (clinic.facebook || '') + '"></div>' +
+            '  <div class="modern-swal-group"><label><ion-icon name="logo-linkedin"></ion-icon> LinkedIn</label><input id="edit-linkedin" class="modern-swal-input" value="' + (clinic.linkedin || '') + '"></div>' +
+            '</div>',
+          focusConfirm: false, width: '600px', showCancelButton: true, confirmButtonText: 'Güncelle',
+          preConfirm: () => {
+            const name = document.getElementById('edit-name').value;
+            const title = document.getElementById('edit-title').value;
+            const subdomain = document.getElementById('edit-subdomain').value;
+            const instagram = document.getElementById('edit-instagram').value;
+            const twitter = document.getElementById('edit-twitter').value;
+            const facebook = document.getElementById('edit-facebook').value;
+            const linkedin = document.getElementById('edit-linkedin').value;
+
+            if(!name || !subdomain) { Swal.showValidationMessage('Ad ve Subdomain zorunludur!'); return false; }
+            return { name, title, subdomain, instagram, twitter, facebook, linkedin };
+          }
+        });
+
+        if (formValues) {
+          Swal.fire({ title: 'Güncelleniyor...', didOpen: () => Swal.showLoading() });
+          try {
+            const res = await fetch(`/api/super-admin/clinics/${clinic.id}`, {
+              method: "PUT", headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` }, body: JSON.stringify(formValues)
+            });
+            if(res.ok) { Swal.fire("Başarılı!", "Doktor sitesi güncellendi.", "success"); loadClinics(); }
+            else { Swal.fire("Hata", (await res.json()).error, "error"); }
+          } catch (e) { Swal.fire("Hata", "Sunucuya bağlanılamadı.", "error"); }
+        }
+      }
+
+      window.manageAdmins = async function(clinicId, clinicName) {
+        const res = await fetch(`/api/super-admin/clinics/${clinicId}/admins`, { headers: { Authorization: `Bearer ${token}` }});
+        const admins = await res.json();
+        
+        let html = `
+          <div style="text-align: left; max-height: 300px; overflow-y: auto; padding: 10px;">
+            <ul style="list-style: none; padding: 0; margin: 0;">
+              ${admins.length === 0 ? '<li style="font-size:1.4rem; color:#888; text-align: center; padding: 20px;">Henüz yönetici yok.</li>' : admins.map(a => `
+                <li style="display: flex; justify-content: space-between; align-items: center; padding: 15px; border: 1px solid #eee; font-size:1.4rem; background: #fff; border-radius: 8px; margin-bottom: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.02);">
+                  <div>
+                    <strong style="color: var(--midnight-green); font-size: 2.2rem;">${a.name || 'İsimsiz'}</strong> <br>
+                    <span style="font-size:1.2rem; color:#666;">
+                      <ion-icon name="mail-outline" style="vertical-align: middle;"></ion-icon> ${a.email}
+                    </span>
+                  </div>
+                  <button onclick="deleteAdmin(${a.id}, ${clinicId}, '${clinicName.replace(/'/g, "\\'")}')" style="background: #fff0f0; color: #dc3545; border: 1px solid #ffcccc; padding: 8px 15px; border-radius: 6px; cursor: pointer; transition: 0.2s; display: flex; align-items: center; gap: 5px; font-weight: bold;">
+                    <ion-icon name="trash-outline"></ion-icon> Sil
+                  </button>
+                </li>
+              `).join("")}
+            </ul>
+          </div>
+          <button onclick="addAdminModal(${clinicId}, '${clinicName.replace(/'/g, "\\'")}')" class="btn-save" style="width: 100%; margin-top: 15px; display: flex; justify-content: center; align-items: center; gap: 5px; font-size: 1.4rem; padding: 15px;">
+            <ion-icon name="add-circle-outline" style="font-size: 1.8rem;"></ion-icon> Yeni Yönetici Ekle
+          </button>
+        `;
+
+        Swal.fire({
+          title: clinicName + ' Yöneticileri',
+          html: html,
+          showConfirmButton: false,
+          showCloseButton: true,
+          width: '550px',
+          background: '#f8f9fa',
+          customClass: { title: 'swal2-title-modern', popup: 'swal2-popup-modern' }
+        });
+      }
+
+      window.addAdminModal = async function(clinicId, clinicName) {
+        const { value: v } = await Swal.fire({
+          title: 'Yeni Yönetici Ekle',
+          html:
+            '<style>' +
+            '  .modern-swal-group { margin-bottom: 20px; text-align: left; }' +
+            '  .modern-swal-group label { display: block; font-weight: 600; margin-bottom: 6px; color: #444; font-size: 1.4rem; }' +
+            '  .modern-swal-input { width: 100%; padding: 12px 15px; border: 1px solid #ddd; border-radius: 8px; font-size: 1.4rem; transition: border-color 0.3s; box-sizing: border-box; background-color: #f9f9f9; }' +
+            '  .modern-swal-input:focus { border-color: var(--verdigris); background-color: #fff; outline: none; box-shadow: 0 0 0 3px rgba(37, 211, 102, 0.1); }' +
+            '</style>' +
+            '<div style="padding: 10px;">' +
+            '  <div class="modern-swal-group">' +
+            '    <label>Ad Soyad <span style="color:red">*</span></label>' +
+            '    <input id="a-name" class="modern-swal-input" placeholder="Örn: Mehmet Yılmaz">' +
+            '  </div>' +
+            '  <div class="modern-swal-group">' +
+            '    <label>E-posta (Giriş için) <span style="color:red">*</span></label>' +
+            '    <input id="a-email" type="email" class="modern-swal-input" placeholder="admin@doktor.com">' +
+            '  </div>' +
+            '  <div class="modern-swal-group">' +
+            '    <label>Şifre <span style="color:red">*</span></label>' +
+            '    <input id="a-pass" type="password" class="modern-swal-input" placeholder="******">' +
+            '  </div>' +
+            '</div>',
+          focusConfirm: false,
+          width: '500px',
+          showCancelButton: true,
+          confirmButtonText: 'Kaydet',
+          cancelButtonText: 'İptal',
+          confirmButtonColor: 'var(--verdigris)',
+          cancelButtonColor: '#888',
+          customClass: { title: 'swal2-title-modern', popup: 'swal2-popup-modern' },
+          preConfirm: () => {
+            const name = document.getElementById('a-name').value;
+            const email = document.getElementById('a-email').value;
+            const password = document.getElementById('a-pass').value;
+            if(!name || !email || !password) {
+              Swal.showValidationMessage('Lütfen tüm alanları doldurun!');
+              return false;
+            }
+            return { name, email, password };
+          }
+        });
+        
+        if(v) {
+          Swal.fire({ title: 'Ekleniyor...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+          const res = await fetch(`/api/super-admin/clinics/${clinicId}/admins`, { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` }, body: JSON.stringify(v) });
+          if(res.ok) {
+             Swal.fire("Başarılı!", "Yeni yönetici eklendi.", "success").then(() => manageAdmins(clinicId, clinicName));
+          } else {
+             const err = await res.json();
+             Swal.fire("Hata", err.error || "Eklenemedi.", "error");
+          }
+        }
+      }
+
+      window.deleteClinic = async function(id) {
+        if(confirm("Bu kliniği ve tüm verilerini silmek istediğinize emin misiniz?")) {
+          await fetch(`/api/super-admin/clinics/${id}`, { method: "DELETE", headers: { Authorization: `Bearer ${token}` }});
+          loadClinics();
+        }
+      }
+
+      window.deleteAdmin = async function(aid, cid, cname) {
+        await fetch(`/api/super-admin/admins/${aid}`, { method: "DELETE", headers: { Authorization: `Bearer ${token}` }});
+        manageAdmins(cid, cname);
+      }
+
+      window.toggleDropdown = function(event, id) {
+        event.stopPropagation();
+        document.querySelectorAll('.action-dropdown.show').forEach(m => { if(m.id !== id) m.classList.remove('show'); });
+        document.getElementById(id).classList.toggle('show');
+      }
+
+      window.updateAppStatus = async function(id, status) {
+        await fetch(`/api/appointments/${id}/status`, { method: 'PUT', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify({ status }) });
+        loadAppointments();
+      }
+
+      window.deleteAppointment = async function(id) {
+        if(confirm("Silinsin mi?")) { await fetch(`/api/appointments/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } }); loadAppointments(); }
+      }
+
+      document.addEventListener('click', () => { document.querySelectorAll('.action-dropdown.show').forEach(m => m.classList.remove('show')); });
+
+      // --- ANA SİTE AYARLARI VE İÇERİK YÖNETİMİ ---
+      async function loadMainSiteData() {
+        try {
+          const res = await fetch("/api/site-content", { headers: { Authorization: `Bearer ${token}` }});
+          const data = await res.json();
+          if (data) {
+            document.getElementById("mainSiteTitle").value = data.site_title || "";
+            document.getElementById("mainWhatsapp").value = data.whatsapp_number || "";
+            document.getElementById("mainAboutTitle").value = data.about_title || "";
+            document.getElementById("mainAboutText").value = data.about_text || "";
+            const aboutImgPreview = document.getElementById("main_about_image_preview");
+            if(data.about_image) {
+              aboutImgPreview.src = data.about_image;
+              aboutImgPreview.style.display = "block";
+            } else {
+              aboutImgPreview.style.display = "none";
+            }
+          }
+          loadServicesForMain();
+        } catch (err) {
+          console.error("loadMainSiteData Error:", err);
+        }
+      }
+
+      async function saveMainSettings() {
+        const formData = new FormData();
+        formData.append("site_title", document.getElementById("mainSiteTitle").value);
+        formData.append("whatsapp_number", document.getElementById("mainWhatsapp").value);
+
+        try {
+          const res = await fetch("/api/site-content/settings", { 
+            method: "POST", 
+            headers: { Authorization: `Bearer ${token}` },
+            body: formData
+          });
+          const data = await res.json();
+          if (data.success) Swal.fire("Başarılı!", "Ayarlar kaydedildi.", "success");
+          else Swal.fire("Hata", data.error || "Bilinmeyen hata", "error");
+        } catch (err) { Swal.fire("Hata", "Sunucu hatası", "error"); }
+      }
+
+      async function saveMainAbout() {
+        const formData = new FormData();
+        formData.append("about_title", document.getElementById("mainAboutTitle").value);
+        formData.append("about_text", document.getElementById("mainAboutText").value);
+        const file = document.getElementById("mainAboutImage").files[0];
+        if (file) formData.append("image", file);
+        try {
+          const res = await fetch("/api/site-content/about", { 
+            method: "POST", 
+            headers: { Authorization: `Bearer ${token}` },
+            body: formData
+          });
+          const data = await res.json();
+          if (data.success) {
+            Swal.fire("Başarılı!", "Hakkımızda kaydedildi.", "success");
+            loadMainSiteData();
+          }
+          else Swal.fire("Hata", data.error || "Bilinmeyen hata", "error");
+        } catch (err) { Swal.fire("Hata", "Sunucu hatası", "error"); }
+      }
+
+      async function loadServicesForMain() {
+        const select = document.getElementById("serviceSelect");
+        if (!select) return;
+        try {
+          const res = await fetch("/api/services", { headers: { Authorization: `Bearer ${token}` }});
+          const services = await res.json();
+          select.innerHTML = '<option value="">Yeni Hizmet Ekle</option>';
+          services.forEach(s => {
+            const opt = document.createElement("option");
+            opt.value = s.id;
+            opt.textContent = s.title;
+            select.appendChild(opt);
+          });
+        } catch (err) { console.error(err); }
+      }
+
+      async function loadServiceDetails(id) {
+        const delBtn = document.getElementById("deleteServiceBtn");
+        const imgPreview = document.getElementById("service_image_preview");
+        if (!id) {
+          document.getElementById("serviceTitle").value = "";
+          document.getElementById("serviceDesc").value = "";
+          document.getElementById("servicePrice").value = "";
+          document.getElementById("serviceImage").value = "";
+          imgPreview.style.display = "none";
+          delBtn.style.display = "none";
+          return;
+        }
+        try {
+          const res = await fetch(`/api/services/${id}`, { headers: { Authorization: `Bearer ${token}` }});
+          const s = await res.json();
+          document.getElementById("serviceTitle").value = s.title;
+          document.getElementById("serviceDesc").value = s.dsc;
+          document.getElementById("servicePrice").value = s.price || "";
+          if(s.image_path) {
+            imgPreview.src = s.image_path;
+            imgPreview.style.display = "block";
+          } else {
+            imgPreview.style.display = "none";
+          }
+          delBtn.style.display = "inline-block";
+        } catch (err) { console.error(err); }
+      }
+
+      async function saveService() {
+        const id = document.getElementById("serviceSelect").value;
+        const title = document.getElementById("serviceTitle").value;
+        const dsc = document.getElementById("serviceDesc").value;
+        const price = document.getElementById("servicePrice").value;
+        const file = document.getElementById("serviceImage").files[0];
+        
+        if(!title || !dsc) return Swal.fire("Hata", "Başlık ve açıklama girin!", "warning");
+        
+        const formData = new FormData();
+        formData.append("title", title);
+        formData.append("dsc", dsc);
+        formData.append("price", price);
+        if (file) formData.append("image", file);
+
+        try {
+          const method = id ? "PUT" : "POST";
+          const url = id ? `/api/services/${id}` : "/api/services";
+          const res = await fetch(url, {
+            method: method,
+            headers: { Authorization: `Bearer ${token}` },
+            body: formData
+          });
+
+          if (res.ok) {
+            await fetch('/api/translate', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({text: title, target: 'en'}) });
+            await fetch('/api/translate', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({text: dsc, target: 'en'}) });
+
+            Swal.fire("Başarılı!", "Hizmet kaydedildi.", "success");
+            loadServicesForMain();
+            loadServiceDetails("");
+            document.getElementById("serviceSelect").value = "";
+          } else {
+            Swal.fire("Hata", "Hizmet kaydedilemedi.", "error");
+          }
+        } catch (err) {
+          Swal.fire("Hata", "Sunucu hatası", "error");
+        }
+      }
+
+      async function deleteService() {
+        const id = document.getElementById("serviceSelect").value;
+        if (!id) return;
+        if (!confirm("Emin misiniz?")) return;
+        try {
+          const res = await fetch(`/api/services/${id}`, {
+            method: "DELETE",
+            headers: { Authorization: `Bearer ${token}` }
+          });
+          if(res.ok) {
+             Swal.fire("Başarılı!", "Hizmet silindi.", "success");
+             loadServicesForMain();
+             loadServiceDetails("");
+             document.getElementById("serviceSelect").value = "";
+          }
+        } catch (err) { Swal.fire("Hata", "Silinemedi", "error"); }
+      }
+
+      function logout() { localStorage.clear(); window.location.href = "login.html"; }
+      loadSuperDashboard();
+    </script>
+  </body>
+</html>

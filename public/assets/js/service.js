@@ -42,6 +42,11 @@ async function renderServices() {
           <p class="card-text">
             ${shortDsc}
           </p>
+          ${service.price > 0 ? `
+            <div class="price-tag" style="margin-top: 15px; font-weight: 700; font-size: 1.8rem; color: var(--verdigris);">
+              ${service.price} ₺
+            </div>
+          ` : ''}
           <button class="btn-circle detail-btn" aria-label="${safeTitle}" data-title="${safeTitle}" data-dsc="${safeDsc}" data-img="${safeImg}">
             <ion-icon name="arrow-forward" aria-hidden="true"></ion-icon>
           </button>

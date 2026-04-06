@@ -137,6 +137,93 @@
             border-bottom: 1px solid var(--gainsboro);
             padding-bottom: 10px;
         }
+        .action-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 1.3rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+        }
+        .btn-complete { background: #d4edda; color: #155724; }
+        .btn-complete:hover { background: #c3e6cb; }
+        .btn-noshow { background: #fff3cd; color: #856404; }
+        .btn-noshow:hover { background: #ffeeba; }
+        .btn-delete-appointment { background: #f8d7da; color: #721c24; }
+        .btn-delete-appointment:hover { background: #f5c6cb; }
+        .dropdown-menu-container {
+            position: relative;
+            display: inline-block;
+        }
+        .dots-btn {
+            background: none;
+            border: none;
+            font-size: 2.4rem;
+            color: #333; /* Rengi koyulaştırıldı */
+            cursor: pointer;
+            padding: 5px 10px;
+            border-radius: 50%;
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .dots-btn:hover, .dots-btn.active {
+            background-color: var(--alice-blue);
+            color: var(--midnight-green);
+        }
+        .action-dropdown {
+            display: none;
+            position: absolute;
+            right: 0;
+            top: 100%;
+            background: white;
+            min-width: 150px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            border-radius: 8px;
+            z-index: 100;
+            overflow: hidden;
+            border: 1px solid #eee;
+        }
+        .action-dropdown.show {
+            display: block;
+            animation: fadeIn 0.2s ease-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .dropdown-action-btn {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            width: 100%;
+            padding: 12px 15px;
+            border: none;
+            background: none;
+            text-align: left;
+            font-size: 1.3rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: 0.2s;
+            color: #444;
+        }
+        .dropdown-action-btn:hover {
+            background-color: #f8f9fa;
+            color: var(--midnight-green);
+        }
+        .dropdown-action-btn ion-icon {
+            font-size: 1.6rem;
+        }
+        .dropdown-complete { color: #155724; }
+        .dropdown-noshow { color: #856404; }
+        .dropdown-delete { color: #dc3545; border-top: 1px solid #eee; }
+        .dropdown-delete:hover { background-color: #fff0f0; color: #c82333; }
+        
         .form-group {
             margin-bottom: 20px;
         }
@@ -210,6 +297,70 @@
             font-size: var(--title-sm);
         }
 
+        /* Dashboard Styles */
+        .dashboard-stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px;
+        }
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: var(--shadow-1);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            transition: transform 0.2s;
+        }
+        .stat-card:hover {
+            transform: translateY(-3px);
+        }
+        .stat-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.8rem;
+        }
+        .stat-info h3 {
+            font-family: var(--ff-oswald);
+            font-size: 2.4rem;
+            color: var(--midnight-green);
+            margin: 0 0 5px 0;
+        }
+        .stat-info p {
+            color: var(--gray-web);
+            margin: 0;
+            font-size: 1.3rem;
+            font-weight: 500;
+        }
+        .upcoming-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        .upcoming-item:last-child {
+            border-bottom: none;
+        }
+        .upcoming-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .upcoming-time {
+            background: #e0f2fe;
+            color: #007bff;
+            padding: 5px 10px;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 1.3rem;
+        }
+
         /* Responsive Düzenlemeler */
         @media (max-width: 992px) {
             .admin-container {
@@ -271,8 +422,7 @@
                 <li><a href="#dashboard" class="active" data-section="dashboard" data-i18n="nav_home">Genel Bakış</a></li>
                 <li><a href="#about-us" data-section="about-us" data-i18n="nav_about">Hakkımızda</a></li>
                 <li><a href="#services" data-section="services" data-i18n="nav_services">Hizmetler</a></li>
-                <li><a href="#doctors" data-section="doctors" data-i18n="nav_doctors">Doktorlar</a></li>
-                <li><a href="#appointments" data-section="appointments" data-i18n="nav_appointment">Randevular</a></li>
+                <li><a href="#appointments" data-section="appointments" data-i18n="admin_appointment_title">Randevular Yönetimi</a></li>
                 <li><a href="#settings" data-section="settings" data-i18n="sidebar_settings">Ayarlar</a></li>
                 <li><a href="index.html" data-i18n="back_to_site">Siteye Dön</a></li>
             </ul>
@@ -280,9 +430,115 @@
 
         <main class="admin-content">
             <section id="dashboard" class="admin-section active">
-                <h2 data-i18n="nav_home">Genel Bakış</h2>
-                <p data-i18n="hero_contact_subtitle">Admin paneline hoş geldiniz. Buradan web sitenizin içeriğini yönetebilirsiniz.</p>
-                <!-- Genel istatistikler veya özet bilgiler buraya eklenebilir -->
+                <div class="section-header" style="margin-bottom: 25px;">
+                    <h2 data-i18n="nav_home" style="margin-bottom: 5px;">Genel Bakış</h2>
+                    <p style="color: var(--gray-web); font-size: 1.4rem;">Kliniğinizin genel durumu ve randevu istatistikleri.</p>
+                </div>
+                
+                <div class="dashboard-sections" style="display: flex; flex-direction: column; gap: 30px;">
+                    <!-- Randevu İstatistikleri -->
+                    <div class="stats-section">
+                        <h3 style="font-family: var(--ff-oswald); font-size: 1.8rem; color: var(--midnight-green); margin-bottom: 15px; border-bottom: 2px solid #eef2f5; padding-bottom: 10px;">
+                            <ion-icon name="calendar-outline" style="vertical-align: middle; margin-right: 5px; color: #007bff;"></ion-icon> Randevu Özeti
+                        </h3>
+                        <div class="dashboard-stats-grid">
+                            <div class="stat-card" style="border-top: 4px solid #007bff;">
+                                <div class="stat-icon" style="background-color: #e0f2fe; color: #007bff;">
+                                    <ion-icon name="today-outline"></ion-icon>
+                                </div>
+                                <div class="stat-info">
+                                    <h3 id="stat-today-apps">0</h3>
+                                    <p>Bugün</p>
+                                </div>
+                            </div>
+                            <div class="stat-card" style="border-top: 4px solid #10b981;">
+                                <div class="stat-icon" style="background-color: #d1fae5; color: #10b981;">
+                                    <ion-icon name="calendar-number-outline"></ion-icon>
+                                </div>
+                                <div class="stat-info">
+                                    <h3 id="stat-weekly-apps">0</h3>
+                                    <p>Bu Hafta</p>
+                                </div>
+                            </div>
+                            <div class="stat-card" style="border-top: 4px solid #f59e0b;">
+                                <div class="stat-icon" style="background-color: #fef3c7; color: #f59e0b;">
+                                    <ion-icon name="people-outline"></ion-icon>
+                                </div>
+                                <div class="stat-info">
+                                    <h3 id="stat-monthly-apps">0</h3>
+                                    <p>Bu Ay</p>
+                                </div>
+                            </div>
+                            <div class="stat-card" style="border-top: 4px solid #6366f1;">
+                                <div class="stat-icon" style="background-color: #e0e7ff; color: #6366f1;">
+                                    <ion-icon name="person-add-outline"></ion-icon>
+                                </div>
+                                <div class="stat-info">
+                                    <h3 id="stat-total-patients">0</h3>
+                                    <p>Toplam Danışan</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Gelir İstatistikleri -->
+                    <div class="stats-section">
+                        <h3 style="font-family: var(--ff-oswald); font-size: 1.8rem; color: var(--midnight-green); margin-bottom: 15px; border-bottom: 2px solid #eef2f5; padding-bottom: 10px;">
+                            <ion-icon name="wallet-outline" style="vertical-align: middle; margin-right: 5px; color: #10b981;"></ion-icon> Finansal Özet
+                        </h3>
+                        <div class="dashboard-stats-grid">
+                            <div class="stat-card" style="border-top: 4px solid #0ea5e9;">
+                                <div class="stat-icon" style="background-color: #e0f2fe; color: #0ea5e9;">
+                                    <ion-icon name="cash-outline"></ion-icon>
+                                </div>
+                                <div class="stat-info">
+                                    <h3 id="stat-daily-revenue">0 ₺</h3>
+                                    <p>Bugünkü Gelir</p>
+                                </div>
+                            </div>
+                            <div class="stat-card" style="border-top: 4px solid #8b5cf6;">
+                                <div class="stat-icon" style="background-color: #ede9fe; color: #8b5cf6;">
+                                    <ion-icon name="trending-up-outline"></ion-icon>
+                                </div>
+                                <div class="stat-info">
+                                    <h3 id="stat-weekly-revenue">0 ₺</h3>
+                                    <p>Haftalık Gelir</p>
+                                </div>
+                            </div>
+                            <div class="stat-card" style="border-top: 4px solid #ec4899;">
+                                <div class="stat-icon" style="background-color: #fce7f3; color: #ec4899;">
+                                    <ion-icon name="podium-outline"></ion-icon>
+                                </div>
+                                <div class="stat-info">
+                                    <h3 id="stat-monthly-revenue">0 ₺</h3>
+                                    <p>Aylık Gelir</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; margin-top: 30px;">
+                    <!-- Yaklaşan Randevular -->
+                    <div class="recent-activity-container" style="background: white; padding: 20px; border-radius: 12px; box-shadow: var(--shadow-1);">
+                        <h3 style="font-size: 1.8rem; color: var(--midnight-green); margin-bottom: 15px; font-family: var(--ff-oswald); border-bottom: 1px solid #eee; padding-bottom: 10px;">
+                            <ion-icon name="time-outline" style="vertical-align: middle; color: #0ea5e9;"></ion-icon> Yaklaşan Randevular
+                        </h3>
+                        <ul id="upcoming-appointments-list" style="list-style: none; padding: 0; margin: 0;">
+                            <li><p style="font-size:1.4rem; color:#888;">Yükleniyor...</p></li>
+                        </ul>
+                    </div>
+
+                    <!-- En Sadık Danışanlar -->
+                    <div class="top-patients-container" style="background: white; padding: 20px; border-radius: 12px; box-shadow: var(--shadow-1);">
+                        <h3 style="font-size: 1.8rem; color: var(--midnight-green); margin-bottom: 15px; font-family: var(--ff-oswald); border-bottom: 1px solid #eee; padding-bottom: 10px;">
+                            <ion-icon name="heart-outline" style="vertical-align: middle; color: #ec4899;"></ion-icon> Düzenli Danışanlar
+                        </h3>
+                        <ul id="top-patients-list" style="list-style: none; padding: 0; margin: 0;">
+                            <li><p style="font-size:1.4rem; color:#888;">Yükleniyor...</p></li>
+                        </ul>
+                    </div>
+                </div>
             </section>
 
             <section id="about-us" class="admin-section">
@@ -346,6 +602,11 @@
         </div>
 
         <div class="form-group">
+            <label for="servicePrice">Seans Ücreti (₺)</label>
+            <input type="number" id="servicePrice" placeholder="Örn: 1500" style="width: 100%; padding: 10px 15px; border: 1px solid #ccc; border-radius: 6px; font-size: 1.4rem;">
+        </div>
+
+        <div class="form-group">
             <label for="serviceImage" data-i18n="hero_about_title">Hizmet Görseli</label>
             <input type="file" id="serviceImage" accept="image/*">
             <img id="service_image" src="#" alt="Görsel Önizleme" style="max-width: 200px; margin-top: 10px; display: none;">
@@ -361,85 +622,11 @@
                    
            
 
-            <section id="doctors" class="admin-section">
-                <h2 data-i18n="nav_doctors">Doktorlar Yönetimi</h2>
-               <h3 data-i18n="hero_services_title">Yeni Doktor Ekle veya Güncelle</h3>
-               <div class="input-box">
-                    <label for="doctors" data-i18n="select_therapist">Terapist Seçin:</label>
-                    <select id="doctorSelect" name="therapist" class="box">
-                         <option value="" data-i18n="select_therapist">Doktor seçiniz</option>
-                    </select>
-                </div>
-<div class="form-group">
-  <label for="doctorName" data-i18n="signup_name_label">Ad Soyad</label>
-  <input type="text" id="doctorName" placeholder="Doktorun adı soyadı" style="width: 50%">
-</div>
-
-<div class="form-group">
-  <label for="doctorTitle" data-i18n="feature_title1">Ünvan</label>
-  <input type="text" id="doctorTitle" placeholder="Ünvan (Uzman Psikolog)" style="width: 50%">
-</div>
-
-<div class="form-group">
-  <label for="doctorPhone" data-i18n="phone_office">Telefon</label>
-  <input type="text" id="doctorPhone" placeholder="05xx xxx xx xx" style="width: 50%">
-</div>
-
-<div class="form-group">
-  <label for="doctorEmail" data-i18n="login_email_label">E-Mail</label>
-  <input type="text" id="doctorEmail" placeholder="mail@example.com" style="width: 50%">
-</div>
-
-<div class="form-group">
-  <label for="doctorInstagram">Instagram</label>
-  <input type="text" id="doctorInstagram" placeholder="Instagram link" style="width: 50%">
-</div>
-
-<div class="form-group">
-  <label for="doctorTwitter">Twitter</label>
-  <input type="text" id="doctorTwitter" placeholder="Twitter link" style="width: 50%">
-</div>
-
-<div class="form-group">
-  <label for="doctorFacebook">Facebook</label>
-  <input type="text" id="doctorFacebook" placeholder="Facebook link" style="width: 50%">
-</div>
-
-<div class="form-group">
-  <label for="doctorLinkedin">LinkedIn</label>
-  <input type="text" id="doctorLinkedin" placeholder="LinkedIn link" style="width: 50%">
-</div>
-
-<div class="form-group">
-  <label for="doctorImage" data-i18n="hero_about_title">Doktor Görseli</label>
-  <input type="file" id="doctorImage" accept="image/*">
-  <img id="doctor_image" src="#" alt="Görsel Önizleme" style="max-width: 200px; margin-top: 10px; display: none;">
-</div>
-
-<div class="form-group">
-  <label for="doctorBio" data-i18n="footer_about_title">Doktor Bilgisi (Kartın Arka Yüzü)</label>
-  <textarea id="doctorBio" rows="4" placeholder="Doktor hakkında kısa bilgi girin..." style="width: 100%"></textarea>
-</div>
-
-<div class="form-group">
-  <label for="doctorIsActive" data-i18n="feature1">Aktif/Pasif</label>
-  <input type="checkbox" id="doctorIsActive" placeholder="Aktif" >
-  </div>
-
-<div class="form-group">
- <button id="deleteDoctor">Sil</button>
- <button id="updateDoctor" data-i18n="btn_save">Güncelle</button>
-<button id="addDoctor" data-i18n="btn_add">Ekle</button>
- 
-</div>
-
-            </section>
-
             <section id="appointments" class="admin-section">
                 <div class="section-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
                     <div>
-                        <h2 data-i18n="nav_appointment" style="margin-bottom: 5px;">Randevular Yönetimi</h2>
-                        <p data-i18n="hero_contact_subtitle" style="color: var(--gray-web); font-size: 1.4rem;">Randevuları takip edin ve durumlarını güncelleyin.</p>
+                        <h2 data-i18n="admin_appointment_title" style="margin-bottom: 5px;">Randevular Yönetimi</h2>
+                        <p data-i18n="admin_appointment_subtitle" style="color: var(--gray-web); font-size: 1.4rem;">Randevuları takip edin ve durumlarını güncelleyin.</p>
                     </div>
                     <div class="search-box" style="position: relative; width: 300px;">
                         <input type="text" id="appointmentSearch" placeholder="İsim veya hizmet ara..." 
@@ -448,34 +635,40 @@
                     </div>
                 </div>
                 
-                <div class="appointment-container" style="background: white; border-radius: 12px; box-shadow: var(--shadow-1); overflow: hidden;">
+                <div class="appointment-container" style="background: white; border-radius: 12px; box-shadow: var(--shadow-1); overflow: visible; padding-bottom: 50px;">
                     <table class="modern-table" style="width: 100%; border-collapse: collapse; min-width: 800px;">
                         <thead>
                             <tr style="background: #f8f9fa; border-bottom: 2px solid #eee;">
-                                <th style="padding: 18px 15px; text-align: left; font-size: 1.4rem; font-weight: 600; color: var(--midnight-green);" data-i18n="appointment_datetime_label">Tarih & Saat</th>
-                                <th style="padding: 18px 15px; text-align: left; font-size: 1.4rem; font-weight: 600; color: var(--midnight-green);" data-i18n="appointment_name_label">Hasta Bilgileri</th>
-                                <th style="padding: 18px 15px; text-align: left; font-size: 1.4rem; font-weight: 600; color: var(--midnight-green);" data-i18n="nav_services">Hizmet</th>
-                                <th style="padding: 18px 15px; text-align: left; font-size: 1.4rem; font-weight: 600; color: var(--midnight-green);" data-i18n="nav_doctors">Terapist</th>
-                                <th style="padding: 18px 15px; text-align: center; font-size: 1.4rem; font-weight: 600; color: var(--midnight-green);">Durum</th>
-                                <th style="padding: 18px 15px; text-align: right; font-size: 1.4rem; font-weight: 600; color: var(--midnight-green);">İşlem</th>
+                                <th style="padding: 18px 15px; text-align: left; font-size: 1.4rem; font-weight: 600; color: var(--midnight-green);" data-i18n="admin_col_datetime">Tarih & Saat</th>
+                                <th style="padding: 18px 15px; text-align: left; font-size: 1.4rem; font-weight: 600; color: var(--midnight-green);" data-i18n="admin_col_patient">Hasta Bilgileri</th>
+                                <th style="padding: 18px 15px; text-align: left; font-size: 1.4rem; font-weight: 600; color: var(--midnight-green);" data-i18n="admin_col_price">Ücret</th>
+                                <th style="padding: 18px 15px; text-align: left; font-size: 1.4rem; font-weight: 600; color: var(--midnight-green);" data-i18n="admin_col_service">Hizmet</th>
+                                <th style="padding: 18px 15px; text-align: left; font-size: 1.4rem; font-weight: 600; color: var(--midnight-green);" data-i18n="admin_col_therapist">Terapist</th>
+                                <th style="padding: 18px 15px; text-align: center; font-size: 1.4rem; font-weight: 600; color: var(--midnight-green);" data-i18n="admin_col_status">Durum</th>
+                                <th style="padding: 18px 15px; text-align: center; font-size: 1.4rem; font-weight: 600; color: var(--midnight-green);" data-i18n="admin_col_action">İşlem</th>
                             </tr>
                         </thead>
                         <tbody id="appointmentsTableBody">
-                            <tr><td colspan="6" style="padding: 40px; text-align: center;" data-i18n="loading">Yükleniyor...</td></tr>
+                            <tr><td colspan="7" style="padding: 40px; text-align: center;" data-i18n="loading">Yükleniyor...</td></tr>
                         </tbody>
                     </table>
                 </div>
             </section>
 
+
             <section id="settings" class="admin-section">
                 <h2 data-i18n="nav_admin">Genel Ayarlar</h2>
                 <div class="form-group">
                     <label for="siteTitle" data-i18n="hero_contact_title">Site Başlığı</label>
-                    <input type="text" id="siteTitle" value="Fast Terapi">
+                    <input type="text" id="siteTitle" placeholder="Site başlığını girin">
                 </div>
                 <div class="form-group">
-                    <label for="contactEmail" data-i18n="email_main">İletişim E-postası</label>
-                    <input type="text" id="contactEmail" value="contact@therapy.com">
+                    <label for="siteLogo" data-i18n="hero_about_title">Site Logosu</label>
+                    <input type="file" id="siteLogo" accept="image/*">
+                    <div id="currentLogoContainer" style="margin-top: 10px; display: none;">
+                        <p style="font-size: 1.2rem; color: #666;">Mevcut Logo:</p>
+                        <img id="site_logo_preview" src="#" alt="Logo Önizleme" style="max-width: 150px; border: 1px solid #ddd; padding: 5px; border-radius: 4px;">
+                    </div>
                 </div>
                 <div class="form-group">
                     <label for="whatsappNumber">WhatsApp Numarası (Örn: 905xxxxxxxxx)</label>
@@ -498,6 +691,8 @@
     </div>
 
     
+    <script type="module" src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.esm.js"></script>
+    <script nomodule src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.js"></script>
     <script src="./assets/js/i18n.js?v=2"></script>
     <script src="./assets/js/admin.js?v=2"></script>
 </body>
